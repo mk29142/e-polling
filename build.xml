@@ -8,9 +8,9 @@
   <path id="classpath.base" />
 
   <!-- adding junit to the classpath for testing on travis -->
-  <path id="classpath.tests">
+  <path id="classpath.test">
     <pathelement location="lib/junit-4.12.jar" />
-    <pathelement location="lib/hamcrest-core-1.3" />
+    <pathelement location="lib/hamcrest-core-1.3.jar" />
     <pathelement location="${main.build.dir}" />
     <path refid="classpath.base" />
   </path>
@@ -29,21 +29,21 @@
   <target name="build" depends="compile">
     <mkdir dir="${tests.build.dir}" />
     <javac srcdir="${tests.src.dir}" destdir="${tests.build.dir}" includeantruntime="false">
-      <classpath refid="classpath.tests" />
+      <classpath refid="classpath.test" />
     </javac>
     <echo message="Epolling Build Complete" />
   </target>
   
   <!-- build and run the tests -->
   <target name="run" depends="build">
-    <junit printsummary="on" haltonfailure="yes">
+    <junit printsummary="on" haltonfailure="yes" fork="true">
       <classpath>
-        <path refid="classpath.tests" />
+        <path refid="classpath.test" />
         <pathelement location="${tests.build.dir}" />
       </classpath>
       <formatter type="brief" usefile="false" />
       <batchtest>
-        <fileset dir="${tests.src.dir}" includes="**/*Test*.java" />
+        <fileset dir="${tests.src.dir}" includes="**/*Test.java" />
       </batchtest>
     </junit>
   </target>
