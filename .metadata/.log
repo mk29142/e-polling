@@ -1,0 +1,57 @@
+
+!ENTRY org.eclipse.ui.ide 4 4 2016-10-13 16:11:53.149
+!MESSAGE Problems saving workspace
+
+!ENTRY org.eclipse.ui.ide 4 1 2016-10-13 16:11:53.151
+!MESSAGE Problems occurred while trying to save the state of the workbench.
+!SUBENTRY 1 org.eclipse.core.resources 4 568 2016-10-13 16:11:53.151
+!MESSAGE Could not write workspace metadata '/homes/rf2114/e-polling/.metadata/.plugins/org.eclipse.core.resources/.root/1.tree'.
+!STACK 0
+java.io.FileNotFoundException: /homes/rf2114/e-polling/.metadata/.plugins/org.eclipse.core.resources/.root/1.tree (No such file or directory)
+	at java.io.FileOutputStream.open0(Native Method)
+	at java.io.FileOutputStream.open(FileOutputStream.java:270)
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:213)
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:162)
+	at org.eclipse.core.internal.localstore.SafeFileOutputStream.<init>(SafeFileOutputStream.java:51)
+	at org.eclipse.core.internal.resources.SaveManager.saveTree(SaveManager.java:1350)
+	at org.eclipse.core.internal.resources.SaveManager.save(SaveManager.java:1134)
+	at org.eclipse.core.internal.resources.Workspace.save(Workspace.java:2375)
+	at org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor$5.run(IDEWorkbenchAdvisor.java:508)
+	at org.eclipse.jface.operation.ModalContext$ModalContextThread.run(ModalContext.java:121)
+
+!ENTRY org.eclipse.ui 2 2 2016-10-13 16:11:53.218
+!MESSAGE Invalid property category path: ValidationPropertiesPage (bundle: org.eclipse.wst.xml.ui, propertyPage: org.eclipse.wst.xml.ui.propertyPage.project.validation)
+!SESSION 2016-10-13 16:15:58.709 -----------------------------------------------
+eclipse.buildId=debbuild
+java.version=1.8.0_91
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_GB
+Command-line arguments:  -os linux -ws gtk -arch x86_64
+
+!ENTRY com.vectrace.MercurialEclipse 1 0 2016-10-13 16:16:12.430
+!MESSAGE checking encoding (ascii)...
+checking Python executable (/usr/bin/python)
+checking Python version (2.7.12)
+checking Python lib (/usr/lib/python2.7)...
+checking installed modules (/usr/lib/python2.7/dist-packages/mercurial)...
+checking templates (/usr/share/mercurial/templates)...
+checking commit editor...
+checking username...
+no username found, using 'rf2114@line18.doc.ic.ac.uk' instead
+no problems detected
+
+!ENTRY com.vectrace.MercurialEclipse 4 0 2016-10-13 16:16:12.498
+!MESSAGE . Command line: hg -y showconfig ui.username, error code: 1
+!STACK 1
+. Command line: hg -y showconfig ui.username, error code: 1
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToStream(AbstractShellCommand.java:448)
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToBytes(AbstractShellCommand.java:387)
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToString(AbstractShellCommand.java:605)
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToString(AbstractShellCommand.java:601)
+	at com.vectrace.MercurialEclipse.commands.HgConfigClient.getHgConfigLines(HgConfigClient.java:30)
+	at com.vectrace.MercurialEclipse.commands.HgConfigClient.getHgConfigLine(HgConfigClient.java:22)
+	at com.vectrace.MercurialEclipse.team.MercurialUtilities.getDefaultUserName(MercurialUtilities.java:256)
+	at com.vectrace.MercurialEclipse.preferences.PreferenceInitializer$1.run(PreferenceInitializer.java:132)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+!SUBENTRY 1 com.vectrace.MercurialEclipse 4 1 2016-10-13 16:16:12.511
+!MESSAGE . Command line: hg -y showconfig ui.username
