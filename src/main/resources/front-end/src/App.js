@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import './App.css';
-import Draggable, {DraggableCore} from 'react-draggable';
+import Draggable from 'react-draggable';
 
+import './App.css';
 import BoxList from './BoxList';
 
 class App extends Component {
