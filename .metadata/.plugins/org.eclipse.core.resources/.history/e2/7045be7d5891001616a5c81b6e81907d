@@ -1,0 +1,29 @@
+//file that will hold the Quad V algorithm
+class QuadV {
+
+	public static void main(String[] args){
+		
+		
+		
+	}
+
+
+
+
+}
+
+class Argument {
+
+  public Argument children[];
+  public boolean vote;
+  public String argumentTitle;
+  public boolean isSupporter;
+  
+  public Argument(){
+    
+  }
+
+
+}
+
+
