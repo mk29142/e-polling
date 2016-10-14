@@ -1,58 +1,89 @@
 import java.util.List;
 
 public class Argument {
-    private List<Argument> children;
+    private List<Supporter> supporters; 
+    private List<Attacker> attackers;
     private String argumentTitle;
+    //TODO: Should probably change to be a number on a scale of 1 to 10, with 10 being strongly agree, and 1 being strongly disagree
+    /* True for agreement/yes, false for disagreement/no. */
     private boolean vote;
-    private boolean isSupporter;
+    /* Use score function (sigma) from DF-QuAD algorithm to calculate strength 
+     * of argument using the vote base score as the base score. */ 
+    private double strength;
 
-    public Argument(boolean vote, String argumentTitle, boolean isSupporter) {
+    public Argument(boolean vote, String argumentTitle) {
         this.argumentTitle = argumentTitle;
         this.vote = vote;
-        this.isSupporter = isSupporter;
     }
 
     public boolean getVote() {
         return vote;
     }
 
-    public boolean getIsSupporter() {
-        return isSupporter;
-    }
-
     public String getArgumentTitle() {
         return argumentTitle;
     }
 
-    public List<Argument> getChildren() {
-        return children;
+//    public List<Supporter> getSupporters() {
+//        return this.supporters;
+//    }
+//    
+//    public List<Attacker> getAttackers() {
+//        return this.attackers;
+//    }
+
+    public void addSupporter(boolean vote, String argumentTitle) {
+        Supporter supporter = new Supporter(vote, argumentTitle);
+        this.supporters.add(supporter);
+    }
+    
+    public void addAttacker(boolean vote, String argumentTitle) {
+        Attacker attacker = new Attacker(vote, argumentTitle);
+        this.attackers.add(attacker);
     }
 
-    public void setChildren(List<Argument> children) {
-        this.children = children;
+    //TODO: Implement algorithm to check that the tree is fully consistent (IS THIS WHAT isStable() was meant to be doing)
+    /* If there are no supporters or attackers, it is consistent.
+     * If we agree with the statement, but agree with any of its attackers and don't agree with any of its supporters, then it is inconsistent.
+     * If we disagree with the statement, but agree with any of its supporters and don't agree with any of its attackers, then it is inconsistent.
+     * Otherwise, it is consistent. */
+    public boolean isConsistent() {
+        
+        if (vote) {
+            if (hasAttackerVote() && !hasSupporterVote()) {
+                return false;
+            }
+        } else {
+            if (hasSupporterVote() && !hasAttackerVote()) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
-    public boolean isStable() {
-        return false;
-    }
-
-    public boolean hasVotedForSupporter() {
-        for (Argument child : children) {
-            if (child.getIsSupporter() && child.getVote()) {
+    /* Returns true if the voter has agreed with a supporter of this 
+     * argument. Returns false otherwise. */
+    public boolean hasSupporterVote() {
+        for (Supporter supporter : this.supporters) {
+            if (supporter.getVote()) {
                 return true;
             }
         }
-
+        
         return false;
     }
-
-    public boolean hasVotedForAttacker() {
-        for (Argument child : children) {
-            if (!child.getIsSupporter() && child.getVote()) {
+    
+    /* Returns true if the voter has agreed with an attacker of this
+     * argument. Returns false otherwise. */
+    public boolean hasAttackerVote() {
+        for (Attacker attacker : this.attackers) {
+            if (attacker.getVote()) {
                 return true;
             }
         }
-
+        
         return false;
     }
+    
 }
