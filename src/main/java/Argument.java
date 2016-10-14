@@ -24,14 +24,6 @@ public class Argument {
         return argumentTitle;
     }
 
-//    public List<Supporter> getSupporters() {
-//        return this.supporters;
-//    }
-//    
-//    public List<Attacker> getAttackers() {
-//        return this.attackers;
-//    }
-
     public void addSupporter(boolean vote, String argumentTitle) {
         Supporter supporter = new Supporter(vote, argumentTitle);
         this.supporters.add(supporter);
@@ -43,9 +35,13 @@ public class Argument {
     }
 
     //TODO: Implement algorithm to check that the tree is fully consistent (IS THIS WHAT isStable() was meant to be doing)
-    /* If there are no supporters or attackers, it is consistent.
-     * If we agree with the statement, but agree with any of its attackers and don't agree with any of its supporters, then it is inconsistent.
-     * If we disagree with the statement, but agree with any of its supporters and don't agree with any of its attackers, then it is inconsistent.
+    /* Checks that this argument is consistent with its supporters and 
+     * attackers.
+     * If there are no supporters or attackers, it is consistent.
+     * If we agree with the statement, but agree with any of its attackers and 
+     * don't agree with any of its supporters, then it is inconsistent.
+     * If we disagree with the statement, but agree with any of its supporters 
+     * and don't agree with any of its attackers, then it is inconsistent.
      * Otherwise, it is consistent. */
     public boolean isConsistent() {
         
@@ -60,6 +56,25 @@ public class Argument {
         }
         
         return true;
+    }
+    
+    /* Returns true if the subtree with this argument as the root is 
+     * consistent, which is when the root and all of its children are 
+     * consistent. */
+    public boolean isSubTreeConsistent() {
+        for (Supporter supporter : supporters) {
+            if (!supporter.isConsistent()) {
+                return false;
+            }
+        }
+        
+        for (Attacker attacker : attackers) {
+            if (!attacker.isConsistent()) {
+                return false;
+            }
+        }
+        
+        return this.isConsistent();
     }
 
     /* Returns true if the voter has agreed with a supporter of this 
