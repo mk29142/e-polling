@@ -6,6 +6,6 @@ public class QuadV {
         port(4567);
         staticFiles.location("/front-end/build");
 
-        get("/hello", (request, response) -> "Hello Friend!");
+        get("/index", (request, response) -> "Hello Friend!");
 	}
 }
