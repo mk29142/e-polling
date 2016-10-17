@@ -1,5 +1,6 @@
 package main.java;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Argument {
@@ -58,6 +59,17 @@ public class Argument {
         }
         
         return true;
+    }
+
+    /*
+    Concatenates Attacker and Supporters and returns list of Arguments,
+    this is used in class MasterTree for the argumentToList() function
+    */
+    public List<Argument> getChildren(){
+        List<Argument> result = new ArrayList<Argument>(attackers);
+        result.add((Argument)supporters);
+        return result;
+
     }
     
     /* Returns true if the subtree with this argument as the root is 
