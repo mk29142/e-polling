@@ -113,7 +113,7 @@ class Node {
     The combination function gives the score of an argument and is based on the scores of its attackers/supporters
     and the base score of the argument. (It is also defined in the notes)
      */
-    public double combinationFunction() {
+    public void combinationFunction() {
         List<Double> attackerScoreList = scoreList(attackers);
         double attackerScore = strengthAggregationFunction(attackerScoreList);
         List<Double> supporterScoreList = scoreList(supporters);
@@ -128,8 +128,6 @@ class Node {
         } else {
             score = baseScore + (1 - baseScore) * Math.abs(supporterScore - attackerScore);
         }
-
-
     }
 
     /*
@@ -160,8 +158,5 @@ class Node {
         } else {
             return 0.5 + (0.5 * (votesFor - votesAgainst) / totalVotes);
         }
-
     }
-
-
 }

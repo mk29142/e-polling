@@ -1,9 +1,10 @@
+
 package main.java;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Argument {
+class Argument {
     private List<Supporter> supporters; 
     private List<Attacker> attackers;
     private String argumentTitle;
@@ -14,12 +15,12 @@ public class Argument {
      * of argument using the vote base score as the base score. */ 
     private double strength;
 
-    public Argument(boolean vote, String argumentTitle) {
+    Argument(boolean vote, String argumentTitle) {
         this.argumentTitle = argumentTitle;
         this.vote = vote;
     }
 
-    public boolean getVote() {
+    boolean getVote() {
         return vote;
     }
 
@@ -46,7 +47,7 @@ public class Argument {
      * If we disagree with the statement, but agree with any of its supporters 
      * and don't agree with any of its attackers, then it is inconsistent.
      * Otherwise, it is consistent. */
-    public boolean isConsistent() {
+    protected boolean isConsistent() {
         
         if (vote) {
             if (hasAttackerVote() && !hasSupporterVote()) {
@@ -65,7 +66,7 @@ public class Argument {
     Concatenates Attacker and Supporters and returns list of Arguments,
     this is used in class MasterTree for the argumentToList() function
     */
-    public List<Argument> getChildren(){
+    List<Argument> getChildren(){
         List<Argument> result = new ArrayList<Argument>(attackers);
         result.add((Argument)supporters);
         return result;
@@ -93,7 +94,7 @@ public class Argument {
 
     /* Returns true if the voter has agreed with a supporter of this 
      * argument. Returns false otherwise. */
-    public boolean hasSupporterVote() {
+    private boolean hasSupporterVote() {
         for (Supporter supporter : this.supporters) {
             if (supporter.getVote()) {
                 return true;
@@ -105,7 +106,7 @@ public class Argument {
     
     /* Returns true if the voter has agreed with an attacker of this
      * argument. Returns false otherwise. */
-    public boolean hasAttackerVote() {
+    private boolean hasAttackerVote() {
         for (Attacker attacker : this.attackers) {
             if (attacker.getVote()) {
                 return true;
