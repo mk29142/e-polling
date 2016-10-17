@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Draggable from 'react-draggable';
 
 import './App.css';
-import BoxList from './BoxList';
+import BoxFactory from './BoxFactory';
 
 class App extends Component {
   constructor(props) {
@@ -28,27 +28,20 @@ class App extends Component {
     return (
       <div>
         <div className="row">
-          <button className="col s1" onClick={ this.addBox }>Add Issue</button>
-          <button className="col s2" onClick={ this.addBox }>Add Answer</button>
-          <button className="col s3" onClick={ this.addBox }>Add Pro Argument</button>
-          <button className="col s4" onClick={ this.addBox }>Add Con Argument</button>
-        </div>
-        <BoxList boxes={ this.state.boxes } />
-        <Draggable
-          axis="both"
-          handle=".handle"
-          defaultPosition={{x: 0, y: 0}}
-          position={null}
-          grid={[25, 25]}
-          zIndex={100}
-          onStart={this.handleStart}
-          onDrag={this.handleDrag}
-          onStop={this.handleStop}>
-          <div>
-            <div className="handle">Drag from here</div>
-            <div>This readme is really dragging on...</div>
+          <div className="col s3">
+            <button className="waves-effect waves-light btn" onClick={ this.addBox }>Add Issue</button>
           </div>
-        </Draggable>
+          <div className="col s3">
+            <button className="waves-effect waves-light btn" onClick={ this.addBox }>Add Answer</button>
+          </div>
+          <div className="col s3">
+            <button className="waves-effect waves-light btn" onClick={ this.addBox }>Add Pro Argument</button>
+          </div>
+          <div className="col s3">
+            <button className="waves-effect waves-light btn" onClick={ this.addBox }>Add Con Argument</button>
+          </div>
+        </div>
+        <BoxFactory boxes={ this.state.boxes } />
       </div>
     );
   }
