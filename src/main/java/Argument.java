@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 package main.java;
 
+=======
+package src.main.java;
+>>>>>>> Stashed changes
 import java.util.List;
 
 public class Argument {
@@ -22,6 +26,13 @@ public class Argument {
         return vote;
     }
 
+<<<<<<< Updated upstream
+=======
+    public boolean isSupporter() {
+        return isSupporter;
+    }
+
+>>>>>>> Stashed changes
     public String getArgumentTitle() {
         return argumentTitle;
     }
@@ -79,23 +90,36 @@ public class Argument {
         return this.isConsistent();
     }
 
+<<<<<<< Updated upstream
     /* Returns true if the voter has agreed with a supporter of this 
      * argument. Returns false otherwise. */
     public boolean hasSupporterVote() {
         for (Supporter supporter : this.supporters) {
             if (supporter.getVote()) {
+=======
+    public boolean hasVotedForSupporter() {
+        for (Argument child : children) {
+            if (child.isSupporter() && child.getVote()) {
+>>>>>>> Stashed changes
                 return true;
             }
         }
         
         return false;
     }
+<<<<<<< Updated upstream
     
     /* Returns true if the voter has agreed with an attacker of this
      * argument. Returns false otherwise. */
     public boolean hasAttackerVote() {
         for (Attacker attacker : this.attackers) {
             if (attacker.getVote()) {
+=======
+
+    public boolean hasVotedForAttacker() {
+        for (Argument child : children) {
+            if (!child.isSupporter() && child.getVote()) {
+>>>>>>> Stashed changes
                 return true;
             }
         }
