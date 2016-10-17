@@ -1,3 +1,5 @@
+package main.java;
+
 import static spark.Spark.*;
 import java.sql.*;
 import java.math.*;
