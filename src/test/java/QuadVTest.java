@@ -1,8 +1,6 @@
-package src.test.java;
+//package src.test.java;
 
 import org.junit.Test;
-
-import src.main.java.Argument;
 
 import java.util.ArrayList;
 import java.util.List;
