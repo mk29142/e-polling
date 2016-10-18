@@ -1,11 +1,12 @@
 function IssueBox(options) {
+  var issueInstance = jsPlumb.getInstance();
 
-  var newBox = document.createElement('div');
-  document.body.append(newBox);
-  newBox.className = 'box';
-  var content = document.createTextNode(options.issue);
-  newBox.append(content);
-  jsPlumb.ready(function() {
-      jsPlumb.draggable(newBox);
+  var newBox = $('<div/>', {
+    class: 'box',
+    text: options.issue
+  }).appendTo('#boxContainer');
+
+  issueInstance.ready(function() {
+    issueInstance.draggable(newBox);
   });
 }
