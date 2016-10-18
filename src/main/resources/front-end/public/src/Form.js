@@ -1,4 +1,6 @@
 function Form() {
+  var id = 0;
+
   // Get the modal
   var modal = $('#myModal');
 
@@ -14,6 +16,7 @@ function Form() {
     var baseValue = $('#baseValue').val();
 
     var newBox = new IssueBox({
+      id: id++,
       issue: issue,
       baseValue: baseValue
     });
