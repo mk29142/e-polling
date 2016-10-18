@@ -20,12 +20,23 @@
 
   </head>
   <body>
-    <button id="issue">Add Issue</button>
-    <!-- <div id="item_left" class="item"></div> -->
-    <!-- <div id="item_right" class="item" style="margin-left:50px;"></div> -->
+    <button id="myBtn" class="btn">Add Issue</button>
 
+    <div id="myModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        Issue:<br>
+        <input type="text" name="issue" id="issue">
+        <br>
+        Base Value:<br>
+        <input type="number" name="baseValue" id="baseValue">
+        <br><br>
+        <input type="submit" class="btn" value="Submit" id="submit">
+      </div>
+    </div>
 
-    <script src="./src/Box.js"></script>
+    <script src="./src/Form.js"></script>
+    <script src="./src/IssueBox.js"></script>
     <script src="./src/main.js"></script>
   </body>
 </html>
