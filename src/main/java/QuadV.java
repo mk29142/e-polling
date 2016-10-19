@@ -1,4 +1,4 @@
-package main.java;
+//package main.java;
 
 import static spark.Spark.*;
 import java.sql.*;
@@ -15,7 +15,9 @@ public class QuadV {
            
         }
 
-        staticFiles.location("/front-end/build");
+        staticFiles.location("/front-end/public");
+
+        get("/index", (req, res) -> "Hello World");
 	}
 
     private static Connection getConnection() throws URISyntaxException, SQLException {
