@@ -1,0 +1,40 @@
+function Form() {
+<<<<<<< HEAD
+  var id = 0;
+
+=======
+>>>>>>> a5edb2efab3bfa61c1589f66b3d615d9bf2c6070
+  // Get the modal
+  var modal = $('#myModal');
+
+  // Get the button that opens the modal
+  $('#myBtn').click(function() {
+    modal.show();
+  });
+
+  $('#submit').click(function(e) {
+    e.preventDefault();
+
+    var issue = $('#issue').val();
+    var baseValue = $('#baseValue').val();
+
+    var newBox = new IssueBox({
+<<<<<<< HEAD
+      id: id++,
+=======
+>>>>>>> a5edb2efab3bfa61c1589f66b3d615d9bf2c6070
+      issue: issue,
+      baseValue: baseValue
+    });
+
+    $('#myForm').trigger('reset');
+    modal.hide();
+  });
+
+  // When the user clicks anywhere outside of the modal, close it
+  $(window).click(function(e) {
+    if (e.target == modal) {
+      modal.hide();
+    }
+  });
+}
