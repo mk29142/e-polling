@@ -1,19 +1,15 @@
 {
   "name": "e-polling",
-  "version": "0.1.0",
-  "private": true,
-  "devDependencies": {
-    "react-scripts": "0.6.1"
+  "version": "1.0.0",
+  "description": "E-polling for polling electronically",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sparekh5/e-polling.git"
   },
-  "dependencies": {
-    "react": "^15.3.2",
-    "react-dom": "^15.3.2",
-    "react-draggable": "^2.2.2"
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sparekh5/e-polling/issues"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
-  }
+  "homepage": "https://github.com/sparekh5/e-polling#readme"
 }
