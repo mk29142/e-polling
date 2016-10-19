@@ -1,3 +1,3 @@
 (function() {
-  var form = new Form();
+    var form = new Form();
 })();

@@ -3,7 +3,7 @@ function Form() {
 
   // Get the modal
   var modal = $('#myModal');
-
+  
   // Get the button that opens the modal
   $('#myBtn').click(function() {
     modal.show();
