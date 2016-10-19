@@ -20,11 +20,27 @@
 
   </head>
   <body>
-    <button id="myBtn" class="btn" value="issue">Add Issue</button>
-    <button class="btn" value="answer">Add answer</button>
-    <button class="btn" value="pro">Add Pro Argument</button>
-    <button class="btn" value="con">Add Con argument</button>
+    <button id="myBtn" class="btn">Add Issue</button>
+<<<<<<< HEAD
 
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <form id="myForm">
+          <div class="input-field">
+            <label for="issue">Issue</label>
+            <input type="text" name="issue" id="issue" />
+          </div>
+          <div class="input-field">
+            <label for="baseValue">Base value</label>
+            <input type="number" name="baseValue" id="baseValue" />
+          </div>
+          <div class="input-field">
+            <input type="submit" class="btn" value="Submit" id="submit" />
+          </div>
+        </form>
+      </div>
+    </div>
+=======
 
     <div id="myModal" class="modal">
       <div class="modal-content">
@@ -44,6 +60,7 @@
       </div>
     </div>
 
+>>>>>>> a5edb2efab3bfa61c1589f66b3d615d9bf2c6070
     <div id="boxContainer">
     </div>
 

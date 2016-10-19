@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Argument {
-    private List<Supporter> supporters; 
-    private List<Attacker> attackers;
+    private boolean isSupporter;
+    private List<Argument> children;
     private String argumentTitle;
     //TODO: Should probably change to be a number on a scale of 1 to 10, with 10 being strongly agree, and 1 being strongly disagree
     /* True for agreement/yes, false for disagreement/no. */
@@ -15,27 +15,27 @@ class Argument {
      * of argument using the vote base score as the base score. */ 
     private double strength;
 
-    Argument(boolean vote, String argumentTitle) {
+    Argument(boolean vote, String argumentTitle, boolean isSupporter) {
         this.argumentTitle = argumentTitle;
         this.vote = vote;
+        this.isSupporter = isSupporter;
+        this.children = new ArrayList<>();
+
     }
 
     boolean getVote() {
         return vote;
     }
+    boolean isSupporter() { return isSupporter;}
 
     public String getArgumentTitle() {
         return argumentTitle;
     }
 
-    public void addSupporter(boolean vote, String argumentTitle) {
-        Supporter supporter = new Supporter(vote, argumentTitle);
-        this.supporters.add(supporter);
-    }
     
-    public void addAttacker(boolean vote, String argumentTitle) {
-        Attacker attacker = new Attacker(vote, argumentTitle);
-        this.attackers.add(attacker);
+    public void addChild(boolean vote, String argumentTitle, boolean isSupporter) {
+        Argument child = new Argument(vote, argumentTitle, isSupporter);
+        this.children.add(child);
     }
 
     //TODO: Implement algorithm to check that the tree is fully consistent (IS THIS WHAT isStable() was meant to be doing)
@@ -67,24 +67,15 @@ class Argument {
     this is used in class MasterTree for the argumentToList() function
     */
     List<Argument> getChildren(){
-        List<Argument> result = new ArrayList<Argument>(attackers);
-        result.add((Argument)supporters);
-        return result;
-
+        return children;
     }
     
     /* Returns true if the subtree with this argument as the root is 
      * consistent, which is when the root and all of its children are 
      * consistent. */
     public boolean isSubTreeConsistent() {
-        for (Supporter supporter : supporters) {
-            if (!supporter.isConsistent()) {
-                return false;
-            }
-        }
-        
-        for (Attacker attacker : attackers) {
-            if (!attacker.isConsistent()) {
+        for (Argument child : children) {
+            if (!child.isConsistent()) {
                 return false;
             }
         }
@@ -95,8 +86,8 @@ class Argument {
     /* Returns true if the voter has agreed with a supporter of this 
      * argument. Returns false otherwise. */
     private boolean hasSupporterVote() {
-        for (Supporter supporter : this.supporters) {
-            if (supporter.getVote()) {
+        for (Argument child : this.children) {
+            if (child.getVote() && child.isSupporter()) {
                 return true;
             }
         }
@@ -107,8 +98,8 @@ class Argument {
     /* Returns true if the voter has agreed with an attacker of this
      * argument. Returns false otherwise. */
     private boolean hasAttackerVote() {
-        for (Attacker attacker : this.attackers) {
-            if (attacker.getVote()) {
+        for (Argument child : this.children) {
+            if (child.getVote() && !child.isSupporter()) {
                 return true;
             }
         }
