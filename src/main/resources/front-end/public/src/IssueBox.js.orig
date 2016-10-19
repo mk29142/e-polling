@@ -1,10 +1,17 @@
 function IssueBox(options) {
+<<<<<<< HEAD
   var newBox = $('<div/>', {
     id: 'box' + options.id,
+=======
+  var issueInstance = jsPlumb.getInstance();
+
+  var newBox = $('<div/>', {
+>>>>>>> a5edb2efab3bfa61c1589f66b3d615d9bf2c6070
     class: 'box',
     text: options.issue
   }).appendTo('#boxContainer');
 
+<<<<<<< HEAD
   var addButton = $('<button/>', {
     class: 'button_add btn',
     text: 'Add'
@@ -30,5 +37,9 @@ function IssueBox(options) {
         anEndpointDestination
       );
     });
+=======
+  issueInstance.ready(function() {
+    issueInstance.draggable(newBox);
+>>>>>>> a5edb2efab3bfa61c1589f66b3d615d9bf2c6070
   });
 }
