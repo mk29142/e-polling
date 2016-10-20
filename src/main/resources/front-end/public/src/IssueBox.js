@@ -1,5 +1,7 @@
 function IssueBox(options) {
 
+  var self = this;
+
   var newBox = $('<div/>', {
     id: 'box' + options.id,
     class: 'box',
@@ -46,10 +48,12 @@ function IssueBox(options) {
     });
 
     jsPlumb.bind('connection', function(ci) {
-      console.log(ci.sourceId + "    " + ci.targetId);
+      // console.log(ci.sourceId + "    " + ci.targetId);
 
-      //fire connections to form maybe using eventmixin 
-
+      //fire connections to form maybe using eventmixin
+      self.fire('load', ci.sourceId + "    " + ci.targetId);
     })
   });
 }
+
+mixin(EventMixin, IssueBox);
