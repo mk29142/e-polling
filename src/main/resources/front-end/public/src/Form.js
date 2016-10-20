@@ -29,6 +29,8 @@ function Form() {
     modal.closeModal();
   });
 
+  // this.fire to main to get list of listeners maybe ? 
+
   // When the user clicks anywhere outside of the modal, close it
   $(window).click(function(e) {
     if (e.target == modal) {

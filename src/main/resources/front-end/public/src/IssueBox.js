@@ -1,4 +1,5 @@
 function IssueBox(options) {
+
   var newBox = $('<div/>', {
     id: 'box' + options.id,
     class: 'box',
@@ -42,7 +43,13 @@ function IssueBox(options) {
         parentnode,
         childEndPoint
       );
-
     });
+
+    jsPlumb.bind('connection', function(ci) {
+      console.log(ci.sourceId + "    " + ci.targetId);
+
+      //fire connections to form maybe using eventmixin 
+
+    })
   });
 }
