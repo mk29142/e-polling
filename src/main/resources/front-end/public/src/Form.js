@@ -4,10 +4,13 @@ function Form() {
   // Get the modal
   var modal = $('#myModal');
 
+  var type;
+
   // Get the button that opens the modal
   $('button').click(function() {
+    type = this.value;
     $('#issue').text(this.value);
-    modal.show();
+    modal.openModal();
   });
 
   $('#submit').click(function(e) {
@@ -23,13 +26,13 @@ function Form() {
     });
 
     $('#myForm').trigger('reset');
-    modal.hide();
+    modal.closeModal();
   });
 
   // When the user clicks anywhere outside of the modal, close it
   $(window).click(function(e) {
     if (e.target == modal) {
-      modal.hide();
+      modal.closeModal();
     }
   });
 }

@@ -13,7 +13,6 @@
 
 .box {
   height:150px; width: 150px;
-  border: 1px solid blue;
   float: left;
   position: absolute;
   text-align: center;
