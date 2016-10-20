@@ -38,7 +38,8 @@ public class Node {
 
 
     /*
-    This function is used by updateScore() in the MasterTree class and is necessary for post-order tree traversal
+    This function is used by updateScore() in the MasterTree class and is 
+    necessary for post-order tree traversal
     */
     public List<Node> getChildren(){
         return children;
@@ -46,8 +47,10 @@ public class Node {
 
     /*
     This recursive aggregation function is defined in the notes,
-    it returns the aggregate of a List of scores for the supporters/attackers of an argument.
-    (The higher the scores in the list, the higher the aggregate, as one would expect)
+    it returns the aggregate of a List of scores for the supporters/attackers 
+    of an argument.
+    (The higher the scores in the list, the higher the aggregate, as one would 
+    expect)
     */
     public double strengthAggregationFunction(List<Double> S) {
         switch(S.size()) {
@@ -60,7 +63,8 @@ public class Node {
         }
     }
     /*
-    This function "base function" is defined in the notes and is exclusively used (so far) as
+    This function "base function" is defined in the notes and is exclusively 
+    used (so far) as
     part of the aggregation function
     */
     public double baseFunction(double score1, double score2) {
@@ -68,29 +72,40 @@ public class Node {
     }
 
     /*
-    The combination function gives the score of an argument and is based on the scores of its attackers/supporters
+    The combination function gives the score of an argument and is based on 
+    the scores of its attackers/supporters
     and the base score of the argument. (It is also defined in the notes)
     */
     public List<Node> getAttackers() {
-        return children.stream().filter(u -> !u.isSupporter()).collect(Collectors.toList());
+        return children
+                .stream()
+                .filter(u -> !u.isSupporter())
+                .collect(Collectors.toList());
     }
 
     public List<Node> getSupporters() {
-        return children.stream().filter(u -> u.isSupporter()).collect(Collectors.toList());
+        return children
+                .stream()
+                .filter(u -> u.isSupporter())
+                .collect(Collectors.toList());
     }
 
     public void combinationFunction() {
         List<Double> attackerScoreList = scoreList(getAttackers());
-        double attackerScore = strengthAggregationFunction(attackerScoreList);
+        double attackerScore = 
+                strengthAggregationFunction(attackerScoreList);
         List<Double> supporterScoreList = scoreList(getSupporters());
-        double supporterScore = strengthAggregationFunction(supporterScoreList);
+        double supporterScore = 
+                strengthAggregationFunction(supporterScoreList);
 
         double baseScore = getBaseScore();
 
         if (attackerScore >= supporterScore) {
-            score = baseScore - baseScore * Math.abs(supporterScore - attackerScore);
+            score = baseScore - 
+                    baseScore * Math.abs(supporterScore - attackerScore);
         } else {
-            score = baseScore + (1 - baseScore) * Math.abs(supporterScore - attackerScore);
+            score = baseScore + 
+                    (1 - baseScore) * Math.abs(supporterScore - attackerScore);
         }
     }
 
@@ -101,7 +116,8 @@ public class Node {
         return score;
     }
     /*
-    scoreList turns a list of nodes into a list of scores and is needed in the combination function
+    scoreList turns a list of nodes into a list of scores and is needed in the 
+    combination function
      */
     public List<Double> scoreList(List<Node> nodeList) {
         List<Double> scoreList = new ArrayList<Double>();
@@ -112,8 +128,8 @@ public class Node {
     }
 
     /*
-    getBaseScore is a simple function that is defined in the notes and is calculated based on the user votes for and
-    against an argument
+    getBaseScore is a simple function that is defined in the notes and is 
+    calculated based on the user votes for and against an argument
      */
     public double getBaseScore() {
         int totalVotes = votesFor + votesAgainst;

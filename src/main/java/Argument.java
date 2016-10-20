@@ -8,7 +8,8 @@ class Argument {
     private boolean isSupporter;
     private List<Argument> children;
     private String argumentTitle;
-    //TODO: Should probably change to be a number on a scale of 1 to 10, with 10 being strongly agree, and 1 being strongly disagree
+    //TODO: Should probably change to be a number on a scale of 1 to 10, with 
+    //      10 being strongly agree, and 1 being strongly disagree
     /* True for agreement/yes, false for disagreement/no. */
     private boolean vote;
     /* Use score function (sigma) from DF-QuAD algorithm to calculate strength 
@@ -33,12 +34,14 @@ class Argument {
     }
 
     
-    public void addChild(boolean vote, String argumentTitle, boolean isSupporter) {
+    public void addChild(boolean vote, String argumentTitle, 
+            boolean isSupporter) {
         Argument child = new Argument(vote, argumentTitle, isSupporter);
         this.children.add(child);
     }
 
-    //TODO: Implement algorithm to check that the tree is fully consistent (IS THIS WHAT isStable() was meant to be doing)
+    //TODO: Implement algorithm to check that the tree is fully consistent 
+    //      (IS THIS WHAT isStable() was meant to be doing)
     /* Checks that this argument is consistent with its supporters and 
      * attackers.
      * If there are no supporters or attackers, it is consistent.
