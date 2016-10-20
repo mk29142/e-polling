@@ -1,12 +1,17 @@
 function Form() {
+  var self = this;
   var id = 0;
 
   // Get the modal
   var modal = $('#myModal');
 
+  var type;
+
   // Get the button that opens the modal
-  $('#myBtn').click(function() {
-    modal.show();
+  $('button').click(function() {
+    type = this.value;
+    $('#issue').text(this.value);
+    modal.openModal();
   });
 
   $('#submit').click(function(e) {
@@ -21,14 +26,22 @@ function Form() {
       baseValue: baseValue
     });
 
+    newBox.on('load', function(ci) {
+      self.fire('load', ci);
+    })
+
     $('#myForm').trigger('reset');
-    modal.hide();
+    modal.closeModal();
   });
+
+  // this.fire to main to get list of listeners maybe ?
 
   // When the user clicks anywhere outside of the modal, close it
   $(window).click(function(e) {
     if (e.target == modal) {
-      modal.hide();
+      modal.closeModal();
     }
   });
 }
+
+mixin(EventMixin, Form);

@@ -12,8 +12,9 @@
 }
 
 .box {
-  height:80px; width: 80px;
-  border: 1px solid blue;
+  height:150px; width: 150px;
   float: left;
   position: absolute;
+  text-align: center;
+  background: rgb(175, 177, 181);
 }

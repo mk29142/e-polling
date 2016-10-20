@@ -1,4 +1,7 @@
 function IssueBox(options) {
+
+  var self = this;
+
   var newBox = $('<div/>', {
     id: 'box' + options.id,
     class: 'box',
@@ -13,12 +16,20 @@ function IssueBox(options) {
   jsPlumb.ready(function() {
     jsPlumb.draggable(newBox);
 
-    var anEndpointDestination = {
+    var parentEndPoint = {
       endpoint: 'Rectangle',
       isSource: true,
       isTarget: true,
       maxConnections: 1,
-      anchor: 'Left'
+      anchor: 'Top'
+    };
+
+    var childEndPoint = {
+      endpoint: 'Rectangle',
+      isSource: true,
+      isTarget: true,
+      maxConnections: -1,
+      anchor: 'Bottom'
     };
 
     // Add additional anchor
@@ -27,8 +38,22 @@ function IssueBox(options) {
 
       jsPlumb.addEndpoint(
         parentnode,
-        anEndpointDestination
+        parentEndPoint
+      );
+
+      jsPlumb.addEndpoint(
+        parentnode,
+        childEndPoint
       );
     });
+
+    jsPlumb.bind('connection', function(ci) {
+      // console.log(ci.sourceId + "    " + ci.targetId);
+
+      //fire connections to form maybe using eventmixin
+      self.fire('load', ci.sourceId + "    " + ci.targetId);
+    })
   });
 }
+
+mixin(EventMixin, IssueBox);
