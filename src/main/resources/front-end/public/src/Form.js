@@ -1,4 +1,5 @@
 function Form() {
+  var self = this;
   var id = 0;
 
   // Get the modal
@@ -25,9 +26,15 @@ function Form() {
       baseValue: baseValue
     });
 
+    newBox.on('load', function(ci) {
+      self.fire('load', ci);
+    })
+
     $('#myForm').trigger('reset');
     modal.closeModal();
   });
+
+  // this.fire to main to get list of listeners maybe ?
 
   // When the user clicks anywhere outside of the modal, close it
   $(window).click(function(e) {
@@ -36,3 +43,5 @@ function Form() {
     }
   });
 }
+
+mixin(EventMixin, Form);
