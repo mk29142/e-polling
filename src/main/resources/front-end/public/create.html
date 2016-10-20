@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <link rel="stylesheet" href="./index.css">
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.0.7/jsPlumb.min.js"></script>
+
+    <title>e-polling</title>
+
+  </head>
+  <body>
+    <button id="myBtn" class="btn" value="Issue">Add Issue</button>
+    <button class="btn" value="Answer">Add answer</button>
+    <button class="btn" value="Pro argument">Add Pro Argument</button>
+    <button class="btn" value="Con argument">Add Con argument</button>
+
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <form id="myForm">
+          <div class="input-field">
+            <label id="issue" for="issue"></label>
+            <input type="text" name="issue" id="issue" />
+          </div>
+          <div class="input-field">
+            <label for="baseValue">Base value</label>
+            <input type="number" name="baseValue" id="baseValue" />
+          </div>
+          <div class="input-field">
+            <input type="submit" class="btn" value="Submit" id="submit" />
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="boxContainer">
+    </div>
+
+    <script src="./src/Form.js"></script>
+    <script src="./src/IssueBox.js"></script>
+    <script src="./src/main.js"></script>
+  </body>
+</html>
