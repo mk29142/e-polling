@@ -1,5 +1,4 @@
 function IssueBox(options) {
-
   var self = this;
 
   var newBox = $('<div/>', {
@@ -7,11 +6,6 @@ function IssueBox(options) {
     class: 'box',
     text: options.issue
   }).appendTo('#boxContainer');
-
-  var addButton = $('<button/>', {
-    class: 'button_add btn',
-    text: 'Add'
-  }).appendTo('#box' + options.id);
 
   jsPlumb.ready(function() {
     jsPlumb.draggable(newBox);
@@ -32,27 +26,13 @@ function IssueBox(options) {
       anchor: 'Bottom'
     };
 
-    // Add additional anchor
-    $('.button_add').on('click', function () {
-      var parentnode = $(this).parent();
-
-      jsPlumb.addEndpoint(
-        parentnode,
-        parentEndPoint
-      );
-
-      jsPlumb.addEndpoint(
-        parentnode,
-        childEndPoint
-      );
-    });
+    var box = $('#box' + options.id);
+    jsPlumb.addEndpoint(box, parentEndPoint);
+    jsPlumb.addEndpoint(box, childEndPoint);
 
     jsPlumb.bind('connection', function(ci) {
-      // console.log(ci.sourceId + "    " + ci.targetId);
-
-      //fire connections to form maybe using eventmixin
-      self.fire('load', ci.sourceId + "    " + ci.targetId);
-    })
+      self.fire('load', ci.sourceId + '    ' + ci.targetId);
+    });
   });
 }
 

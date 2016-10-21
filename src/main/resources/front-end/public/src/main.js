@@ -1,8 +1,6 @@
 (function() {
-    var form = new Form();
-    // console.log(jsPlumb.getAllConnections());
-    form.on('load', function(ci) {
-      console.log(ci);
-    });
-    
+  var form = new Form();
+  form.on('load', function(ci) {
+    console.log(ci);
+  });
 })();

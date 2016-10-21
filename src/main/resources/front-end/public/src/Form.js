@@ -3,14 +3,11 @@ function Form() {
   var id = 0;
 
   // Get the modal
-  var modal = $('#myModal');
-
-  var type;
+  var modal = $('#formModal');
 
   // Get the button that opens the modal
   $('button').click(function() {
-    type = this.value;
-    $('#issue').text(this.value);
+    $('#issueLabel').text(this.value);
     modal.openModal();
   });
 
@@ -28,17 +25,15 @@ function Form() {
 
     newBox.on('load', function(ci) {
       self.fire('load', ci);
-    })
+    });
 
     $('#myForm').trigger('reset');
     modal.closeModal();
   });
 
-  // this.fire to main to get list of listeners maybe ?
-
   // When the user clicks anywhere outside of the modal, close it
   $(window).click(function(e) {
-    if (e.target == modal) {
+    if (e.target === modal) {
       modal.closeModal();
     }
   });
