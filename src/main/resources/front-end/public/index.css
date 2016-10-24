@@ -18,3 +18,20 @@
   text-align: center;
   background: rgb(175, 177, 181);
 }
+
+#form_submit {
+  position: absolute;
+  right:    50%;
+  bottom:   50px;
+}
+
+.button_add_pro {
+  position: absolute;
+  right: 50%;
+  bottom:   0;
+}
+
+.button_add_con {
+  position: absolute;
+  bottom:   0;
+}

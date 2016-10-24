@@ -9,8 +9,15 @@ function IssueBox(options) {
   }).appendTo('#boxContainer');
 
   var addButton = $('<button/>', {
-    class: 'button_add btn',
-    text: 'Add'
+    class: 'button_add_pro btn',
+    value: "Pro",
+    text: '+'
+  }).appendTo('#box' + options.id);
+
+  var addButton = $('<button/>', {
+    class: 'button_add_con btn',
+    value: "Con",
+    text: '-'
   }).appendTo('#box' + options.id);
 
   jsPlumb.ready(function() {
@@ -32,9 +39,20 @@ function IssueBox(options) {
       anchor: 'Bottom'
     };
 
+    //An issue box is never going to be a child in this function - this is
+    //because this function only happens for the child after a button inside a
+    //box has been clicked
     // Add additional anchor
-    $('.button_add').on('click', function () {
-      var parentnode = $(this).parent();
+    $('button').on('click', function () {
+      var child = this;
+      var type = child.value;
+      console.log(type);
+      var parentnode = $(child).parent();
+
+      //add pro/con node
+      // var conBox = new ConBox();
+      // conBox.getId();
+      //jsPlumb.connect (......);
 
       jsPlumb.addEndpoint(
         parentnode,
@@ -48,10 +66,13 @@ function IssueBox(options) {
     });
 
     jsPlumb.bind('connection', function(ci) {
-      // console.log(ci.sourceId + "    " + ci.targetId);
-
       //fire connections to form maybe using eventmixin
-      self.fire('load', ci.sourceId + "    " + ci.targetId);
+      if('box' + options.id == ci.sourceId) {
+        self.fire('load', {
+          source: ci.sourceId,
+          target: ci.targetId
+        });
+      }
     })
   });
 }
