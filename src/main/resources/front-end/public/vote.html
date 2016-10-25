@@ -6,6 +6,7 @@
 
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <link rel="stylesheet" href="./index.css">
 
     <!-- jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -14,14 +15,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
 
     <title>Voting Page</title>
+    <div class="row">
+      <h2 class="col offset-s1"> Debate title goes here </h2>
+    </div>
   </head>
   <body>
-    <div class="row"> Debate title goes here </div>
-    <div class="container col s4 offset-s4">
-      <form action="#">
-        <p class="range-field">
-          <input type="range" id="test5" min="0" max="100" />
-        </p>
-      </form>
+    <div class="container">
+      <div class="row">
+        <div class="col s6 offset-s3">
+          <p align="center"> Questionnen ist here </p>
+          <form action="#">
+            <p class="range-field">
+              <input type="range" id="test5" min="0" max="100" />
+            </p>
+          </form>
+        </div>
+      </div>
     </div>
   </body>
