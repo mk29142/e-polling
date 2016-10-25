@@ -18,6 +18,13 @@
     support: 50,
     reason: '',
     parent: 0
+  }, {
+    id: 3,
+    type: 'attack',
+    text: 'The 3rd which attacks Boooo',
+    support: 50,
+    reason: '',
+    parent: 2
   }];
 
   var title = $('#debate-title');
@@ -31,6 +38,8 @@
   $('#finalQ').hide();
   title.html(issue.text);
   question.html(currQ.text);
+  setNavList();
+  setActive();
 
   $('#nextQ').click(function(e) {
     e.preventDefault();
@@ -47,13 +56,32 @@
       $('#nextQ').hide();
       $('#finalQ').show();
     }
+
+    setActive();
   });
 
   $('#finalQ').click(function(e) {
     e.preventDefault();
 
     // Send back questions with ajax and redirect to results page
-
     window.location.href = '/results';
   });
+
+  function setNavList() {
+    var nav = $('#nav-list');
+
+    for (var i = 1; i < questions.length; i++) {
+      nav.append('<a class="collection-item">' + questions[i].text + '</a>');
+    }
+  };
+
+  function setActive() {
+    var nav = $('#nav-list');
+    var children = nav.children();
+    children.removeClass('active');
+
+    var active = children.eq(counter - 1); // Nav-list doesn't contain the issue.
+    console.log(children, active);
+    active.addClass('active');
+  }
 })();
