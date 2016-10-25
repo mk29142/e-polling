@@ -57,11 +57,29 @@ IssueBox.prototype.createChildren = function (newBox) {
       var type = child.value;
       console.log(type);
       var parentnode = $(child).parent();
-
+      var modal = $('#myModal');
+      $('#IssueLabel').text(this.value);
+      modal.openModal();
       //add pro/con node
       // var conBox = new ConBox();
       // conBox.getId();
       //jsPlumb.connect (......);
+
+      $('#submit').click(function(e) {
+        e.preventDefault();
+
+        var issue = $('#issue').val();
+        var baseValue = $('#baseValue').val();
+
+        // var newBox = new IssueBox({
+        //   id: id++,
+        //   issue: issue,
+        //   baseValue: baseValue
+        // });
+
+        $('#myForm').trigger('reset');
+        modal.closeModal();
+      });
 
       jsPlumb.addEndpoint(
         parentnode,
