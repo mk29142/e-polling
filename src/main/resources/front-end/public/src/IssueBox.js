@@ -2,6 +2,11 @@ function IssueBox(options) {
 
   var self = this;
 
+  var newBox = this.createBox(options);
+  this.createChildren(newBox);
+}
+
+IssueBox.prototype.createBox = function (options) {
   var newBox = $('<div/>', {
     id: 'box' + options.id,
     class: 'box',
@@ -20,6 +25,10 @@ function IssueBox(options) {
     text: '-'
   }).appendTo('#box' + options.id);
 
+  return newBox;
+};
+
+IssueBox.prototype.createChildren = function (newBox) {
   jsPlumb.ready(function() {
     jsPlumb.draggable(newBox);
 
@@ -73,8 +82,8 @@ function IssueBox(options) {
           target: ci.targetId
         });
       }
-    })
+    });
   });
-}
+};
 
 mixin(EventMixin, IssueBox);
