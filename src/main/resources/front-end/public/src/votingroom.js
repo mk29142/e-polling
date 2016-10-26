@@ -1,19 +1,13 @@
 (function() {
   var issues = [{
     id: 0,
-    type: 'issue',
-    text: 'The big issue',
-    parent: null
+    text: 'The big issue'
   }, {
     id: 1,
-    type: 'issue',
-    text: 'The bigger issue',
-    parent: null
+    text: 'The bigger issue'
   }, {
     id: 2,
-    type: 'issue',
-    text: 'The biggest issue',
-    parent: null
+    text: 'The biggest issue'
   }];
 
   function setIssueList() {
@@ -21,7 +15,7 @@
 
     for (var i = 0; i < issues.length; i++) {
       issueList.append('<a class="collection-item"' +
-      'value="' +
+      'href="/vote/' +
       issues[i].id +
       '">' +
       issues[i].text +
