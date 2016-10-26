@@ -43,6 +43,10 @@ public class QuadV {
         get("/create", (req, res) ->
                 new ModelAndView(map, "create.mustache"),
                 templateEngine);
+
+        get("/results", (req, res) ->
+                new ModelAndView(map, "results.mustache"),
+                templateEngine);
 	}
 
     private static Connection getConnection()
