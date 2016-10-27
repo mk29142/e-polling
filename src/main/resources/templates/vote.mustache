@@ -1,25 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="/index.css">
-
-  <!-- jQuery -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-  <!-- Materialize -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-
-  <title>Voting Page</title>
-</head>
-
-<body>
+{{> header}}
+<body style="background-color: #EFEFEF">
   <div class="container">
     <div class="row">
       <h2 id="debate-title" class="col offset-s1">Debate title goes here</h2>
@@ -47,10 +29,12 @@
             </div>
           </div>
           <div class="right-align">
-            <button id="nextQ" class="btn waves-effect waves-light" type="submit">Next
+            <button id="nextQ" class="btn z-depth-0"
+                    type="submit">Next
               <i class="material-icons right">send</i>
             </button>
-            <button id="finalQ" class="btn waves-effect waves-light" type="submit">Submit
+            <button id="finalQ" class="btn z-depth-0 waves-red"
+                    type="submit">Submit
               <i class="material-icons right">send</i>
             </button>
           </div>

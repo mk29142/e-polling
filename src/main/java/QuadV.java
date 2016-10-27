@@ -22,10 +22,7 @@ public class QuadV {
 
             MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
 
-            get("/", (req, res) -> {
-                Map map = new HashMap();
-                return new ModelAndView(map,"index.mustache");
-            }, templateEngine);
+            get("/", (req, res) -> new ModelAndView(null, "index.mustache"), templateEngine);
 
             get("/votingroom", (req, res) -> {
                 //Get all of the names of polls for listing
@@ -42,6 +39,7 @@ public class QuadV {
             }, templateEngine);
 
             get("/vote/:id", (request, response) -> {
+                Map<String, ArrayList> map = new HashMap<>();
                 //Get the questions one by one for the specific poll
                 //use PreparedStatement in here to stop string injection
                 PreparedStatement findPolls = connection.prepareStatement("SELECT poll.\"?\" FROM polls");
@@ -54,11 +52,11 @@ public class QuadV {
             }, templateEngine);
 
             get("/create", (req, res) ->
-                            new ModelAndView(map, "create.mustache"),
+                            new ModelAndView(null, "create.mustache"),
                     templateEngine);
 
             get("/results", (req, res) ->
-                            new ModelAndView(map, "results.mustache"),
+                            new ModelAndView(null, "results.mustache"),
                     templateEngine);
         } catch (Exception e) {
 

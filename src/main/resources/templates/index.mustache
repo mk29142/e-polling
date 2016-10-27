@@ -1,26 +1,9 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Compiled and minified CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
-  <link rel="stylesheet" href="/index.css">
-
-  <!-- jQuery -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-  <!-- Materialize -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-
-  <!-- jsPlumb -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.0.7/jsPlumb.min.js"></script>
-
-  <title>e-polling</title>
-</head>
+{{> header}}
 <body>
-  <a class="btn" value="Create" href="/create">Create a poll</a>
-  <a class="btn" value="Vote" href="/votingroom">Vote on polls</a>
+  <div id="create" class="col s6" align="center"> Create a poll </div>
+  <div id="vote" class="col s6" align="center"> Vote on a poll </div>
+  <script src="/src/index.js"></script>
 </body>
 </html>

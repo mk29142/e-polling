@@ -1,30 +1,71 @@
-#diagramContainer {
-  padding: 20px;
-  width:80%; height: 200px;
-  border: 1px solid gray;
-}
-
-.item {
-  height:80px; width: 80px;
-  border: 1px solid blue;
-  float: left;
-  position: absolute;
+html, body {
+    height: 100%;
 }
 
 .box {
-  height: 150px; width: 150px;
+  height: 175px; width: 200px;
+  border: 1px solid #a9a9a9;
   float: left;
   position: absolute;
   text-align: center;
-  background: rgb(175, 177, 181);
+  background: #FEFEFE;
 }
 
-header, main, footer {
-  padding-left: 300px;
+.btn {
+  background: #FF3B3F;
+  color: #EFEFEF;
 }
 
-@media only screen and (max-width : 992px) {
-  header, main, footer {
-  padding-left: 0;
-  }
+.btn:hover {
+  background: #FF6E72;
+  color: #3D3D3D;
+}
+
+.btn:focus {
+  background: #FF3B3F;
+}
+
+.collection-item {
+  background-color: #FF3B3F;
+}
+
+#create {
+  background-color: #CAEBF2;
+   color: #a9a9a9;
+  float: left;
+  width: 50%;
+  height: 100%;
+  font-family: 'Oswald', sans-serif;
+  font-size: 6em;
+  padding-top: 20%;
+  cursor: pointer;
+  -o-transition:.5s;
+  -ms-transition:.5s;
+  -moz-transition:.5s;
+  -webkit-transition:.5s;
+  transition:.5s;
+}
+
+#create:hover {
+  background-color: #E4FFFF;
+}
+
+#vote {
+  background-color: #A9A9A9;
+  margin-left: 50%;
+  height: 100%;
+  font-family: 'Oswald', sans-serif;
+  font-size: 6em;
+  padding-top: 20%;
+  color: #caebf2;
+  cursor: pointer;
+  -o-transition:.5s;
+  -ms-transition:.5s;
+  -moz-transition:.5s;
+  -webkit-transition:.5s;
+  transition:.5s;
+}
+
+#vote:hover {
+  background-color: #C3C3C3;
 }
