@@ -1,9 +1,10 @@
 function Box(options) {
   var selfId = 'box' + options.id;
+  var typeMessage = options.type == undefined ? 'Enter Title' : options.type + ' argument';
 
   var newBox = $(
     '<div id="' + selfId + '" class="box">' +
-    '<input type="text" name="statement" placeholder="Enter title"/>' +
+    '<input type="text" name="statement" placeholder="' + typeMessage + '"/>' +
     '<input type="number" name="baseValue" placeholder="Enter base value"/>' +
     '<button class="btn plus">' +
     '+</button>' +
@@ -17,7 +18,8 @@ function Box(options) {
 
     new Box({
       id: id++,
-      parentId: parentId
+      parentId: parentId,
+      type: 'Pro'
     });
   });
 
@@ -26,7 +28,8 @@ function Box(options) {
 
     new Box({
       id: id++,
-      parentId: parentId
+      parentId: parentId,
+      type: 'Con'
     });
   });
 
