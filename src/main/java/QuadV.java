@@ -9,7 +9,6 @@ import static spark.Spark.*;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
-
 public class QuadV {
     public static void main(String[] args) {
         // Configure Spark and server routes.
@@ -19,48 +18,61 @@ public class QuadV {
 
         try {
             connection = getConnection();
-
-            MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
-
-            get("/", (req, res) -> new ModelAndView(null, "index.mustache"), templateEngine);
-
-            get("/votingroom", (req, res) -> {
-                //Get all of the names of polls for listing
-                Statement stmt = connection.createStatement();
-                Map<String, ArrayList> map = new HashMap<>();
-                ResultSet rs = stmt.executeQuery("SELECT poll_name FROM public.polls");
-
-                ArrayList<String> output = new ArrayList<String>();
-                while (rs.next()) {
-                    output.add(rs.getString("poll_name"));
-                }
-                map.put("polls", output);
-                return new ModelAndView(map, "votingroom.mustache");
-            }, templateEngine);
-
-            get("/vote/:id", (request, response) -> {
-                Map<String, ArrayList> map = new HashMap<>();
-                //Get the questions one by one for the specific poll
-                //use PreparedStatement in here to stop string injection
-                PreparedStatement findPolls = connection.prepareStatement("SELECT poll.\"?\" FROM polls");
-                findPolls.setString(1, request.params(":id"));
-
-                ResultSet rs = findPolls.executeQuery();
-
-
-                return new ModelAndView(map, "vote.mustache");
-            }, templateEngine);
-
-            get("/create", (req, res) ->
-                            new ModelAndView(null, "create.mustache"),
-                    templateEngine);
-
-            get("/results", (req, res) ->
-                            new ModelAndView(null, "results.mustache"),
-                    templateEngine);
-        } catch (Exception e) {
-
+        } catch (URISyntaxException | SQLException e) {
+            return;
         }
+
+        MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
+
+        get("/", (req, res) -> new ModelAndView(null, "index.mustache"), templateEngine);
+
+        get("/votingroom", (req, res) -> {
+            //Get all of the names of polls for listing
+            try {
+                Map<String, String> map = new HashMap<>();
+                Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery("SELECT * FROM public.polls");
+                StringBuilder sb = new StringBuilder();
+                sb.append('[');
+
+                while (rs.next()) {
+                    sb.append('{');
+                    sb.append(String.format("\"id\": %d,", rs.getInt("id")));
+                    sb.append(String.format("\"name\": %s", rs.getString("poll_name")));
+                    sb.append("},");
+                }
+
+                sb.deleteCharAt(sb.length() - 1);
+                sb.append(']');
+                map.put("polls", sb.toString());
+                return new ModelAndView(map, "votingroom.mustache");
+            } catch (SQLException e) {
+                return null;
+            }
+        }, templateEngine);
+
+        get("/vote/:id", (request, response) -> {
+            Map<String, ArrayList> map = new HashMap<>();
+            // Get the questions one by one for the specific poll
+            // use PreparedStatement in here to stop string injection
+
+            PreparedStatement findPolls = connection.prepareStatement("SELECT * FROM poll.\"?\"");
+            findPolls.setString(1, request.params(":id"));
+
+            ResultSet rs = findPolls.executeQuery();
+
+            return new ModelAndView(map, "vote.mustache");
+        }, templateEngine);
+
+        post("/create", (req, res) -> {
+            String statements = req.body();
+            PreparedStatement addStatement = connection.prepareStatement("ALTER TABLE ");
+            return new ModelAndView(null, "create.mustache");
+        }, templateEngine);
+
+        get("/results", (req, res) ->
+                new ModelAndView(null, "results.mustache"),
+                templateEngine);
     }
 
     private static Connection getConnection()
@@ -72,6 +84,6 @@ public class QuadV {
     private static int getPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
         String port = processBuilder.environment().get("PORT");
-        return port != null ? Integer.parseInt(port) : 4567;
+        return port != null ? Integer.parseInt(port) : 8080;
     }
 }
