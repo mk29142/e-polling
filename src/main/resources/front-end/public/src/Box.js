@@ -5,9 +5,9 @@ function Box(options) {
     '<div id="' + selfId + '" class="box">' +
     '<input type="text" name="statement" placeholder="Enter title"/>' +
     '<input type="number" name="baseValue" placeholder="Enter base value"/>' +
-    '<button class="btn plus">' +
-    '+</button>' +
-    '<button class="btn minus">' +
+    '<button class="btn plus z-depth-0">' +
+    '+</button>        ' +
+    '<button class="btn minus z-depth-0">' +
     '-</button>' +
     '</div>')
     .appendTo('#boxContainer');
@@ -38,7 +38,8 @@ function Box(options) {
         source: selfId,
         target: options.parentId,
         anchors: ['Top', 'Bottom'],
-        detachable: false
+        detachable: false,
+        endpoint: 'Blank'
       });
     }
   });
