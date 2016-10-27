@@ -3,8 +3,8 @@ function Box(options) {
 
   var newBox = $(
     '<div id="' + selfId + '" class="box">' +
-    '<input type="text" name="statement"/>' +
-    '<input type="number" name="baseValue" />' +
+    '<input type="text" name="statement" placeholder="Enter title"/>' +
+    '<input type="number" name="baseValue" placeholder="Enter base value"/>' +
     '<button class="btn plus">' +
     '+</button>' +
     '<button class="btn minus">' +
