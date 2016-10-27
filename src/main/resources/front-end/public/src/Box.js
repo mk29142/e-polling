@@ -15,22 +15,28 @@ function Box(options) {
 
   $('#' + selfId + ' .plus').click(function(e) {
     var parentId = e.target.parentNode.id;
-
-    new Box({
+    var boxOptions = {
       id: id++,
       parentId: parentId,
       type: 'Pro'
-    });
+    }
+
+    list.push(boxOptions);
+
+    new Box(boxOptions);
   });
 
   $('#' + selfId + ' .minus').click(function(e) {
     var parentId = e.target.parentNode.id;
-
-    new Box({
+    var boxOptions = {
       id: id++,
       parentId: parentId,
       type: 'Con'
-    });
+    }
+
+    list.push(boxOptions);
+
+    new Box(boxOptions);
   });
 
   jsPlumb.ready(function() {
