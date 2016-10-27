@@ -1,11 +1,11 @@
 import java.net.URISyntaxException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import static spark.Spark.*;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
@@ -20,31 +20,38 @@ public class QuadV {
         try {
             connection = getConnection();
 
-
             MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
 
-            Map map = new HashMap();
-            map.put("name", "Sam");
-
             get("/", (req, res) -> {
-                        //Get all of the names of polls for listing
-                        Statement stmt = connection.createStatement();
+                Map map = new HashMap();
+                return new ModelAndView(map,"index.mustache");
+            }, templateEngine);
 
-                        ResultSet rs = stmt.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema='poll';");
-                       return new ModelAndView(map, "index.mustache");
-                    }, templateEngine);
+            get("/votingroom", (req, res) -> {
+                //Get all of the names of polls for listing
+                Statement stmt = connection.createStatement();
+                Map<String, ArrayList> map = new HashMap<>();
+                ResultSet rs = stmt.executeQuery("SELECT poll_name FROM public.polls");
 
-            get("/votingroom", (req, res) ->
-                            new ModelAndView(map, "votingroom.mustache"),
-                    templateEngine);
+                ArrayList<String> output = new ArrayList<String>();
+                while (rs.next()) {
+                    output.add(rs.getString("poll_name"));
+                }
+                map.put("polls", output);
+                return new ModelAndView(map, "votingroom.mustache");
+            }, templateEngine);
 
             get("/vote/:id", (request, response) -> {
-                        //Get the questions one by one for the specific poll
-                        //use PreparedStatement in here to stop string injection
-                        String pollname = request.params(":id");
-                        PreparedStatement findPolls = connection.prepareStatement("SELECT  FROM polls");
-                        return new ModelAndView(map, "vote.mustache");
-                    }, templateEngine);
+                //Get the questions one by one for the specific poll
+                //use PreparedStatement in here to stop string injection
+                PreparedStatement findPolls = connection.prepareStatement("SELECT poll.\"?\" FROM polls");
+                findPolls.setString(1, request.params(":id"));
+
+                ResultSet rs = findPolls.executeQuery();
+
+
+                return new ModelAndView(map, "vote.mustache");
+            }, templateEngine);
 
             get("/create", (req, res) ->
                             new ModelAndView(map, "create.mustache"),
@@ -56,7 +63,6 @@ public class QuadV {
         } catch (Exception e) {
 
         }
-
     }
 
     private static Connection getConnection()
