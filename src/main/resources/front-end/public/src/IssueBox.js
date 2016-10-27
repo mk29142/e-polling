@@ -2,24 +2,29 @@ function IssueBox(options) {
 
   var self = this;
 
+  //Make the divs
   var newBox = this.createBox(options);
+
+  //Make the plus and minus buttons do something, i.e. set up listeners
   this.createChildren(newBox);
 }
 
+/* Create the divs for the box itself and the +/- buttons on the box. */
 IssueBox.prototype.createBox = function (options) {
+  console.log('Creating a box');
   var newBox = $('<div/>', {
     id: 'box' + options.id,
     class: 'box',
     text: options.issue
   }).appendTo('#boxContainer');
 
-  var addButton = $('<button/>', {
+  var proButton = $('<button/>', {
     class: 'button_add_pro btn',
     value: "Pro",
     text: '+'
   }).appendTo('#box' + options.id);
 
-  var addButton = $('<button/>', {
+  var conButton = $('<button/>', {
     class: 'button_add_con btn',
     value: "Con",
     text: '-'
@@ -55,6 +60,11 @@ IssueBox.prototype.createChildren = function (newBox) {
     $('button').on('click', function () {
       var child = this;
       var type = child.value;
+
+      if ((type != 'Pro') && (type != 'Con')) {
+        return;
+      }
+
       console.log(type);
       var parentnode = $(child).parent();
       var modal = $('#myModal');
@@ -70,12 +80,6 @@ IssueBox.prototype.createChildren = function (newBox) {
 
         var issue = $('#issue').val();
         var baseValue = $('#baseValue').val();
-
-        // var newBox = new IssueBox({
-        //   id: id++,
-        //   issue: issue,
-        //   baseValue: baseValue
-        // });
 
         $('#myForm').trigger('reset');
         modal.closeModal();
