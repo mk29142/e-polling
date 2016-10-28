@@ -5,7 +5,6 @@ function Box(options) {
   var newBox = $(
     '<div id="' + selfId + '" class="box">' +
     '<input type="text" name="statement" placeholder="' + typeMessage + '"/>' +
-    '<input type="number" name="baseValue" placeholder="Enter base value"/>' +
     '<button class="btn plus z-depth-0">' +
     '+</button>        ' +
     '<button class="btn minus z-depth-0">' +
