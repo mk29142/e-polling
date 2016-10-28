@@ -112,3 +112,9 @@ html, body {
 #vote:hover {
   background-color: #C3C3C3;
 }
+
+#submit-poll {
+    position: absolute;
+    right: 50%;
+    bottom: 50px;
+}
