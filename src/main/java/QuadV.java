@@ -10,7 +10,6 @@ import static spark.Spark.*;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
-
 public class QuadV {
     public static void main(String[] args) {
         // Configure Spark and server routes.
@@ -20,12 +19,15 @@ public class QuadV {
             connection = getConnection();
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
+            System.exit(e.hashCode());
             return;
         }
 
-        port(getPort());
-
         staticFiles.location("/front-end/public");
+
+        int port = getPort();
+        port(port);
+        System.out.println("Listening on port " + port);
 
         MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
 
@@ -76,6 +78,7 @@ public class QuadV {
 
     private static Connection getConnection()
             throws URISyntaxException, SQLException {
+        System.out.println("Initializing database connection...");
         String dbUrl = System.getenv("JDBC_DATABASE_URL");
         return DriverManager.getConnection(dbUrl);
     }
