@@ -46,9 +46,7 @@ html, body {
   transition:.5s;
 }
 
-#create:hover {
-  background-color: #E4FFFF;
-}
+
 
 #vote {
   background-color: #A9A9A9;
@@ -64,6 +62,51 @@ html, body {
   -moz-transition:.5s;
   -webkit-transition:.5s;
   transition:.5s;
+}
+
+#smart {
+  position: absolute;
+  background-color: #CAEBF2;
+  color: #a9a9a9;
+  float: right;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-size: 3em;
+  -o-transition:.5s;
+  -ms-transition:.5s;
+  -moz-transition:.5s;
+  -webkit-transition:.5s;
+  transition:.5s;
+  width: 50%;
+}
+
+#poll {
+  position: absolute;
+  background-color: #A9A9A9;
+  color: #caebf2;
+  float: left;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-size: 3em;
+  -o-transition:.5s;
+  -ms-transition:.5s;
+  -moz-transition:.5s;
+  -webkit-transition:.5s;
+  transition:.5s;
+  width: 50%;
+  margin-left: 50%;
+}
+
+#create:hover + #smart {
+  background-color: #E4FFFF;
+}
+
+#vote:hover + #poll {
+  background-color: #C3C3C3;
+}
+
+#create:hover {
+  background-color: #E4FFFF;
 }
 
 #vote:hover {
