@@ -1,3 +1,4 @@
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,15 +13,19 @@ import spark.template.mustache.MustacheTemplateEngine;
 public class QuadV {
     public static void main(String[] args) {
         // Configure Spark and server routes.
-        port(getPort());
-        Connection connection;
-        staticFiles.location("/front-end/public");
 
+        Connection connection;
         try {
             connection = getConnection();
         } catch (URISyntaxException | SQLException e) {
             return;
         }
+
+        staticFiles.location("/front-end/public");
+
+        int port = getPort();
+        port(port);
+        System.out.println("Listening on port " + port);
 
         MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
 
@@ -77,13 +82,21 @@ public class QuadV {
 
     private static Connection getConnection()
             throws URISyntaxException, SQLException {
-        String dbUrl = System.getenv("JDBC_DATABASE_URL");
-        return DriverManager.getConnection(dbUrl);
+            String dbUrl;
+            try {
+                System.out.println("Initializing database connection...");
+                dbUrl = System.getenv("JDBC_DATABASE_URL");
+                return DriverManager.getConnection(dbUrl);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                System.exit(e.hashCode());
+                return null;
+            }
     }
 
     private static int getPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
         String port = processBuilder.environment().get("PORT");
-        return port != null ? Integer.parseInt(port) : 8080;
+        return port != null ? Integer.parseInt(port) : 4567;
     }
 }
