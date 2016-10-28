@@ -25,9 +25,7 @@ public class QuadV {
 
         staticFiles.location("/front-end/public");
 
-        int port = getPort();
-        port(port);
-        System.out.println("Listening on port " + port);
+        port(getPort());
 
         MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
 
