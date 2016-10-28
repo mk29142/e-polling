@@ -7,9 +7,11 @@
       <h2>Public polls</h2>
     </div>
     <div id="issue-list" class="collection">
+      {{# polls}}
+        <a class="collection" href="/vote/{{id}}">{{name}}</a>
+      {{/polls}}
     </div>
   </div>
-  <script src="/src/votingroom.js"></script>
 </body>
 </html>
 
