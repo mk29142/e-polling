@@ -77,14 +77,7 @@ public class QuadV {
     private static Connection getConnection()
             throws URISyntaxException, SQLException {
         String dbUrl = System.getenv("JDBC_DATABASE_URL");
-        String user = "tcwufcwhobioex";
-        String pass = "AJ1O0Xgyo68mJT410unmRO-WIp";
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return DriverManager.getConnection(dbUrl, user, pass);
+        return DriverManager.getConnection(dbUrl);
     }
 
     private static int getPort() {
