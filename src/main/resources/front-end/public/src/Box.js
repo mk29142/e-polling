@@ -1,9 +1,10 @@
 function Box(options) {
   var selfId = 'box' + options.id;
-  var typeMessage = options.type == undefined ? 'Enter Title' : options.type + ' argument';
+  var typeMessage = options.type === 'Pro' || options.type === 'Con' ?
+    options.type + ' argument' : 'Enter Title';
 
   var newBox = $(
-    '<div id="' + selfId + '" class="box">' +
+    '<div id="' + selfId + '" class="box ' + options.type + '">' +
     '<input type="text" name="statement" placeholder="' + typeMessage + '"/>' +
     '<button class="btn plus z-depth-0">' +
     '+</button>        ' +

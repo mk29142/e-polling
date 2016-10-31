@@ -2,9 +2,15 @@
 <html lang="en">
 {{> header}}
 <body style="background-color:#efefef">
-  <div id="boxContainer">
+  <div class="container">
+    <div>
+      <a class="btn z-depth-0" href="/">back</a>
+    </div>
+    <div class="center-align" style="padding:20%" id="boxContainer"></div>
+    <div>
+      <button class="btn z-depth-0" id="submit-poll">Submit</button>
+    </div>
   </div>
-
   <script>id = 0; list = [];</script>
   <script src="/src/Box.js"></script>
   <script src="/src/create.js"></script>
