@@ -3,7 +3,7 @@
   console.log(pollId);
 
   $.get('/boxes/' + pollId, function(data) {
-    var questions = data;
+    var questions = JSON.parse(data);
     console.log(questions);
 
     var title = $('#debate-title');

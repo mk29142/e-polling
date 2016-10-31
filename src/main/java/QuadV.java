@@ -17,6 +17,7 @@ public class QuadV {
 
         try {
             connection = getConnection();
+            connection.createStatement().execute("CREATE TYPE statement_type AS ('Issue', 'Pro', 'Con', 'Answer'");
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
             System.exit(e.hashCode());
@@ -62,11 +63,9 @@ public class QuadV {
                 rs = findPoll.executeQuery();
 
                 rs.next();
-                String name =  rs.getString("poll_name");
-                PreparedStatement findStatements = connection.prepareStatement("SELECT poll_id, parent_id, statement, type FROM poll.?;");
-                findStatements.setString(1, name);
-                System.out.println(findStatements.toString());
-                rs = connection.createStatement().executeQuery(findStatements.toString());
+                PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ?;");
+                findStatements.setString(1, rs.getString("poll_name"));
+                rs = connection.createStatement().executeQuery(findStatements.toString().replace("'", "\""));
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
                 return e.getMessage();
@@ -74,7 +73,7 @@ public class QuadV {
             List<Box> boxes = new ArrayList<>();
 
             while (rs.next()) {
-                int id = rs.getInt("poll_id");
+                int id = rs.getInt("statement_id");
                 int parentId = rs.getInt("parent_id");
                 String statement = rs.getString("statement");
                 String type = rs.getString("type");
@@ -84,10 +83,36 @@ public class QuadV {
             return boxes;
         }, new JsonTransformer());
 
-        get("/create", (req, res) ->
-                new ModelAndView(null, "create.mustache"), templateEngine);
+        get("/create", (req, res) -> new ModelAndView(null, "create.mustache"), templateEngine);
 
-        get("/results", (req, res) ->
+        post("/create", (req, res) -> {
+            String body = req.body();
+            System.out.println(body);
+
+            PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls VALUES (?);");
+            PreparedStatement findId = connection.prepareStatement("IDENT CURRENT (?)");
+            PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
+                    "(statement_id INT SET NOT NULL, " +
+                    "parent_id INT, " +
+                    "statement TEXT SET NOT NULL, " +
+                    "type statement_type;");
+
+            String name = res.body().substring(8, 20);
+            createPoll.setString(1, name);
+            insertPoll.setString(1, name);
+            findId.setString(1, name);
+
+            ResultSet rs = insertPoll.executeQuery();
+            findId.executeQuery();
+            createPoll.executeQuery();
+
+            rs.next();
+            Integer id = rs.getInt("id");
+            res.redirect("/results/" + id);
+            return null;
+        });
+
+        get("/results/:id", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
     }
 
