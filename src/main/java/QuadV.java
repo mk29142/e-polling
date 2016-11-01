@@ -19,8 +19,9 @@ public class QuadV {
 
         try {
             connection = getConnection();
-            //connection.createStatement().execute("CREATE TYPE
-            // statement_type " +
+            connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
+                    "(id SERIAL UNIQUE, poll_name TEXT);");
+            //  connection.createStatement().execute("CREATE TYPE IF NOT EXISTS statement_type " +
             //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
@@ -94,40 +95,35 @@ public class QuadV {
             JsonParser jsonParser = new JsonParser();
             JsonElement element = jsonParser.parse(body);
 
-            PreparedStatement createPollsList = connection.prepareStatement("CREATE TABLE IF NOT EXISTS polls" +
-                    "(id SERIAL UNIQUE, poll_name TEXT);");
             PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls VALUES (?);");
-            PreparedStatement findId = connection.prepareStatement("IDENT_CURRENT (?)");
+            PreparedStatement findId = connection.prepareStatement("SELECT CURRVAL('polls_id_seq')");
             PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
-                    "(statement_id INT SET NOT NULL, " +
+                    "(statement_id INT NOT NULL, " +
                     "parent_id INT, " +
-                    "statement TEXT SET NOT NULL, " +
+                    "statement TEXT NOT NULL, " +
                     "type statement_type);");
 
             String name = element.getAsJsonObject().get("name").getAsString();
             createPoll.setString(1, name);
             insertPoll.setString(1, name);
-            findId.setString(1, name);
 
             try {
-                boolean created = createPollsList.execute();
-                System.out.println(created);
                 int inserted = insertPoll.executeUpdate();
                 System.out.println(inserted);
                 ResultSet rs = findId.executeQuery();
-                createPoll.execute();
-
+                connection.createStatement().execute(createPoll.toString().replace("'", "\""));
 
                 rs.next();
 
-                int id = rs.getInt("id");
-                res.redirect("/results/" + id);
+                return rs.getInt("currval");
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
+                return "500 ERROR";
             }
-
-            return "200 OK";
         });
+
+        get("/results", (req, res) ->
+                new ModelAndView(null, "results.mustache"), templateEngine);
 
         get("/results/:id", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);

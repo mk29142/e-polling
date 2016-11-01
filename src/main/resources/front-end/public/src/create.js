@@ -26,8 +26,9 @@
       url: '/create',
       data: JSON.stringify(data),
       dataType: 'json',
-      success: function() {
-        console.log('Succeeded');
+      success: function(data) {
+        console.log(data);
+        window.location.href = "/results/" + data;
       }
     });
   });
