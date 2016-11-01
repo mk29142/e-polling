@@ -41,7 +41,7 @@ public class QuadV {
             Map<String, List<Poll>> map = new HashMap<>();
 
             Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, poll_name FROM public.polls");
+            ResultSet rs = stmt.executeQuery("SELECT id, poll_name FROM polls");
 
             List<Poll> polls = new ArrayList<>();
 
@@ -94,6 +94,8 @@ public class QuadV {
             JsonParser jsonParser = new JsonParser();
             JsonElement element = jsonParser.parse(body);
 
+            PreparedStatement createPollsList = connection.prepareStatement("CREATE TABLE IF NOT EXISTS polls" +
+                    "(id SERIAL UNIQUE, poll_name TEXT);");
             PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls VALUES (?);");
             PreparedStatement findId = connection.prepareStatement("IDENT_CURRENT (?)");
             PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
@@ -107,14 +109,24 @@ public class QuadV {
             insertPoll.setString(1, name);
             findId.setString(1, name);
 
-            ResultSet rs = insertPoll.executeQuery();
-            findId.executeQuery();
-            createPoll.executeQuery();
+            try {
+                boolean created = createPollsList.execute();
+                System.out.println(created);
+                int inserted = insertPoll.executeUpdate();
+                System.out.println(inserted);
+                ResultSet rs = findId.executeQuery();
+                createPoll.execute();
 
-            rs.next();
-            Integer id = rs.getInt("id");
-            res.redirect("/results/" + id);
-            return null;
+
+                rs.next();
+
+                int id = rs.getInt("id");
+                res.redirect("/results/" + id);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+
+            return "200 OK";
         });
 
         get("/results/:id", (req, res) ->
