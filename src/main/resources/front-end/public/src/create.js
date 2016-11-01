@@ -16,14 +16,14 @@
       elem.value = $('#box' + elem.id).find('input').val();
     }
     $.ajax({
-      type: "POST",
-      url: "/create",
+      type: 'POST',
+      url: '/create',
       data: {
         name: list[0].value,
         list: list
       },
       success: function() {
-        console.log("Succeeded");
+        console.log('Succeeded');
       }
     });
   });
