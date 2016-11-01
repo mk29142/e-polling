@@ -93,6 +93,7 @@ public class QuadV {
             String body = req.body();
             JsonParser jsonParser = new JsonParser();
             JsonElement element = jsonParser.parse(body);
+            System.out.println(element.getAsJsonObject().toString());
 
             PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls VALUES (?);");
             PreparedStatement findId = connection.prepareStatement("IDENT_CURRENT (?)");
