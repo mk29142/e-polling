@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.gson.*;
 
 import static spark.Spark.*;
 
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
+
 
 public class QuadV {
     public static void main(String[] args) {
@@ -17,8 +19,9 @@ public class QuadV {
 
         try {
             connection = getConnection();
-            connection.createStatement().execute("CREATE TYPE statement_type " +
-                    "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
+            //connection.createStatement().execute("CREATE TYPE
+            // statement_type " +
+            //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
             System.exit(e.hashCode());
@@ -88,17 +91,18 @@ public class QuadV {
 
         post("/create", (req, res) -> {
             String body = req.body();
-            System.out.println(body);
+            JsonParser jsonParser = new JsonParser();
+            JsonElement element = jsonParser.parse(body);
 
             PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls VALUES (?);");
-            PreparedStatement findId = connection.prepareStatement("IDENT CURRENT (?)");
+            PreparedStatement findId = connection.prepareStatement("IDENT_CURRENT (?)");
             PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
                     "(statement_id INT SET NOT NULL, " +
                     "parent_id INT, " +
                     "statement TEXT SET NOT NULL, " +
-                    "type statement_type;");
+                    "type statement_type);");
 
-            String name = res.body().substring(8, 20);
+            String name = element.getAsJsonObject().get("name").getAsString();
             createPoll.setString(1, name);
             insertPoll.setString(1, name);
             findId.setString(1, name);

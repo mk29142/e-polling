@@ -15,13 +15,17 @@
       var elem = list[i];
       elem.value = $('#box' + elem.id).find('input').val();
     }
+
+    var data = {
+      name: list[0].value,
+      list: list
+    }
+
     $.ajax({
       type: 'POST',
       url: '/create',
-      data: {
-        name: list[0].value,
-        list: list
-      },
+      data: JSON.stringify(data),
+      dataType: 'json',
       success: function() {
         console.log('Succeeded');
       }

@@ -8,4 +8,8 @@ class JsonTransformer implements ResponseTransformer {
     public String render(Object model) {
         return gson.toJson(model);
     }
+
+    public <T> T fromJson(String json, Class<T> cls) {
+        return gson.fromJson(json, cls);
+    }
 }
