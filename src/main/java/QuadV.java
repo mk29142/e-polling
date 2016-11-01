@@ -17,7 +17,8 @@ public class QuadV {
 
         try {
             connection = getConnection();
-            connection.createStatement().execute("CREATE TYPE statement_type AS ('Issue', 'Pro', 'Con', 'Answer'");
+            connection.createStatement().execute("CREATE TYPE statement_type " +
+                    "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
             System.exit(e.hashCode());
