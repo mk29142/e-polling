@@ -1,10 +1,9 @@
 (function() {
-  var pollId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1);
-  console.log(pollId);
+  var pollId = window.location.href.substring(
+    window.location.href.lastIndexOf('/') + 1);
 
   $.get('/boxes/' + pollId, function(data) {
     var questions = JSON.parse(data);
-    console.log(questions);
 
     var title = $('#debate-title');
     var question = $('#question');

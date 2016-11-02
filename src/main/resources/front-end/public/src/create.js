@@ -21,7 +21,7 @@
     var data = {
       name: list[0].value,
       list: list
-    }
+    };
 
     $.ajax({
       type: 'POST',

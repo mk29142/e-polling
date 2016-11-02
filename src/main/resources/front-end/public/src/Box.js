@@ -20,7 +20,7 @@ function Box(options) {
       id: id++,
       parentId: parentId,
       type: 'Pro'
-    }
+    };
 
     list.push(boxOptions);
 
@@ -34,7 +34,7 @@ function Box(options) {
       id: id++,
       parentId: parentId,
       type: 'Con'
-    }
+    };
 
     list.push(boxOptions);
 
