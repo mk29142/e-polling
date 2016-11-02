@@ -1,1 +1,1 @@
-web: mvn exec:java
+web: mvn package && mvn exec:java
