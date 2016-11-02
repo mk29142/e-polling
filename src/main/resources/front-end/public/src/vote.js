@@ -8,7 +8,7 @@
 
     var title = $('#debate-title');
     var question = $('#question');
-    var checked = $('input[name=options]:checked');
+    var options = $('input[name=options]');
     var reason = $('#opinion-area');
     var issue = questions[0];
     var counter = 1;
@@ -60,13 +60,20 @@
     }
 
     function changeQuestion() {
-      currQ.support = checked.val();
+      currQ.support = options.filter(':checked').val();
       currQ.reason = reason.val();
 
       currQ = questions[++counter];
-      question.html(currQ.text);
-      slider.val(currQ.support);
+      question.text(currQ.text);
       reason.val(currQ.reason);
+
+      if (currQ.support) {
+        $('#vote-yes').prop('checked', currQ.support === 'yes');
+        $('#vote-no').prop('checked', currQ.support === 'no');
+      } else {
+        $('#vote-yes').prop('checked', false);
+        $('#vote-no').prop('checked', false);
+      }
 
       if (currQ.id === questions.length - 1) {
         $('#nextQ').hide();
