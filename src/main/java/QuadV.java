@@ -23,7 +23,7 @@ public class QuadV {
             connection = getConnection();
             connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
                     "(id SERIAL UNIQUE, poll_name TEXT);");
-            //  connection.createStatement().execute("CREATE TYPE IF NOT EXISTS statement_type " +
+            //connection.createStatement().execute("CREATE TYPE statement_type " +
             //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
