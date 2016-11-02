@@ -15,6 +15,7 @@ function Box(options) {
 
   $('#' + selfId + ' .plus').click(function(e) {
     var parentId = e.target.parentNode.id;
+
     var boxOptions = {
       id: id++,
       parentId: parentId,
@@ -28,6 +29,7 @@ function Box(options) {
 
   $('#' + selfId + ' .minus').click(function(e) {
     var parentId = e.target.parentNode.id;
+
     var boxOptions = {
       id: id++,
       parentId: parentId,

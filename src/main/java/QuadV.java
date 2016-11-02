@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.*;
 
 import static spark.Spark.*;
@@ -19,8 +21,9 @@ public class QuadV {
 
         try {
             connection = getConnection();
-            //connection.createStatement().execute("CREATE TYPE
-            // statement_type " +
+            connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
+                    "(id SERIAL UNIQUE, poll_name TEXT);");
+            //  connection.createStatement().execute("CREATE TYPE IF NOT EXISTS statement_type " +
             //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
@@ -41,7 +44,7 @@ public class QuadV {
             Map<String, List<Poll>> map = new HashMap<>();
 
             Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, poll_name FROM public.polls");
+            ResultSet rs = stmt.executeQuery("SELECT id, poll_name FROM polls");
 
             List<Poll> polls = new ArrayList<>();
 
@@ -96,27 +99,61 @@ public class QuadV {
             System.out.println(element.getAsJsonObject().toString());
 
             PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls VALUES (?);");
-            PreparedStatement findId = connection.prepareStatement("IDENT_CURRENT (?)");
+            PreparedStatement findId = connection.prepareStatement("SELECT CURRVAL('polls_id_seq')");
             PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
-                    "(statement_id INT SET NOT NULL, " +
+                    "(statement_id INT NOT NULL, " +
                     "parent_id INT, " +
-                    "statement TEXT SET NOT NULL, " +
+                    "statement TEXT NOT NULL, " +
                     "type statement_type);");
 
-            String name = element.getAsJsonObject().get("name").getAsString();
+            JsonObject obj = element.getAsJsonObject();
+            JsonArray list = obj.getAsJsonArray("list");
+            String name = obj.get("name").getAsString();
+
             createPoll.setString(1, name);
             insertPoll.setString(1, name);
-            findId.setString(1, name);
 
-            ResultSet rs = insertPoll.executeQuery();
-            findId.executeQuery();
-            createPoll.executeQuery();
+            try {
+                insertPoll.executeUpdate();
+                ResultSet rs = findId.executeQuery();
+                connection.createStatement().execute(createPoll.toString().replace("'", "\""));
 
-            rs.next();
-            Integer id = rs.getInt("id");
-            res.redirect("/results/" + id);
-            return null;
+                for (JsonElement elem : list) {
+                    JsonObject elemObj = elem.getAsJsonObject();
+
+                    try {
+                        PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?::statement_type);");
+                        addRow.setString(1, name);
+                        addRow.setInt(2, elemObj.get("id").getAsInt());
+
+                        if (elemObj.get("parentId").isJsonNull()) {
+                            addRow.setNull(3, Types.INTEGER);
+                        } else {
+                            addRow.setInt(3, elemObj.get("parentId").getAsInt());
+                        }
+
+                        addRow = connection.prepareStatement(addRow.toString().replace("'", "\""));
+
+                        addRow.setString(1, elemObj.get("value").getAsString());
+                        addRow.setString(2, elemObj.get("type").getAsString());
+                        addRow.executeUpdate();
+                    } catch (SQLException | UnsupportedOperationException e) {
+                        System.out.print("FAILED: ");
+                        System.out.println(e.getMessage());
+                    }
+                }
+
+                rs.next();
+
+                return rs.getInt("currval");
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                return "500 ERROR";
+            }
         });
+
+        get("/results", (req, res) ->
+                new ModelAndView(null, "results.mustache"), templateEngine);
 
         get("/results/:id", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);

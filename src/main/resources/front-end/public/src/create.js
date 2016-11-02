@@ -14,6 +14,8 @@
     for (var i = 0; i < list.length; i++) {
       var elem = list[i];
       elem.value = $('#box' + elem.id).find('input').val();
+      var oldParent = elem.parentId;
+      elem.parentId = oldParent ? parseInt(oldParent.substring(3)) : null;
     }
 
     var data = {
@@ -26,8 +28,9 @@
       url: '/create',
       data: JSON.stringify(data),
       dataType: 'json',
-      success: function() {
-        console.log('Succeeded');
+      success: function(data) {
+        console.log(data);
+        window.location.href = "/results/" + data;
       }
     });
   });
