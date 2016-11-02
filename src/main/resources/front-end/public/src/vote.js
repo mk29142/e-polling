@@ -1,5 +1,5 @@
 (function() {
-  var pollId = window.location.href.substring(27);
+  var pollId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1);
   console.log(pollId);
 
   $.get('/boxes/' + pollId, function(data) {

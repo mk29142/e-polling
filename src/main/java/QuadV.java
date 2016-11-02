@@ -57,7 +57,7 @@ public class QuadV {
             return new ModelAndView(map, "votingroom.mustache");
         }, templateEngine);
 
-        get("/vote/:id", ((request, response) -> new ModelAndView(null, "vote.mustache")), templateEngine);
+        get("/vote/:id", ((req, res) -> new ModelAndView(null, "vote.mustache")), templateEngine);
 
         get("/boxes/:id", "application/json", (request, response) -> {
             // Get the questions one by one for the specific poll
