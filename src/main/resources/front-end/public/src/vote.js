@@ -8,7 +8,7 @@
 
     var title = $('#debate-title');
     var question = $('#question');
-    var slider = $('#question-slider');
+    var checked = $('input[name=options]:checked');
     var reason = $('#opinion-area');
     var issue = questions[0];
     var counter = 1;
@@ -60,7 +60,7 @@
     }
 
     function changeQuestion() {
-      currQ.support = slider.val();
+      currQ.support = checked.val();
       currQ.reason = reason.val();
 
       currQ = questions[++counter];

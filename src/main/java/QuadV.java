@@ -23,7 +23,7 @@ public class QuadV {
             connection = getConnection();
             connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
                     "(id SERIAL UNIQUE, poll_name TEXT);");
-            //  connection.createStatement().execute("CREATE TYPE IF NOT EXISTS statement_type " +
+            //connection.createStatement().execute("CREATE TYPE statement_type " +
             //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
@@ -96,9 +96,8 @@ public class QuadV {
             String body = req.body();
             JsonParser jsonParser = new JsonParser();
             JsonElement element = jsonParser.parse(body);
-            System.out.println(element.getAsJsonObject().toString());
 
-            PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls VALUES (?);");
+            PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls(poll_name) VALUES (?);");
             PreparedStatement findId = connection.prepareStatement("SELECT CURRVAL('polls_id_seq')");
             PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
                     "(statement_id INT NOT NULL, " +
