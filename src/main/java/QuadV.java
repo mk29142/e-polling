@@ -65,7 +65,7 @@ public class QuadV {
             ResultSet rs = null;
             try {
                 PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ?;");
-                findStatements.setString(1, request.queryParams("id"));
+                findStatements.setString(1, request.params(":id"));
                 rs = connection.createStatement().executeQuery(findStatements.toString().replace("'", "\""));
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
@@ -118,7 +118,7 @@ public class QuadV {
 
                     try {
                         PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?::statement_type);");
-                        addRow.setString(1, name);
+                        addRow.setString(1, id.toString());
                         addRow.setInt(2, elemObj.get("id").getAsInt());
 
                         if (elemObj.get("parentId").isJsonNull()) {
