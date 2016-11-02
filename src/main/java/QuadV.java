@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.*;
 
 import static spark.Spark.*;
 
+import javafx.util.Pair;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
@@ -150,6 +150,53 @@ public class QuadV {
                 return "500 ERROR";
             }
         });
+
+        post("/answers", "application/json", (req, res) -> {
+            JsonParser jsonParser = new JsonParser();
+            JsonArray answers = jsonParser.parse(req.body()).getAsJsonArray();
+            List<Argument> allArgs = new ArrayList<>();
+
+            // Go through array to make the arguments
+            for (JsonElement elem : answers) {
+                JsonObject answer = elem.getAsJsonObject();
+
+                boolean vote;
+                try {
+                    vote = answer.get("support").getAsString().equals("yes");
+                } catch (Exception e) {
+                    vote = false;
+                }
+
+                String text = answer.get("text").getAsString();
+                boolean isSupporter = answer.get("type").getAsString().equals("Pro");
+
+                int id = answer.get("id").getAsInt();
+                int parent = answer.get("parent").getAsInt();
+
+                Argument arg = new Argument(vote, text, isSupporter);
+                arg.setId(id);
+                arg.setParent(parent);
+                allArgs.add(arg);
+            }
+
+            Argument root = allArgs.get(0);
+
+            // Go through allArgs to set the children
+            for (Argument arg : allArgs) {
+                List<Argument> children = new ArrayList<>();
+                int parentId = arg.getId();
+
+                for (Argument potentialChild : allArgs) {
+                    if (parentId == potentialChild.getParent() && parentId != potentialChild.getId()) {
+                        children.add(potentialChild);
+                    }
+                }
+
+                arg.addChildren(children);
+            }
+
+            return root.isSubTreeConsistent() ? "200 OK" : "500 Error";
+        }, new JsonTransformer());
 
         get("/results", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);

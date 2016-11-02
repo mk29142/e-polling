@@ -29,7 +29,16 @@
       e.preventDefault();
 
       // Send back questions with ajax and redirect to results page
-      window.location.href = '/results';
+      $.ajax({
+        type: 'POST',
+        url: '/answers',
+        data: JSON.stringify(questions),
+        dataType: 'json',
+        success: function(data) {
+          console.log(data);
+          window.location.href = '/results/' + data;
+        }
+      });
     });
 
     $('#nav-list .collection-item').click(function(e) {

@@ -39,15 +39,15 @@ public class QuadVTest {
 
     @Test
     public void isPollConsistent() {
-        assertFalse(arg.isConsistent());
+        assertFalse(arg.isSubTreeConsistent());
     }
 
     @Test
     public void argumentObjectToBooleanListOfVotes() {
         List<Boolean> correctList = new ArrayList<Boolean>();
-        correctList.add(new Boolean(true));
-        correctList.add(new Boolean(true));
-        correctList.add(new Boolean(true));
+        correctList.add(true);
+        correctList.add(true);
+        correctList.add(true);
 
         assertEquals(correctList,master.getVoteList());
     }

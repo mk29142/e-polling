@@ -8,10 +8,30 @@ class Argument {
     private boolean isSupporter;
     private List<Argument> children;
     private String argumentTitle;
+    private int parent;
+    private int id;
     //TODO: Should probably change to be a number on a scale of 1 to 10, with
-    //      10 being strongly agree, and 1 being strongly disagree
+
+    public void setParent(int parent){
+        this.parent = parent;
+    }
+
+    public void setId(int id){
+        this.id = id;
+    }
+
+    public int getParent() {
+        return parent;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    // 10 being strongly agree, and 1 being strongly disagree
     /* True for agreement/yes, false for disagreement/no. */
     private boolean vote;
+
     /* Use score function (sigma) from DF-QuAD algorithm to calculate strength
      * of argument using the vote base score as the base score. */
     private double strength;
@@ -21,7 +41,6 @@ class Argument {
         this.vote = vote;
         this.isSupporter = isSupporter;
         this.children = new ArrayList<>();
-
     }
 
     boolean getVote() {
@@ -40,6 +59,14 @@ class Argument {
         this.children.add(child);
     }
 
+    public void addChild(Argument child) {
+        this.children.add(child);
+    }
+
+    public void addChildren(List<Argument> children) {
+        this.children.addAll(children);
+    }
+
     //TODO: Implement algorithm to check that the tree is fully consistent
     //      (IS THIS WHAT isStable() was meant to be doing)
     /* Checks that this argument is consistent with its supporters and
@@ -50,7 +77,7 @@ class Argument {
      * If we disagree with the statement, but agree with any of its supporters
      * and don't agree with any of its attackers, then it is inconsistent.
      * Otherwise, it is consistent. */
-    protected boolean isConsistent() {
+    private boolean isConsistent() {
         return vote?
             !hasAttackerVote() || hasSupporterVote():
             hasAttackerVote() || !hasSupporterVote();
@@ -100,5 +127,4 @@ class Argument {
 
         return false;
     }
-
 }
