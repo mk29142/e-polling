@@ -9,7 +9,6 @@ import com.google.gson.*;
 
 import static spark.Spark.*;
 
-import javafx.util.Pair;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
@@ -65,13 +64,8 @@ public class QuadV {
             // use PreparedStatement in here to stop string injection
             ResultSet rs = null;
             try {
-                PreparedStatement findPoll = connection.prepareStatement("SELECT poll_name FROM polls WHERE id = ?;");
-                findPoll.setInt(1, Integer.parseInt(request.params(":id")));
-                rs = findPoll.executeQuery();
-
-                rs.next();
                 PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ?;");
-                findStatements.setString(1, rs.getString("poll_name"));
+                findStatements.setString(1, request.queryParams("id"));
                 rs = connection.createStatement().executeQuery(findStatements.toString().replace("'", "\""));
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
@@ -109,12 +103,14 @@ public class QuadV {
             JsonArray list = obj.getAsJsonArray("list");
             String name = obj.get("name").getAsString();
 
-            createPoll.setString(1, name);
             insertPoll.setString(1, name);
 
             try {
                 insertPoll.executeUpdate();
                 ResultSet rs = findId.executeQuery();
+                rs.next();
+                Integer id = rs.getInt("currval");
+                createPoll.setString(1, id.toString());
                 connection.createStatement().execute(createPoll.toString().replace("'", "\""));
 
                 for (JsonElement elem : list) {
@@ -142,9 +138,7 @@ public class QuadV {
                     }
                 }
 
-                rs.next();
-
-                return rs.getInt("currval");
+                return id;
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
                 return "500 ERROR";
@@ -201,8 +195,10 @@ public class QuadV {
         get("/results", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
 
-        get("/results/:id", (req, res) ->
-                new ModelAndView(null, "results.mustache"), templateEngine);
+        get("/results/:id", (req, res) -> {
+                //where we will show all of the graphs and stats of the poll
+                return new ModelAndView(null, "results.mustache");
+        }, templateEngine);
     }
 
     private static Connection getConnection()
