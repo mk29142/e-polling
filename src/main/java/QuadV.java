@@ -98,6 +98,8 @@ public class QuadV {
                     "parent_id INT, " +
                     "statement TEXT NOT NULL, " +
                     "type statement_type);");
+            PreparedStatement createAnswers = connection.prepareStatement("CREATE TABLE ? " +
+                    "(user_id SERIAL UNIQUE, stupidity INT);");
 
             JsonObject obj = element.getAsJsonObject();
             JsonArray list = obj.getAsJsonArray("list");
@@ -111,6 +113,7 @@ public class QuadV {
                 rs.next();
                 Integer id = rs.getInt("currval");
                 createPoll.setString(1, id.toString());
+                createAnswers.setString(1, id.toString() + "_answers");
                 connection.createStatement().execute(createPoll.toString().replace("'", "\""));
 
                 for (JsonElement elem : list) {
@@ -118,8 +121,15 @@ public class QuadV {
 
                     try {
                         PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?::statement_type);");
+                        PreparedStatement addAnswerColumn = connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
+
+                        int statement_id = elemObj.get("id").getAsInt();
+
                         addRow.setString(1, id.toString());
-                        addRow.setInt(2, elemObj.get("id").getAsInt());
+                        addRow.setInt(2, statement_id);
+
+                        addAnswerColumn.setString(1, id.toString());
+                        addAnswerColumn.setInt(2, statement_id);
 
                         if (elemObj.get("parentId").isJsonNull()) {
                             addRow.setNull(3, Types.INTEGER);
@@ -132,6 +142,7 @@ public class QuadV {
                         addRow.setString(1, elemObj.get("value").getAsString());
                         addRow.setString(2, elemObj.get("type").getAsString());
                         addRow.executeUpdate();
+                        addAnswerColumn.executeUpdate();
                     } catch (SQLException | UnsupportedOperationException e) {
                         System.out.print("FAILED: ");
                         System.out.println(e.getMessage());
