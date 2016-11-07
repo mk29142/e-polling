@@ -103,7 +103,7 @@ html, body {
   background-color: #E4FFFF;
 }
 
-#vote:hover + #poll {
+#vote:hover {
   background-color: #C3C3C3;
 }
 
@@ -111,7 +111,7 @@ html, body {
   background-color: #E4FFFF;
 }
 
-#vote:hover {
+#vote:hover, #poll:hover {
   background-color: #C3C3C3;
 }
 

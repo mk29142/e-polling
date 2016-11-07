@@ -114,7 +114,7 @@ class Argument {
             }
         }
 
-        return !this.getInconsistencies().isEmpty();
+        return this.getInconsistencies().isEmpty();
     }
 
     /* Returns true if the voter has agreed with a supporter of this

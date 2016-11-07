@@ -115,21 +115,24 @@ public class QuadV {
                 createPoll.setString(1, id.toString());
                 createAnswers.setString(1, id.toString() + "_answers");
                 connection.createStatement().execute(createPoll.toString().replace("'", "\""));
+                connection.createStatement().execute(createAnswers.toString().replace("'", "\""));
 
                 for (JsonElement elem : list) {
                     JsonObject elemObj = elem.getAsJsonObject();
 
                     try {
                         PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?::statement_type);");
+
+                        //this statement adds a column to the answers table
                         PreparedStatement addAnswerColumn = connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
 
-                        int statement_id = elemObj.get("id").getAsInt();
+                        Integer statement_id = elemObj.get("id").getAsInt();
 
                         addRow.setString(1, id.toString());
                         addRow.setInt(2, statement_id);
 
-                        addAnswerColumn.setString(1, id.toString());
-                        addAnswerColumn.setInt(2, statement_id);
+                        addAnswerColumn.setString(1, id.toString() + "_answers");
+                        addAnswerColumn.setString(2, statement_id.toString());
 
                         if (elemObj.get("parentId").isJsonNull()) {
                             addRow.setNull(3, Types.INTEGER);
@@ -138,6 +141,7 @@ public class QuadV {
                         }
 
                         addRow = connection.prepareStatement(addRow.toString().replace("'", "\""));
+                        addAnswerColumn = connection.prepareStatement(addAnswerColumn.toString().replace("'", "\""));
 
                         addRow.setString(1, elemObj.get("value").getAsString());
                         addRow.setString(2, elemObj.get("type").getAsString());
