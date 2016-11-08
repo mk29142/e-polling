@@ -99,7 +99,7 @@ public class QuadV {
                     "statement TEXT NOT NULL, " +
                     "type statement_type);");
             PreparedStatement createAnswers = connection.prepareStatement("CREATE TABLE ? " +
-                    "(user_id SERIAL UNIQUE, stupidity INT);");
+                    "(user_id , stupidity INT);");
 
             JsonObject obj = element.getAsJsonObject();
             JsonArray list = obj.getAsJsonArray("list");
@@ -160,10 +160,11 @@ public class QuadV {
             }
         });
 
-        post("/answers", "application/json", (req, res) -> {
+        post("/answers/:id", "application/json", (req, res) -> {
             JsonParser jsonParser = new JsonParser();
             JsonArray answers = jsonParser.parse(req.body()).getAsJsonArray();
             List<Argument> allArgs = new ArrayList<>();
+            String pollId = req.params(":id");
 
             // Go through array to make the arguments
             for (JsonElement elem : answers) {
@@ -179,9 +180,23 @@ public class QuadV {
                 String text = answer.get("text").getAsString();
                 boolean isSupporter = answer.get("type").getAsString().equals("Pro");
 
-                int id = answer.get("id").getAsInt();
+                Integer id = answer.get("id").getAsInt();
                 int parent = answer.get("parent").getAsInt();
+                try {
+                    PreparedStatement insertAnswer = connection.prepareStatement("INSERT INTO ? (?)");
 
+                    insertAnswer.setString(1, pollId + "_answers");
+                    insertAnswer.setString(2, id.toString());
+                    PreparedStatement insertBool = connection.prepareStatement(insertAnswer.toString().replace("'", "\"") + " VALUES (?);");
+
+                    insertBool.setBoolean(1, vote);
+
+                    System.out.println(insertAnswer);
+                    insertBool.executeUpdate();
+
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                }
                 Argument arg = new Argument(vote, text, isSupporter);
                 arg.setId(id);
                 arg.setParent(parent);
