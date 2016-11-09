@@ -259,6 +259,15 @@ public class QuadV {
             return root.isSubTreeConsistent() ? "200 OK" : "500 Error";
         }, new JsonTransformer());
 
+        post("/dynamicQuestions/:id",  "application/json", (request, result) -> {
+            String ip = request.ip();
+            String pollId = request.params(":id");
+
+
+
+            return null;
+        }, new JsonTransformer());
+
         get("/results", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
 

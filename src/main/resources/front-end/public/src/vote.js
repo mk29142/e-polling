@@ -28,18 +28,23 @@
       e.preventDefault();
 
       // Send back questions with ajax and redirect to results page
-      $.ajax({
-        type: 'POST',
-        url: '/answers/'+pollId,
-        data: JSON.stringify(questions),
-        dataType: 'json',
-        success: function(data) {
-          console.log(data);
+      var dynamicData;
+      do {
+        $.ajax({
+          type: 'POST',
+          url: '/answers/'+pollId,
+          data: JSON.stringify(questions),
+          dataType: 'json',
+          success: function(data) {
+            console.log(data);
+            dynamicData = data;
+          }
+        });
 
-          //a modal will pop up with dynamic questions from data obj
-          window.location.href = '/results/' + data;
-        }
-      });
+        //a modal will pop up with dynamic questions from data obj
+        //on last round of dynamic questions modal will show submit
+        //window.location.href = '/results/' + data;
+      } while (dynamicData);
     });
 
     $('#nav-list .collection-item').click(function(e) {
