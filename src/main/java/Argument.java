@@ -4,7 +4,7 @@ import java.util.List;
 class Argument {
     private boolean isSupporter;
     private List<Argument> children;
-    private String argumentTitle;
+    private String text;
     private int parent;
     private int id;
     //TODO: Should probably change to be a number on a scale of 1 to 10, with
@@ -34,7 +34,7 @@ class Argument {
     private double strength;
 
     Argument(boolean vote, String argumentTitle, boolean isSupporter) {
-        this.argumentTitle = argumentTitle;
+        this.text = argumentTitle;
         this.vote = vote;
         this.isSupporter = isSupporter;
         this.children = new ArrayList<>();
@@ -45,8 +45,15 @@ class Argument {
     }
     boolean isSupporter() { return isSupporter;}
 
-    public String getArgumentTitle() {
-        return argumentTitle;
+    public String getText() {
+        return text;
+    }
+
+    //Returns box for sending back Argument in JSON
+    public Box toBox() {
+
+        String type = isSupporter ? "Pro" : "Con";
+        return new Box(id, parent, text, type);
     }
 
 
