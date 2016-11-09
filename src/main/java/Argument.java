@@ -75,26 +75,26 @@ class Argument {
      * and don't agree with any of its attackers, then it is inconsistent.
      * Otherwise, it is consistent. */
     public List<Argument> getInconsistencies() {
-        List<Argument> attackers = getAttackers();
-        List<Argument> supporters = getSupporters();
+        List<Argument> attackers = attackersAgreedWith();
+        List<Argument> supporters = supportersAgreedWith();
 
         if (this.vote) {
-            if (inconsistentLists(attackers, supporters)) {
-                return attackers;
+            if (supporters.isEmpty()) {
+                return getAllSupporters();
             }
         } else {
-            if (inconsistentLists(supporters, attackers)) {
-                return supporters;
+            if (attackers.isEmpty()) {
+                return getAllAttackers();
             }
         }
 
         return new ArrayList<>();
     }
 
-    // Depends on this.vote
-    private boolean inconsistentLists(List<Argument> l1, List<Argument> l2) {
-        return !l1.isEmpty() && l2.isEmpty();
-    }
+//    // Depends on this.vote
+//    private boolean inconsistentLists(List<Argument> l1, List<Argument> l2) {
+//        return !l1.isEmpty() && l2.isEmpty();
+//    }
 
     /*
     Concatenates Attacker and Supporters and returns list of Arguments,
@@ -119,7 +119,7 @@ class Argument {
 
     /* Returns true if the voter has agreed with a supporter of this
      * argument. Returns false otherwise. */
-    private List<Argument> getSupporters() {
+    private List<Argument> supportersAgreedWith() {
         List<Argument> supporters = new ArrayList<>();
         for (Argument child : this.children) {
             if (child.getVote() && child.isSupporter()) {
@@ -132,10 +132,36 @@ class Argument {
 
     /* Returns true if the voter has agreed with an attacker of this
      * argument. Returns false otherwise. */
-    private List<Argument> getAttackers() {
+    private List<Argument> attackersAgreedWith() {
         List<Argument> attackers = new ArrayList<>();
         for (Argument child : this.children) {
             if (child.getVote() && !child.isSupporter()) {
+                attackers.add(child);
+            }
+        }
+
+        return attackers;
+    }
+
+    /* Returns true if the voter has agreed with a supporter of this
+     * argument. Returns false otherwise. */
+    private List<Argument> getAllSupporters() {
+        List<Argument> supporters = new ArrayList<>();
+        for (Argument child : this.children) {
+            if (child.isSupporter()) {
+                supporters.add(child);
+            }
+        }
+
+        return supporters;
+    }
+
+    /* Returns true if the voter has agreed with an attacker of this
+     * argument. Returns false otherwise. */
+    private List<Argument> getAllAttackers() {
+        List<Argument> attackers = new ArrayList<>();
+        for (Argument child : this.children) {
+            if (!child.isSupporter()) {
                 attackers.add(child);
             }
         }

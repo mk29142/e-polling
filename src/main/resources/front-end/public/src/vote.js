@@ -35,6 +35,8 @@
         dataType: 'json',
         success: function(data) {
           console.log(data);
+
+          //a modal will pop up with dynamic questions from data obj
           window.location.href = '/results/' + data;
         }
       });

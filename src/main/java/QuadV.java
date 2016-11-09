@@ -250,13 +250,19 @@ public class QuadV {
                 arg.addChildren(children);
             }
 
+            List<Argument> inconsistencies = root.getInconsistencies();
+
+            for (Argument a : inconsistencies) {
+                System.out.println(a.getArgumentTitle());
+            }
+
             return root.isSubTreeConsistent() ? "200 OK" : "500 Error";
         }, new JsonTransformer());
 
         get("/results", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
 
-        get("/results/:id", (req, res) -> {
+        get("/results/:id", (reqty, res) -> {
                 //where we will show all of the graphs and stats of the poll
                 return new ModelAndView(null, "results.mustache");
         }, templateEngine);
