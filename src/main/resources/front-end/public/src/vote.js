@@ -26,8 +26,26 @@
 
     $('#finalQ').click(function(e) {
       e.preventDefault();
+//      createQuestion("Does this work");
+      createQuestion("test1", 1);
+      $('#dynamicModal').openModal({
+        dismissible: false
+      });
 
+      currQ.support = options.filter(':checked').val();
+      currQ.reason = reason.val();
+
+      if (currQ.support) {
+        $('#vote-yes').prop('checked', currQ.support === 'yes');
+        $('#vote-no').prop('checked', currQ.support === 'no');
+      } else {
+        $('#vote-yes').prop('checked', false);
+        $('#vote-no').prop('checked', false);
+      }
+
+      var dynamicData;
       // Send back questions with ajax and redirect to results page
+      console.log(JSON.stringify(questions));
       $.ajax({
         type: 'POST',
         url: '/answers/'+pollId,
@@ -35,11 +53,15 @@
         dataType: 'json',
         success: function(data) {
           console.log(data);
-
+          dynamicData = data;
           //a modal will pop up with dynamic questions from data obj
-          window.location.href = '/results/' + data;
+//          window.location.href = '/results/' + data;
         }
       });
+
+//      if(!dynamicData) {
+//         window.location.href = '/results/' + data;
+//      }
     });
 
     $('#nav-list .collection-item').click(function(e) {
@@ -95,5 +117,18 @@
 
       setActive();
     }
+
+    function createQuestion(question, counter) {
+      var q = '<div id="' + question + '">' +
+      '<p>' + question + '</p>' +
+      '<input type="radio" id="q' + counter + '-yes" name="options" value="yes">' +
+      '<label for="q' + counter +'-yes">Yes</label>   &nbsp; &nbsp; &nbsp;  ' +
+      '<input type="radio" id="q' + counter + '-no" name="options" value="no">' +
+      '<label for="q' + counter +'-no">No</label>' +
+      '</div>'
+
+      $('#questions').append(q);
+    }
   });
+
 })();

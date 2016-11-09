@@ -128,3 +128,10 @@ html, body {
 .Con {
   border: 5px solid #FF3B3F;
 }
+
+.modal {
+     z-index: 1; /* Sit on top */
+
+ }
+
+
