@@ -175,13 +175,13 @@ public class QuadV {
             }
         });
 
-        post("/answers/:id", "application/json", (req, res) -> {
-            JsonParser jsonParser = new JsonParser();
-            JsonArray answers = jsonParser.parse(req.body()).getAsJsonArray();
-            List<Argument> allArgs = new ArrayList<>();
-            String pollId = req.params(":id");
+        post("/user/:id", (request, response) -> {
+            /*
+            NEED TO ONLY INSERT ID IP IS NOT ALREADY IN TABLE
+            */
 
-            String ip = req.ip();
+            String pollId = request.params(":id");
+            String ip = request.ip();
 
             //printing out the ip so you can check
             System.out.println(ip);
@@ -196,9 +196,22 @@ public class QuadV {
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
             }
+            return "200 OK";
+        });
+
+        post("/answers/:id", "application/json", (req, res) -> {
+
+            JsonParser jsonParser = new JsonParser();
+
+            JsonObject data = jsonParser.parse(req.body()).getAsJsonObject();
+            String pollId = req.params(":id");
+            String ip = req.ip();
+            Integer currentHead = data.get("currentHead").getAsInt();
+            JsonArray answers = data.get("questions").getAsJsonArray();
 
             // Go through array to make the arguments
-            for (JsonElement elem : answers) {
+            for (int i = 1; i < answers.size(); i++) {
+                JsonElement elem = answers.get(i);
                 JsonObject answer = elem.getAsJsonObject();
 
                 boolean vote;
@@ -208,11 +221,8 @@ public class QuadV {
                     vote = false;
                 }
 
-                String text = answer.get("text").getAsString();
-                boolean isSupporter = answer.get("type").getAsString().equals("Pro");
-
                 Integer id = answer.get("id").getAsInt();
-                int parent = answer.get("parent").getAsInt();
+
                 try {
                     PreparedStatement insertAnswer = connection.prepareStatement("UPDATE ? SET ?=");
                     insertAnswer.setString(1, pollId + "_answers");
@@ -228,44 +238,60 @@ public class QuadV {
                 } catch (SQLException e) {
                     System.out.println(e.getMessage());
                 }
-                Argument arg = new Argument(vote, text, isSupporter);
-                arg.setId(id);
-                arg.setParent(parent);
-                allArgs.add(arg);
             }
 
-            Argument root = allArgs.get(0);
+            try {
+                PreparedStatement getUserAnswers = connection.prepareStatement("SELECT * FROM ? WHERE user_id=");
+                PreparedStatement getValues = connection.prepareStatement("SELECT * FROM ? WHERE parent_id=");
 
-            // Go through allArgs to set the children
-            for (Argument arg : allArgs) {
-                List<Argument> children = new ArrayList<>();
-                int parentId = arg.getId();
+                getUserAnswers.setString(1, pollId + "_answers");
+                getValues.setString(1, pollId);
 
-                for (Argument potentialChild : allArgs) {
-                    if (parentId == potentialChild.getParent() && parentId != potentialChild.getId()) {
-                        children.add(potentialChild);
-                    }
+                PreparedStatement getAnswers = connection.prepareStatement(getUserAnswers.toString().replace("'", "\"") + "?;");
+                PreparedStatement getChildren = connection.prepareStatement(getValues.toString().replace("'", "\"") + "? OR" +
+                        " statement_id=? ORDER BY statement_id");
+                getAnswers.setString(1, ip);
+                getChildren.setInt(1, currentHead);
+                getChildren.setInt(2, currentHead);
+
+                // get all answers
+                ResultSet rs = getAnswers.executeQuery();
+                rs.next(); //rs is now the row from the answers table with user_id
+
+                ResultSet rs2 = getChildren.executeQuery(); //set of all rows for relevant nodes in tree
+                rs2.next();
+
+                Argument head = new Argument(rs.getBoolean("0"), rs2.getString("statement"), rs2.getString("type").equals("Pro"));
+                head.setId(rs2.getInt("statement_id"));
+
+                //while there is a row for a child
+                while (rs2.next()) {
+                    Integer argumentId = rs2.getInt("statement_id");
+                    Integer parentId = rs2.getInt("parent_id");
+//                    System.out.println(rs2.getString("statement"));
+                    Argument arg = new Argument(rs.getBoolean(argumentId.toString()), rs2.getString("statement"),
+                            rs2.getString("type").equals("Pro"));
+                    arg.setId(argumentId);
+                    arg.setParent(parentId);
+
+                    head.addChild(arg);
                 }
 
-                arg.addChildren(children);
+                List<Argument> inconsistencies = head.getInconsistencies();
+                List<Box> dynamicQuestions = new ArrayList<>();
+                dynamicQuestions.add(0, head.toBox());
+
+                for (Argument a : inconsistencies) {
+                    dynamicQuestions.add(a.toBox());
+                    System.out.println(a.getText());
+                }
+
+                return dynamicQuestions;
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+
+                return "500 ERROR";
             }
-
-            List<Argument> inconsistencies = root.getInconsistencies();
-
-            for (Argument a : inconsistencies) {
-                System.out.println(a.getArgumentTitle());
-            }
-
-            return root.isSubTreeConsistent() ? "200 OK" : "500 Error";
-        }, new JsonTransformer());
-
-        post("/dynamicQuestions/:id",  "application/json", (request, result) -> {
-            String ip = request.ip();
-            String pollId = request.params(":id");
-
-
-
-            return null;
         }, new JsonTransformer());
 
         get("/results", (req, res) ->
@@ -305,15 +331,4 @@ public class QuadV {
         }
     }
 
-    private static class Box {
-        int id, parent;
-        String text, type;
-
-        Box(int id, int parentId, String text, String type) {
-            this.id = id;
-            this.parent = parentId;
-            this.text = text;
-            this.type = type;
-        }
-    }
 }

@@ -27,13 +27,24 @@
     $('#finalQ').click(function(e) {
       e.preventDefault();
 
+      //Do a post to /user so we are able to log their ip address once to put questions in the database
+      $.ajax({
+         type: 'POST',
+         url: '/user/'+pollId,
+         dataType: 'json',
+      });
+
       // Send back questions with ajax and redirect to results page
-      var dynamicData;
+      var dynamicData = {
+        questions: questions,
+        currentHead: 0
+      };
+
       do {
         $.ajax({
           type: 'POST',
           url: '/answers/'+pollId,
-          data: JSON.stringify(questions),
+          data: JSON.stringify(dynamicData),
           dataType: 'json',
           success: function(data) {
             console.log(data);
@@ -44,7 +55,10 @@
         //a modal will pop up with dynamic questions from data obj
         //on last round of dynamic questions modal will show submit
         //window.location.href = '/results/' + data;
-      } while (dynamicData);
+
+        //
+        dynamicData.currentHead++;
+      } while (dynamicData.currentHead < questions.length);
     });
 
     $('#nav-list .collection-item').click(function(e) {
