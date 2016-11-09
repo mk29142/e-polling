@@ -62,7 +62,22 @@ public class QuadV {
         get("/boxes/:id", "application/json", (request, response) -> {
             // Get the questions one by one for the specific poll
             // use PreparedStatement in here to stop string injection
+            String ip = request.ip();
             ResultSet rs = null;
+
+            //checking if connection exists
+            PreparedStatement ipCheck = connection.prepareStatement("SELECT EXISTS(SELECT * FROM ? ");
+            ipCheck.setString(1,request.params(":id")+"_answers");
+
+            PreparedStatement insertIp = connection.prepareStatement(ipCheck.toString().replace("'","\"") +"WHERE user_id=?);");
+            insertIp.setString(1, ip);
+
+            rs = insertIp.executeQuery();
+            rs.next();
+
+            //if they have answered questions already do something to notify user
+            //if not then carry on
+
             try {
                 PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ?;");
                 findStatements.setString(1, request.params(":id"));
@@ -99,7 +114,7 @@ public class QuadV {
                     "statement TEXT NOT NULL, " +
                     "type statement_type);");
             PreparedStatement createAnswers = connection.prepareStatement("CREATE TABLE ? " +
-                    "(user_id , stupidity INT);");
+                    "(user_id TEXT, stupidity INT);");
 
             JsonObject obj = element.getAsJsonObject();
             JsonArray list = obj.getAsJsonArray("list");
@@ -166,6 +181,22 @@ public class QuadV {
             List<Argument> allArgs = new ArrayList<>();
             String pollId = req.params(":id");
 
+            String ip = req.ip();
+
+            //printing out the ip so you can check
+            System.out.println(ip);
+
+            try {
+                PreparedStatement createUser = connection.prepareStatement("INSERT INTO ? (user_id)");
+                createUser.setString(1, pollId+"_answers");
+                PreparedStatement insertIp = connection.prepareStatement(createUser.toString().replace("'", "\"") + "  VALUES(?);");
+
+                insertIp.setString(1, ip);
+                insertIp.executeUpdate();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+
             // Go through array to make the arguments
             for (JsonElement elem : answers) {
                 JsonObject answer = elem.getAsJsonObject();
@@ -183,17 +214,17 @@ public class QuadV {
                 Integer id = answer.get("id").getAsInt();
                 int parent = answer.get("parent").getAsInt();
                 try {
-                    PreparedStatement insertAnswer = connection.prepareStatement("INSERT INTO ? (?)");
-
+                    PreparedStatement insertAnswer = connection.prepareStatement("UPDATE ? SET ?=");
                     insertAnswer.setString(1, pollId + "_answers");
                     insertAnswer.setString(2, id.toString());
-                    PreparedStatement insertBool = connection.prepareStatement(insertAnswer.toString().replace("'", "\"") + " VALUES (?);");
 
-                    insertBool.setBoolean(1, vote);
+                    PreparedStatement insertValues = connection.prepareStatement(insertAnswer.toString().replace("'", "\"")
+                            + "? WHERE user_id=?;");
 
-                    System.out.println(insertAnswer);
-                    insertBool.executeUpdate();
+                    insertValues.setBoolean(1, vote);
+                    insertValues.setString(2, ip);
 
+                    insertValues.executeUpdate();
                 } catch (SQLException e) {
                     System.out.println(e.getMessage());
                 }

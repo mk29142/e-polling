@@ -30,7 +30,7 @@
       // Send back questions with ajax and redirect to results page
       $.ajax({
         type: 'POST',
-        url: '/answers',
+        url: '/answers/'+pollId,
         data: JSON.stringify(questions),
         dataType: 'json',
         success: function(data) {
