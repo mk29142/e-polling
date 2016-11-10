@@ -26,11 +26,6 @@
 
     $('#finalQ').click(function(e) {
       e.preventDefault();
-//      createQuestion("Does this work");
-      createQuestion("test1", 1);
-      $('#dynamicModal').openModal({
-        dismissible: false
-      });
 
       currQ.support = options.filter(':checked').val();
       currQ.reason = reason.val();
@@ -51,20 +46,22 @@
       });
 
       // Send back questions with ajax and redirect to results page
+
       var dynamicData = {
-        questions: questions,
+        questions: questions;
         currentHead: 0
       };
+      var questionCounter = 0;
 
-      do {
         $.ajax({
           type: 'POST',
           url: '/answers/'+pollId,
-          data: JSON.stringify(dynamicData),
+          data: JSON.stringify(questions),
           dataType: 'json',
           success: function(data) {
-            console.log(data);
-            dynamicData = data;
+//            console.log(data);
+            dynamicData.questions = data;
+            isInconsistent = true;
           }
         });
 
@@ -72,9 +69,22 @@
         //on last round of dynamic questions modal will show submit
         //window.location.href = '/results/' + data;
 
+        $('#dynamicModal').openModal({
+          dismissible: false
+        });
+
+        $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
+        dynamicData.questions[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
+        for(var i = 1; i < dynamicData.questions.length; i++) {
+          var support = dynamicData.questions[i].support;
+          createQuestion(dynamicData.questions[i].text, questionCounter);
+          $('#q' + questionCounter + "-" + support).prop('checked', true);
+          questionCounter++;
+        }
+
         //
-        dynamicData.currentHead++;
-      } while (dynamicData.currentHead < questions.length);
+      //  dynamicData.currentHead++;
+     // } while (dynamicData.currentHead < questions.length);
     });
 
     $('#nav-list .collection-item').click(function(e) {
@@ -134,9 +144,9 @@
     function createQuestion(question, counter) {
       var q = '<div id="' + question + '">' +
       '<p>' + question + '</p>' +
-      '<input type="radio" id="q' + counter + '-yes" name="options" value="yes">' +
+      '<input type="radio" id="q' + counter + '-yes" name="' + counter + '" value="yes">' +
       '<label for="q' + counter +'-yes">Yes</label>   &nbsp; &nbsp; &nbsp;  ' +
-      '<input type="radio" id="q' + counter + '-no" name="options" value="no">' +
+      '<input type="radio" id="q' + counter + '-no" name="' + counter + '" value="no">' +
       '<label for="q' + counter +'-no">No</label>' +
       '</div>'
 
