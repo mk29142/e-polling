@@ -209,7 +209,7 @@ public class QuadV {
             Integer currentHead = data.get("currentHead").getAsInt();
             JsonArray answers = data.get("questions").getAsJsonArray();
 
-            // Go through array to make the arguments
+            // Go through array to add to the database
             for (int i = 1; i < answers.size(); i++) {
                 JsonElement elem = answers.get(i);
                 JsonObject answer = elem.getAsJsonObject();
@@ -240,8 +240,12 @@ public class QuadV {
                 }
             }
 
+            //Pull from the database into argument objects
             try {
+                //get row of answers for user
                 PreparedStatement getUserAnswers = connection.prepareStatement("SELECT * FROM ? WHERE user_id=");
+
+                //get parent and children rows in poll table where parent id = currentHead
                 PreparedStatement getValues = connection.prepareStatement("SELECT * FROM ? WHERE parent_id=");
 
                 getUserAnswers.setString(1, pollId + "_answers");
@@ -268,7 +272,6 @@ public class QuadV {
                 while (rs2.next()) {
                     Integer argumentId = rs2.getInt("statement_id");
                     Integer parentId = rs2.getInt("parent_id");
-//                    System.out.println(rs2.getString("statement"));
                     Argument arg = new Argument(rs.getBoolean(argumentId.toString()), rs2.getString("statement"),
                             rs2.getString("type").equals("Pro"));
                     arg.setId(argumentId);

@@ -72,26 +72,53 @@
               $('#q' + i + "-" + support).prop('checked', true);
             }
           }
+          $('#dynamicModal').openModal({
+            dismissible: false
+          });
         });
 
         //a modal will pop up with dynamic questions from data obj
         //on last round of dynamic questions modal will show submit
         //window.location.href = '/results/' + data;
 
-        $('#dynamicModal').openModal({
-          dismissible: false
-        });
 
-          var changedQuestions = [dynamicData.questions[0]];
+        var changedQuestions = {
+          questions: [dynamicData.questions[0]],
+          currentHead: dynamicData.currentHead
+        }
+
         $('#dynamicQuestionSubmit').click(function(e) {
-          e.preventDefault();
+//          e.preventDefault();
           console.log(dynamicData.questions.length);
           for(var i = 1; i < dynamicData.questions.length; i++) {
             var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
             console.log(val);
             dynamicData.questions[i].support = val;
-            changedQuestions.push(dynamicData.questions[i]);
+            changedQuestions.questions.push(dynamicData.questions[i]);
          }
+
+          $.ajax({
+                   type: 'POST',
+                   url: '/answers/'+pollId,
+                   data: JSON.stringify(changedQuestions),
+                   dataType: 'json',
+                   success: function(data) {
+         //            console.log(data);
+                     dynamicData.questions = data;
+                     console.log(dynamicData);
+
+                     $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
+                     dynamicData.questions[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
+                     for(var i = 1; i < dynamicData.questions.length; i++) {
+                       var support = dynamicData.questions[i].support;
+                       createQuestion(dynamicData.questions[i].text, i);
+                       $('#q' + i + "-" + support).prop('checked', true);
+                     }
+                   }
+                   $('#dynamicModal').openModal({
+                               dismissible: false
+                             });
+            });
             console.log(changedQuestions);
         });
 
