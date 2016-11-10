@@ -48,20 +48,29 @@
       // Send back questions with ajax and redirect to results page
 
       var dynamicData = {
-        questions: questions;
+        questions: questions,
         currentHead: 0
       };
-      var questionCounter = 0;
+
+//      console.log(questions)
 
         $.ajax({
           type: 'POST',
           url: '/answers/'+pollId,
-          data: JSON.stringify(questions),
+          data: JSON.stringify(dynamicData),
           dataType: 'json',
           success: function(data) {
 //            console.log(data);
             dynamicData.questions = data;
-            isInconsistent = true;
+            console.log(dynamicData);
+
+            $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
+            dynamicData.questions[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
+            for(var i = 1; i < dynamicData.questions.length; i++) {
+              var support = dynamicData.questions[i].support;
+              createQuestion(dynamicData.questions[i].text, i);
+              $('#q' + i + "-" + support).prop('checked', true);
+            }
           }
         });
 
@@ -73,14 +82,18 @@
           dismissible: false
         });
 
-        $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-        dynamicData.questions[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
-        for(var i = 1; i < dynamicData.questions.length; i++) {
-          var support = dynamicData.questions[i].support;
-          createQuestion(dynamicData.questions[i].text, questionCounter);
-          $('#q' + questionCounter + "-" + support).prop('checked', true);
-          questionCounter++;
-        }
+          var changedQuestions = [dynamicData.questions[0]];
+        $('#dynamicQuestionSubmit').click(function(e) {
+          e.preventDefault();
+          console.log(dynamicData.questions.length);
+          for(var i = 1; i < dynamicData.questions.length; i++) {
+            var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
+            console.log(val);
+            dynamicData.questions[i].support = val;
+            changedQuestions.push(dynamicData.questions[i]);
+         }
+            console.log(changedQuestions);
+        });
 
         //
       //  dynamicData.currentHead++;
