@@ -285,7 +285,7 @@ public class QuadV {
                     dynamicQuestions.add(a.toBox());
                     System.out.println(a.getText());
                 }
-
+                System.out.println("POSTING DYNAMIC QUESTIONS");
                 return dynamicQuestions;
             } catch (Exception e) {
                 System.out.println(e.getMessage());

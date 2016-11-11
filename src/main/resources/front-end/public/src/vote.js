@@ -10,7 +10,8 @@
     var options = $('input[name=options]');
     var reason = $('#opinion-area');
     var issue = questions[0];
-    var counter = 1;
+    console.log(issue);
+    var counter = 0;
     var currQ = questions[counter];
 
     $('#finalQ').hide();
@@ -28,9 +29,11 @@
       e.preventDefault();
 //      createQuestion("Does this work");
       createQuestion("test1", 1);
-      $('#dynamicModal').openModal({
-        dismissible: false
-      });
+      createQuestion("test2", 2);
+      createQuestion("test3", 3);
+//      $('#dynamicModal').openModal({
+//        dismissible: false
+//      });
 
       currQ.support = options.filter(':checked').val();
       currQ.reason = reason.val();
@@ -56,6 +59,8 @@
         currentHead: 0
       };
 
+      var printCounter = 0
+
       do {
         $.ajax({
           type: 'POST',
@@ -63,16 +68,19 @@
           data: JSON.stringify(dynamicData),
           dataType: 'json',
           success: function(data) {
+            console.log("DATA is ");
             console.log(data);
-            dynamicData = data;
+            dynamicData.questions = data;
           }
         });
 
         //a modal will pop up with dynamic questions from data obj
         //on last round of dynamic questions modal will show submit
         //window.location.href = '/results/' + data;
+        console.log("DYNAMIC DATA IS " + printCounter++);
+        console.log(dynamicData);
 
-        //
+
         dynamicData.currentHead++;
       } while (dynamicData.currentHead < questions.length);
     });
@@ -85,7 +93,7 @@
     function setNavList() {
       var nav = $('#nav-list');
 
-      for (var i = 1; i < questions.length; i++) {
+      for (var i = 0; i < questions.length; i++) {
         nav.append('<a class="collection-item"' +
         'value="' +
         questions[i].id +
@@ -100,7 +108,7 @@
       var children = nav.children();
       children.removeClass('active');
 
-      var active = children.eq(counter - 1); // Nav-list doesn't contain the issue.
+      var active = children.eq(counter);
       active.addClass('active');
     }
 
@@ -134,9 +142,9 @@
     function createQuestion(question, counter) {
       var q = '<div id="' + question + '">' +
       '<p>' + question + '</p>' +
-      '<input type="radio" id="q' + counter + '-yes" name="options" value="yes">' +
+      '<input type="radio" id="q' + counter + '-yes" name="'+ question + '" value="yes">' +
       '<label for="q' + counter +'-yes">Yes</label>   &nbsp; &nbsp; &nbsp;  ' +
-      '<input type="radio" id="q' + counter + '-no" name="options" value="no">' +
+      '<input type="radio" id="q' + counter + '-no" name="'+ question + '" value="no">' +
       '<label for="q' + counter +'-no">No</label>' +
       '</div>'
 
