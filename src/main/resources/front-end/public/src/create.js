@@ -3,7 +3,8 @@
   var boxOptions = {
     id: id++,
     parentId: null,
-    type: 'Issue'
+    type: 'Issue',
+    level: 0
   };
 
   new Box(boxOptions);
@@ -17,6 +18,8 @@
       var oldParent = elem.parentId;
       elem.parentId = oldParent ? parseInt(oldParent.substring(3)) : null;
     }
+
+
 
     var data = {
       name: list[0].value,

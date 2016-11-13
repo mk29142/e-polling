@@ -10,8 +10,17 @@
     var options = $('input[name=options]');
     var reason = $('#opinion-area');
     var issue = questions[0];
-    var counter = 1;
+    var counter = 0;
     var currQ = questions[counter];
+
+    var dynamicCounter;
+    var currConflictSet;
+
+    var dynamicData = {
+            questions: [questions], //questions to update answers for, initialised to be all questions with head as first value
+            nextLevel: 0 //next level to be searched for inconsistencies
+    };
+
 
     $('#finalQ').hide();
     title.html(issue.text);
@@ -45,12 +54,7 @@
          dataType: 'json',
       });
 
-      // Send back questions with ajax and redirect to results page
-
-      var dynamicData = {
-        questions: questions,
-        currentHead: 0
-      };
+      // send this ajax post for first answers and receive inconsistencies from first level
 
         $.ajax({
           type: 'POST',
@@ -58,16 +62,19 @@
           data: JSON.stringify(dynamicData),
           dataType: 'json',
           success: function(data) {
-//            console.log(data);
-            dynamicData.questions = data;
-            console.log(dynamicData);
+          console.log(data);
 
-            $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-            dynamicData.questions[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
-            for(var i = 1; i < dynamicData.questions.length; i++) {
-              var support = dynamicData.questions[i].support;
-              createQuestion(dynamicData.questions[i].text, i);
-              $('#q' + i + "-" + support).prop('checked', true);
+            if (data != "STOP") {
+              dynamicData.questions = data.dynamicQuestions;
+              dynamicData.nextLevel = data.nextLevel;
+
+              dynamicCounter = 0;
+              currConflictSet = dynamicData.questions[dynamicCounter];
+
+              displayModal();
+
+            } else {
+              window.location.href = '/results/';
             }
           }
         });
@@ -76,48 +83,43 @@
         //on last round of dynamic questions modal will show submit
         //window.location.href = '/results/' + data;
 
-        $('#dynamicModal').openModal({
-          dismissible: false
-        });
 
         $('#dynamicQuestionSubmit').click(function(e) {
-          e.preventDefault();
-          if(dynamicData.currentHead < questions.length) {
-           dynamicData.currentHead++;
-           for(var i = 1; i < dynamicData.questions.length; i++) {
-             var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
-             dynamicData.questions[i].support = val;
+        e.preventDefault();
+            for(var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+               var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
+               dynamicData.questions[dynamicCounter][i].support = val;
             }
-            $.ajax({
-              type: 'POST',
-              url: '/answers/'+pollId,
-              data: JSON.stringify(dynamicData),
-              dataType: 'json',
-              success: function(data) {
-                console.log(data);
-                dynamicData.questions = data;
+            dynamicCounter++;
 
+            // send this ajax post when we want inconsistencies for next level
+            if (dynamicCounter >= dynamicData.questions.length) {
+              $.ajax({
+                type: 'POST',
+                url: '/answers/'+pollId,
+                data: JSON.stringify(dynamicData),
+                dataType: 'json',
+                success: function(data) {
+                  console.log(data);
+                  if (data != "STOP") {
+                    dynamicData.questions = data.dynamicQuestions;
+                    dynamicData.nextLevel = data.nextLevel;
 
+                    dynamicCounter = 0;
+                    currConflictSet = dynamicData.questions[dynamicCounter];
+                    displayModal();
+                  } else {
+                    window.location.href = '/results'
+                  }
 
-                $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-                dynamicData.questions[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
-                for(var i = 1; i < dynamicData.questions.length; i++) {
-                  var support = dynamicData.questions[i].support;
-                  createQuestion(dynamicData.questions[i].text, i);
-                  $('#q' + i + "-" + support).prop('checked', true);
                 }
-                $('#dynamicModal').openModal({
-                  dismissible: false
-                });
-              }
-            });
-          }
+              });
+             } else {
+               currConflictSet = dynamicData.questions[dynamicCounter];
+               displayModal();
+             }
 
         });
-
-        //
-      //  dynamicData.currentHead++;
-     // } while (dynamicData.currentHead < questions.length);
     });
 
     $('#nav-list .collection-item').click(function(e) {
@@ -128,7 +130,7 @@
     function setNavList() {
       var nav = $('#nav-list');
 
-      for (var i = 1; i < questions.length; i++) {
+      for (var i = 0; i < questions.length; i++) {
         nav.append('<a class="collection-item"' +
         'value="' +
         questions[i].id +
@@ -138,12 +140,29 @@
       }
     };
 
+    function displayModal() {
+
+    $("#questions").html("");
+
+    $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
+                  currConflictSet[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
+                  for(var i = 1; i < currConflictSet.length; i++) {
+                    var support = currConflictSet[i].support;
+                    createQuestion(currConflictSet[i].text, i);
+                    $('#q' + i + "-" + support).prop('checked', true);
+                  }
+
+                   $('#dynamicModal').openModal({
+                            dismissible: false
+                   });
+    }
+
     function setActive() {
       var nav = $('#nav-list');
       var children = nav.children();
       children.removeClass('active');
 
-      var active = children.eq(counter - 1); // Nav-list doesn't contain the issue.
+      var active = children.eq(counter);
       active.addClass('active');
     }
 

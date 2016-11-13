@@ -4,7 +4,7 @@ function Box(options) {
     options.type + ' argument' : 'Enter Title';
 
   var newBox = $(
-    '<div id="' + selfId + '" class="box ' + options.type + '">' +
+    '<div id="' + selfId + '" class="box ' + options.type + '" data-level="' + options.level + '">' +
     '<input type="text" name="statement" placeholder="' + typeMessage + '"/>' +
     '<button class="btn plus z-depth-0">' +
     '+</button>        ' +
@@ -15,11 +15,13 @@ function Box(options) {
 
   $('#' + selfId + ' .plus').click(function(e) {
     var parentId = e.target.parentNode.id;
+    var parentLevel = e.target.parentNode.getAttribute('data-level');
 
     var boxOptions = {
       id: id++,
       parentId: parentId,
-      type: 'Pro'
+      type: 'Pro',
+      level: ++parentLevel
     };
 
     list.push(boxOptions);
@@ -29,11 +31,13 @@ function Box(options) {
 
   $('#' + selfId + ' .minus').click(function(e) {
     var parentId = e.target.parentNode.id;
+    var parentLevel = e.target.parentNode.getAttribute('data-level');
 
     var boxOptions = {
       id: id++,
       parentId: parentId,
-      type: 'Con'
+      type: 'Con',
+      level: ++parentLevel
     };
 
     list.push(boxOptions);

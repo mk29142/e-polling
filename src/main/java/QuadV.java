@@ -1,3 +1,4 @@
+import java.net.InterfaceAddress;
 import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import com.google.gson.*;
 
 import static spark.Spark.*;
 
+import jdk.internal.util.xml.impl.Pair;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
@@ -111,6 +113,7 @@ public class QuadV {
             PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
                     "(statement_id INT NOT NULL, " +
                     "parent_id INT, " +
+                    "level INT NOT NULL, " +
                     "statement TEXT NOT NULL, " +
                     "type statement_type);");
             PreparedStatement createAnswers = connection.prepareStatement("CREATE TABLE ? " +
@@ -134,9 +137,10 @@ public class QuadV {
 
                 for (JsonElement elem : list) {
                     JsonObject elemObj = elem.getAsJsonObject();
+                    System.out.println(elemObj.toString());
 
                     try {
-                        PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?::statement_type);");
+                        PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?, ?::statement_type);");
 
                         //this statement adds a column to the answers table
                         PreparedStatement addAnswerColumn = connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
@@ -154,6 +158,8 @@ public class QuadV {
                         } else {
                             addRow.setInt(3, elemObj.get("parentId").getAsInt());
                         }
+
+                        addRow.setInt(4, elemObj.get("level").getAsInt());
 
                         addRow = connection.prepareStatement(addRow.toString().replace("'", "\""));
                         addAnswerColumn = connection.prepareStatement(addAnswerColumn.toString().replace("'", "\""));
@@ -177,7 +183,9 @@ public class QuadV {
 
         post("/user/:id", (request, response) -> {
             /*
+            TODO:
             NEED TO ONLY INSERT ID IP IS NOT ALREADY IN TABLE
+            DO A CHECK HERE
             */
 
             String pollId = request.params(":id");
@@ -202,41 +210,48 @@ public class QuadV {
         post("/answers/:id", "application/json", (req, res) -> {
 
             JsonParser jsonParser = new JsonParser();
-
             JsonObject data = jsonParser.parse(req.body()).getAsJsonObject();
             String pollId = req.params(":id");
             String ip = req.ip();
-            Integer currentHead = data.get("currentHead").getAsInt();
             JsonArray answers = data.get("questions").getAsJsonArray();
 
-            // Go through array to add to the database
-            for (int i = 1; i < answers.size(); i++) {
-                JsonElement elem = answers.get(i);
-                JsonObject answer = elem.getAsJsonObject();
+            System.out.println(answers);
 
-                boolean vote;
-                try {
-                    vote = answer.get("support").getAsString().equals("yes");
-                } catch (Exception e) {
-                    vote = false;
-                }
+            // Go through head's adding changed vote values (for first run all answers given)
+            for (int i = 0; i < answers.size(); i++) {
+                JsonArray headAnswers = answers.get(i).getAsJsonArray();
 
-                Integer id = answer.get("id").getAsInt();
+                // go through a single head
+                for (int j = 0; j < headAnswers.size(); j++) {
+                    JsonElement elem = headAnswers.get(j);
+                    JsonObject answer = elem.getAsJsonObject();
 
-                try {
-                    PreparedStatement insertAnswer = connection.prepareStatement("UPDATE ? SET ?=");
-                    insertAnswer.setString(1, pollId + "_answers");
-                    insertAnswer.setString(2, id.toString());
+                    boolean vote;
+                    try {
+                        vote = answer.get("support").getAsString().equals("yes");
+                    } catch (Exception e) {
+                        //In all other cases than the first "support" is not a field so
+                        //we don't update it with anything
+                        continue;
+                    }
 
-                    PreparedStatement insertValues = connection.prepareStatement(insertAnswer.toString().replace("'", "\"")
-                            + "? WHERE user_id=?;");
+                    Integer id = answer.get("id").getAsInt();
 
-                    insertValues.setBoolean(1, vote);
-                    insertValues.setString(2, ip);
+                    try {
+                        PreparedStatement insertAnswer = connection.prepareStatement("UPDATE ? SET ?=");
+                        insertAnswer.setString(1, pollId + "_answers");
+                        insertAnswer.setString(2, id.toString());
 
-                    insertValues.executeUpdate();
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
+                        PreparedStatement insertValues = connection.prepareStatement(insertAnswer.toString().replace("'", "\"")
+                                + "? WHERE user_id=?;");
+
+                        insertValues.setBoolean(1, vote);
+                        insertValues.setString(2, ip);
+
+                        insertValues.executeUpdate();
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
             }
 
@@ -244,56 +259,103 @@ public class QuadV {
             try {
                 //get row of answers for user
                 PreparedStatement getUserAnswers = connection.prepareStatement("SELECT * FROM ? WHERE user_id=");
-
-                //get parent and children rows in poll table where parent id = currentHead
-                PreparedStatement getValues = connection.prepareStatement("SELECT * FROM ? WHERE parent_id=");
-
                 getUserAnswers.setString(1, pollId + "_answers");
-                getValues.setString(1, pollId);
-
                 PreparedStatement getAnswers = connection.prepareStatement(getUserAnswers.toString().replace("'", "\"") + "?;");
-                PreparedStatement getChildren = connection.prepareStatement(getValues.toString().replace("'", "\"") + "? OR" +
-                        " statement_id=? ORDER BY statement_id");
                 getAnswers.setString(1, ip);
-                getChildren.setInt(1, currentHead);
-                getChildren.setInt(2, currentHead);
 
                 // get all answers
                 ResultSet rs = getAnswers.executeQuery();
-                rs.next(); //rs is now the row from the answers table with user_id
+                rs.next(); //rs is now the first row from the answers table with user_id (should be unique
 
-                ResultSet rs2 = getChildren.executeQuery(); //set of all rows for relevant nodes in tree
-                rs2.next();
+                Integer nextLevel = data.get("nextLevel").getAsInt();
 
-                Argument head = new Argument(rs.getBoolean("0"), rs2.getString("statement"), rs2.getString("type").equals("Pro"));
-                head.setId(rs2.getInt("statement_id"));
+                List<List<Box>> dynamicQuestions;
+                ResultSet rs3;
+                do {
+                    dynamicQuestions = new ArrayList<>(); //1st elem of each inner list is the head
 
-                //while there is a row for a child
-                while (rs2.next()) {
-                    Integer argumentId = rs2.getInt("statement_id");
-                    Integer parentId = rs2.getInt("parent_id");
-                    Argument arg = new Argument(rs.getBoolean(argumentId.toString()), rs2.getString("statement"),
-                            rs2.getString("type").equals("Pro"));
-                    arg.setId(argumentId);
-                    arg.setParent(parentId);
+                    //get all id's for a level
+                    PreparedStatement getHeads = connection.prepareStatement("SELECT \"statement_id\" FROM ? WHERE \"level\"=");
+                    getHeads.setString(1 ,pollId);
+                    PreparedStatement getHeadIds = connection.prepareStatement(getHeads.toString().replace("'","\"") + nextLevel);
+                    rs3 = getHeadIds.executeQuery();
 
-                    head.addChild(arg);
+                    //this case will occur when we go past last level of tree
+                    if (!rs3.isBeforeFirst()) {
+                        return "STOP";
+                    }
+
+                    //for each head find its' inconsistencies and store it in a list of boxes
+
+                    while (rs3.next()) {
+
+                        Integer currentHead = rs3.getInt("statement_id");
+                        Argument head;
+                        List<Argument> inconsistencies = new ArrayList<>();
+
+                        //get parent = currenthead and children rows in poll table where parent_id = currentHead
+                        PreparedStatement getValues = connection.prepareStatement("SELECT * FROM ? WHERE parent_id=");
+                        getValues.setString(1, pollId);
+                        PreparedStatement getChildren = connection.prepareStatement(getValues.toString().replace("'", "\"") + "? OR" +
+                                " statement_id=? ORDER BY statement_id");
+                        getChildren.setInt(1, currentHead);
+                        getChildren.setInt(2, currentHead);
+
+                        ResultSet rs2 = getChildren.executeQuery(); //set of all rows for relevant nodes in tree
+                        if (rs2.isBeforeFirst()) { //only true if there are children (ignore heads without children)
+
+                            rs2.next(); // head is the first here as it has the lowest index
+
+                            head = new Argument(rs.getBoolean("0"), rs2.getString("statement"), rs2.getString("type").equals("Pro"));
+                            head.setId(rs2.getInt("statement_id"));
+
+                            //while there is a row for a child
+                            while (rs2.next()) {
+                                Integer argumentId = rs2.getInt("statement_id");
+                                Integer parentId = rs2.getInt("parent_id");
+                                Argument arg = new Argument(rs.getBoolean(argumentId.toString()), rs2.getString("statement"),
+                                        rs2.getString("type").equals("Pro"));
+                                arg.setId(argumentId);
+                                arg.setParent(parentId);
+
+                                head.addChild(arg);
+                            }
+
+                            inconsistencies = head.getInconsistencies();
+
+                            //if there are inconsistencies then store them with their head node
+                            if (!inconsistencies.isEmpty()) {
+                                List<Box> headInconsistencies = new ArrayList<>();
+                                headInconsistencies.add(0, head.toBox());
+
+                                for (Argument a : inconsistencies) {
+                                    headInconsistencies.add(a.toBox());
+                                }
+                                dynamicQuestions.add(headInconsistencies);
+                            }
+
+
+                        }
+                    }
+
+                    nextLevel++;
+
+                } while (dynamicQuestions.isEmpty());
+
+
+                for (List<Box> lb : dynamicQuestions) {
+                    System.out.println("---------------");
+                    for (Box b : lb) {
+                        System.out.println(b.text);
+                    }
+                    System.out.println("---------------");
                 }
 
-                List<Argument> inconsistencies = head.getInconsistencies();
-                List<Box> dynamicQuestions = new ArrayList<>();
-                dynamicQuestions.add(0, head.toBox());
-
-                for (Argument a : inconsistencies) {
-                    dynamicQuestions.add(a.toBox());
-                    System.out.println(a.getText());
-                }
-
-                return dynamicQuestions;
+                return new DynamicData(dynamicQuestions, nextLevel);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
 
-                return "500 ERROR";
+            return "500 ERROR";
             }
         }, new JsonTransformer());
 
