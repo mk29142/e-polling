@@ -1,4 +1,3 @@
-import java.net.InterfaceAddress;
 import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,10 +9,8 @@ import com.google.gson.*;
 
 import static spark.Spark.*;
 
-import jdk.internal.util.xml.impl.Pair;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
-
 
 public class QuadV {
     public static void main(String[] args) {
