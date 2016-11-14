@@ -17,10 +17,10 @@
     var currConflictSet;
 
     var dynamicData = {
-            questions: [questions], //questions to update answers for, initialised to be all questions with head as first value
-            nextLevel: 0 //next level to be searched for inconsistencies
+      questions: [questions], // questions to update answers for,
+                              // initialised to be all questions with head as first value
+      nextLevel: 0 // next level to be searched for inconsistencies
     };
-
 
     $('#finalQ').hide();
     title.html(issue.text);
@@ -47,79 +47,72 @@
         $('#vote-no').prop('checked', false);
       }
 
-      //Do a post to /user so we are able to log their ip address once to put questions in the database
+      // Do a post to /user so we are able to log their ip address once to put questions in the database
       $.ajax({
-         type: 'POST',
-         url: '/user/'+pollId,
-         dataType: 'json',
+        type: 'POST',
+        url: '/user/' + pollId,
+        dataType: 'json',
       });
 
-      // send this ajax post for first answers and receive inconsistencies from first level
-
-        $.ajax({
-          type: 'POST',
-          url: '/answers/'+pollId,
-          data: JSON.stringify(dynamicData),
-          dataType: 'json',
-          success: function(data) {
+      // Send this ajax post for first answers and receive inconsistencies from first level
+      $.ajax({
+        type: 'POST',
+        url: '/answers/' + pollId,
+        data: JSON.stringify(dynamicData),
+        dataType: 'json',
+        success: function(data) {
           console.log(data);
+          if (data != 'STOP') {
+            dynamicData.questions = data.dynamicQuestions;
+            dynamicData.nextLevel = data.nextLevel;
 
-            if (data != "STOP") {
-              dynamicData.questions = data.dynamicQuestions;
-              dynamicData.nextLevel = data.nextLevel;
+            dynamicCounter = 0;
+            currConflictSet = dynamicData.questions[dynamicCounter];
 
-              dynamicCounter = 0;
-              currConflictSet = dynamicData.questions[dynamicCounter];
-
-              displayModal();
-
-            } else {
-              window.location.href = '/results';
-            }
+            displayModal();
+          } else {
+            window.location.href = '/results';
           }
-        });
+        }
+      });
 
-        //a modal will pop up with dynamic questions from data obj
-        //on last round of dynamic questions modal will show submit
-        //window.location.href = '/results/' + data;
-
-
-        $('#dynamicQuestionSubmit').click(function(e) {
+      // A modal will pop up with dynamic questions from data obj
+      // on last round of dynamic questions modal will show submit
+      // window.location.href = '/results/' + data;
+      $('#dynamicQuestionSubmit').click(function(e) {
         e.preventDefault();
-            for(var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
-               var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
-               dynamicData.questions[dynamicCounter][i].support = val;
+        for(var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+           var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
+           dynamicData.questions[dynamicCounter][i].support = val;
+        }
+        dynamicCounter++;
+
+        // send this ajax post when we want inconsistencies for next level
+        if (dynamicCounter >= dynamicData.questions.length) {
+          $.ajax({
+            type: 'POST',
+            url: '/answers/' + pollId,
+            data: JSON.stringify(dynamicData),
+            dataType: 'json',
+            success: function(data) {
+              console.log(data);
+              if (data != 'STOP') {
+                dynamicData.questions = data.dynamicQuestions;
+                dynamicData.nextLevel = data.nextLevel;
+
+                dynamicCounter = 0;
+                currConflictSet = dynamicData.questions[dynamicCounter];
+                displayModal();
+              } else {
+                window.location.href = '/results';
+              }
             }
-            dynamicCounter++;
-
-            // send this ajax post when we want inconsistencies for next level
-            if (dynamicCounter >= dynamicData.questions.length) {
-              $.ajax({
-                type: 'POST',
-                url: '/answers/'+pollId,
-                data: JSON.stringify(dynamicData),
-                dataType: 'json',
-                success: function(data) {
-                  console.log(data);
-                  if (data != "STOP") {
-                    dynamicData.questions = data.dynamicQuestions;
-                    dynamicData.nextLevel = data.nextLevel;
-
-                    dynamicCounter = 0;
-                    currConflictSet = dynamicData.questions[dynamicCounter];
-                    displayModal();
-                  } else {
-                    window.location.href = '/results'
-                  }
-
-                }
-              });
-             } else {
-               currConflictSet = dynamicData.questions[dynamicCounter];
-               displayModal();
-             }
-
-        });
+          });
+        } else {
+          currConflictSet = dynamicData.questions[dynamicCounter];
+          displayModal();
+        }
+      });
     });
 
     $('#nav-list .collection-item').click(function(e) {
@@ -141,20 +134,20 @@
     };
 
     function displayModal() {
+      $("#questions").html("");
 
-    $("#questions").html("");
+      $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
+        currConflictSet[0].text + '. Please change your answer or give a reason why you answered the way you did.');
 
-    $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-                  currConflictSet[0].text + ". Please change your answer or give a reason as you why you answered the way you did.");
-                  for(var i = 1; i < currConflictSet.length; i++) {
-                    var support = currConflictSet[i].support;
-                    createQuestion(currConflictSet[i].text, i);
-                    $('#q' + i + "-" + support).prop('checked', true);
-                  }
+      for(var i = 1; i < currConflictSet.length; i++) {
+        var support = currConflictSet[i].support;
+        createQuestion(currConflictSet[i].text, i);
+        $('#q' + i + "-" + support).prop('checked', true);
+      }
 
-                   $('#dynamicModal').openModal({
-                            dismissible: false
-                   });
+      $('#dynamicModal').openModal({
+        dismissible: false
+      });
     }
 
     function setActive() {
@@ -205,5 +198,4 @@
       $('#questions').append(q);
     }
   });
-
 })();
