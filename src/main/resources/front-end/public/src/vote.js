@@ -55,6 +55,36 @@
       });
 
       // Send this ajax post for first answers and receive inconsistencies from first level
+      submitDynamicData();
+
+      // A modal will pop up with dynamic questions from data obj
+      // on last round of dynamic questions modal will show submit
+      // window.location.href = '/results/' + data;
+      $('#dynamicQuestionSubmit').click(function(e) {
+        e.preventDefault();
+        for(var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+          var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
+          dynamicData.questions[dynamicCounter][i].support = val;
+        }
+
+        dynamicCounter++;
+
+        // Send this ajax post when we want inconsistencies for next level
+        if (dynamicCounter >= dynamicData.questions.length) {
+          submitDynamicData();
+        } else {
+          currConflictSet = dynamicData.questions[dynamicCounter];
+          displayModal();
+        }
+      });
+    });
+
+    $('#nav-list .collection-item').click(function(e) {
+      counter = e.target.attributes[1].value - 1;
+      changeQuestion();
+    });
+
+    function submitDynamicData() {
       $.ajax({
         type: 'POST',
         url: '/answers/' + pollId,
@@ -75,50 +105,7 @@
           }
         }
       });
-
-      // A modal will pop up with dynamic questions from data obj
-      // on last round of dynamic questions modal will show submit
-      // window.location.href = '/results/' + data;
-      $('#dynamicQuestionSubmit').click(function(e) {
-        e.preventDefault();
-        for(var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
-           var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
-           dynamicData.questions[dynamicCounter][i].support = val;
-        }
-        dynamicCounter++;
-
-        // send this ajax post when we want inconsistencies for next level
-        if (dynamicCounter >= dynamicData.questions.length) {
-          $.ajax({
-            type: 'POST',
-            url: '/answers/' + pollId,
-            data: JSON.stringify(dynamicData),
-            dataType: 'json',
-            success: function(data) {
-              console.log(data);
-              if (data != 'STOP') {
-                dynamicData.questions = data.dynamicQuestions;
-                dynamicData.nextLevel = data.nextLevel;
-
-                dynamicCounter = 0;
-                currConflictSet = dynamicData.questions[dynamicCounter];
-                displayModal();
-              } else {
-                window.location.href = '/results';
-              }
-            }
-          });
-        } else {
-          currConflictSet = dynamicData.questions[dynamicCounter];
-          displayModal();
-        }
-      });
-    });
-
-    $('#nav-list .collection-item').click(function(e) {
-      counter = e.target.attributes[1].value - 1;
-      changeQuestion();
-    });
+    }
 
     function setNavList() {
       var nav = $('#nav-list');
