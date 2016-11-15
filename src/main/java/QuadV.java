@@ -16,9 +16,11 @@ public class QuadV {
     public static void main(String[] args) {
         // Configure Spark and server routes.
         Connection connection;
+        DatabaseCommands db;
 
         try {
             connection = getConnection();
+            db = new DatabaseCommands(connection);
             connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
                     "(id SERIAL UNIQUE, poll_name TEXT);");
             //connection.createStatement().execute("CREATE TYPE statement_type " +
@@ -38,21 +40,9 @@ public class QuadV {
         get("/", (req, res) -> new ModelAndView(null, "index.mustache"), templateEngine);
 
         get("/votingroom", (req, res) -> {
-            // Get all of the names of polls for listing
             Map<String, List<Poll>> map = new HashMap<>();
 
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, poll_name FROM polls");
-
-            List<Poll> polls = new ArrayList<>();
-
-            while (rs.next()) {
-                Poll p = new Poll(rs.getInt("id"), rs.getString("poll_name"));
-                polls.add(p);
-            }
-
-            map.put("polls", polls);
-
+            map.put("polls", db.getAllPolls());
             return new ModelAndView(map, "votingroom.mustache");
         }, templateEngine);
 
