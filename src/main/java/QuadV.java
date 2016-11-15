@@ -102,117 +102,31 @@ public class QuadV {
 
         post("/create", (req, res) -> {
             String body = req.body();
-            JsonParser jsonParser = new JsonParser();
-            JsonElement element = jsonParser.parse(body);
+            JsonElement element = new JsonParser().parse(body);
 
-            PreparedStatement insertPoll = connection.prepareStatement("INSERT INTO polls(poll_name) VALUES (?);");
-            PreparedStatement findId = connection.prepareStatement("SELECT CURRVAL('polls_id_seq')");
-            PreparedStatement createPoll = connection.prepareStatement("CREATE TABLE ? " +
-                    "(statement_id INT NOT NULL, " +
-                    "parent_id INT, " +
-                    "level INT NOT NULL, " +
-                    "statement TEXT NOT NULL, " +
-                    "type statement_type);");
-            PreparedStatement createAnswers = connection.prepareStatement("CREATE TABLE ? " +
-                    "(user_id TEXT, stupidity INT);");
-
-            JsonObject obj = element.getAsJsonObject();
-            JsonArray list = obj.getAsJsonArray("list");
-            String name = obj.get("name").getAsString();
-
-            insertPoll.setString(1, name);
-
-            try {
-                insertPoll.executeUpdate();
-                ResultSet rs = findId.executeQuery();
-                rs.next();
-                Integer id = rs.getInt("currval");
-                createPoll.setString(1, id.toString());
-                createAnswers.setString(1, id.toString() + "_answers");
-                connection.createStatement().execute(createPoll.toString().replace("'", "\""));
-                connection.createStatement().execute(createAnswers.toString().replace("'", "\""));
-
-                for (JsonElement elem : list) {
-                    JsonObject elemObj = elem.getAsJsonObject();
-                    System.out.println(elemObj.toString());
-
-                    try {
-                        PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?, ?::statement_type);");
-
-                        //this statement adds a column to the answers table
-                        PreparedStatement addAnswerColumn = connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
-
-                        Integer statement_id = elemObj.get("id").getAsInt();
-
-                        addRow.setString(1, id.toString());
-                        addRow.setInt(2, statement_id);
-
-                        addAnswerColumn.setString(1, id.toString() + "_answers");
-                        addAnswerColumn.setString(2, statement_id.toString());
-
-                        if (elemObj.get("parentId").isJsonNull()) {
-                            addRow.setNull(3, Types.INTEGER);
-                        } else {
-                            addRow.setInt(3, elemObj.get("parentId").getAsInt());
-                        }
-
-                        addRow.setInt(4, elemObj.get("level").getAsInt());
-
-                        addRow = connection.prepareStatement(addRow.toString().replace("'", "\""));
-                        addAnswerColumn = connection.prepareStatement(addAnswerColumn.toString().replace("'", "\""));
-
-                        addRow.setString(1, elemObj.get("value").getAsString());
-                        addRow.setString(2, elemObj.get("type").getAsString());
-                        addRow.executeUpdate();
-                        addAnswerColumn.executeUpdate();
-                    } catch (SQLException | UnsupportedOperationException e) {
-                        System.out.print("FAILED: ");
-                        System.out.println(e.getMessage());
-                    }
-                }
-
-                return id;
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-                return "500 ERROR";
-            }
+            return new CreateUtils(connection, element).createPoll();
         });
 
         post("/user/:id", (request, response) -> {
-            /*
-            TODO:
-            NEED TO ONLY INSERT ID IP IS NOT ALREADY IN TABLE
-            DO A CHECK HERE
-            */
-
-            String pollId = request.params(":id");
+            // TODO: NEED TO ONLY INSERT IF IP IS NOT ALREADY IN TABLE DO A CHECK HERE
             String ip = request.ip();
 
-            //printing out the ip so you can check
+            // Printing out the ip so you can check
             System.out.println(ip);
 
-            try {
-                PreparedStatement createUser = connection.prepareStatement("INSERT INTO ? (user_id)");
-                createUser.setString(1, pollId+"_answers");
-                PreparedStatement insertIp = connection.prepareStatement(createUser.toString().replace("'", "\"") + "  VALUES(?);");
+            new AnswersUtils(connection, request.params(":id"), ip).addUser();
 
-                insertIp.setString(1, ip);
-                insertIp.executeUpdate();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
             return "200 OK";
         });
 
         post("/answers/:id", "application/json", (req, res) -> {
-            JsonParser jsonParser = new JsonParser();
-            JsonObject data = jsonParser.parse(req.body()).getAsJsonObject();
+            JsonObject data = new JsonParser()
+                    .parse(req.body())
+                    .getAsJsonObject();
             String pollId = req.params(":id");
             String ip = req.ip();
             JsonArray answers = data.get("questions").getAsJsonArray();
             AnswersUtils ans = new AnswersUtils(connection, pollId, ip);
-
-            System.out.println(answers);
 
             ans.enterAnswersIntoDatabase(answers);
 
