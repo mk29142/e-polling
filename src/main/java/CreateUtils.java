@@ -29,6 +29,9 @@ public class CreateUtils {
                     "parent_id INT, " +
                     "level INT NOT NULL, " +
                     "statement TEXT NOT NULL, " +
+                    "score REAL," +
+                    "yes_votes INT NOT NULL," +
+                    "no_votes INT NOT NULL," +
                     "type statement_type);");
             createAnswers = connection.prepareStatement("CREATE TABLE ? " +
                     "(user_id TEXT, stupidity INT);");

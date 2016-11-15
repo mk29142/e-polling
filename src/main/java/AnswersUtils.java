@@ -68,6 +68,9 @@ public class AnswersUtils {
 
                 // This case will occur when we go past last level of tree
                 if (!headIds.isBeforeFirst()) {
+                    MasterTree mt = new MasterTree(connection, pollId);
+                    mt.updateScores();
+
                     return "STOP";
                 }
 

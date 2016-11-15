@@ -25,7 +25,7 @@ public class QuadVTest {
 
         arg = new Argument(true, "Should britain leave the EU?",false);
         arg.addChild(true, "EU migrants are good for the economy", false);
-        arg.addChild(true, "EU migrants pay more tax than they take out", 
+        arg.addChild(true, "EU migrants pay more tax than they take out",
                 false);
 
         master = new MasterTree(root);

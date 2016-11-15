@@ -86,6 +86,8 @@ public class QuadV {
 
             ans.enterAnswersIntoDatabase(answers);
 
+            //create updateScore function in AnswerUtils and call it here
+
             return ans.resolveDynamicQuestions(data);
         }, new JsonTransformer());
 
