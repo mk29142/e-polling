@@ -62,7 +62,7 @@
       // window.location.href = '/results/' + data;
       $('#dynamicQuestionSubmit').click(function(e) {
         e.preventDefault();
-        for(var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+        for (var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
           var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
           dynamicData.questions[dynamicCounter][i].support = val;
         }

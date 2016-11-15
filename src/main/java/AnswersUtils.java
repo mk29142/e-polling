@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AnswersUtils {
-
     private Connection connection;
     private String pollId;
     private String ip;
@@ -52,7 +51,7 @@ public class AnswersUtils {
         }
     }
 
-    public String resolveDynamicQuestions(JsonObject data) {
+    public Object resolveDynamicQuestions(JsonObject data) {
         // Pull from the database into argument objects
         try {
             ResultSet rs = getAnswers();
@@ -61,10 +60,9 @@ public class AnswersUtils {
 
             Integer nextLevel = data.get("nextLevel").getAsInt();
 
-            List<List<Box>> dynamicQuestions;
+            List<List<Box>> dynamicQuestions = new ArrayList<>();
 
             do {
-                dynamicQuestions = new ArrayList<>();
                 // 1st elem of each inner list is the head
                 ResultSet headIds = getHeadIds(nextLevel);
 
@@ -84,7 +82,7 @@ public class AnswersUtils {
                 nextLevel++;
             } while (dynamicQuestions.isEmpty());
 
-            return new JsonTransformer().render(new DynamicData(dynamicQuestions, nextLevel));
+            return new DynamicData(dynamicQuestions, nextLevel);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return "500 ERROR";
