@@ -1,5 +1,4 @@
 (function() {
-
   var boxOptions = {
     id: id++,
     parentId: null,
@@ -18,8 +17,6 @@
       var oldParent = elem.parentId;
       elem.parentId = oldParent ? parseInt(oldParent.substring(3)) : null;
     }
-
-
 
     var data = {
       name: list[0].value,
