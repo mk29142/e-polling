@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AnswersUtils {
+    private MasterTree mt;
     private Connection connection;
     private String pollId;
     private String ip;
@@ -19,6 +20,7 @@ public class AnswersUtils {
         this.connection = connection;
         this.pollId = pollId;
         this.ip = ip;
+        this.mt = new MasterTree(connection);
     }
 
     public void enterAnswersIntoDatabase(JsonArray answers) {
@@ -68,8 +70,7 @@ public class AnswersUtils {
 
                 // This case will occur when we go past last level of tree
                 if (!headIds.isBeforeFirst()) {
-                    MasterTree mt = new MasterTree(connection, pollId);
-                    mt.updateScores();
+                    mt.updateVotes(pollId, ip);
 
                     return "STOP";
                 }

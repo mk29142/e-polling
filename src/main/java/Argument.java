@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 class Argument {
     private double score;
+
     private int votesFor;
     private int votesAgainst;
 
@@ -50,6 +51,14 @@ class Argument {
         return vote;
     }
     boolean isSupporter() { return isSupporter;}
+
+    public void setVotesFor(int votesFor) {
+        this.votesFor = votesFor;
+    }
+
+    public void setVotesAgainst(int votesAgainst) {
+        this.votesAgainst = votesAgainst;
+    }
 
     public String getText() {
         return text;
@@ -148,14 +157,6 @@ class Argument {
         return attackers;
     }
 
-    public void incrementVotesFor(){
-        votesFor++;
-    }
-
-    public void incrementVotesAgainst(){
-        votesAgainst++;
-    }
-
     /*
      * This recursive aggregation function is defined in the notes,
      * it returns the aggregate of a List of scores for the supporters/attackers
@@ -246,6 +247,7 @@ class Argument {
      * calculated based on the user votes for and against an argument
      */
     public double getBaseScore() {
+
         int totalVotes = votesFor + votesAgainst;
         if (totalVotes == 0) {
             return 0.5;
@@ -259,12 +261,13 @@ class Argument {
             child.updateScore();
         }
 
+        /*
         if (this.vote) {
             this.incrementVotesFor();
         } else {
             this.incrementVotesAgainst();
         }
-
+        */
         this.combinationFunction();
     }
 }
