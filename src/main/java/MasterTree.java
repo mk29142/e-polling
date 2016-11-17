@@ -25,6 +25,7 @@ public class MasterTree {
             answerRow.setString(1, userId);
 
             ResultSet userAnswers = answerRow.executeQuery();
+            userAnswers.next();
 
             PreparedStatement getQuestions = connection.prepareStatement("SELECT * FROM ?");
             getQuestions.setString(1, pollId);
@@ -46,7 +47,13 @@ public class MasterTree {
                 updateStatement.setInt(1, statementId);
                 updateStatement.executeUpdate();
             }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + "in updateVotes");
+        }
+    }
 
+    public void updateScores(String pollId) {
+        try {
             PreparedStatement getRoot = connection.prepareStatement("SELECT * FROM ? WHERE 'statement_id' = 0;");
             getRoot.setString(1, pollId);
             getRoot = connection.prepareStatement(getRoot.toString().replace("'", "\""));
@@ -59,9 +66,11 @@ public class MasterTree {
             root.setVotesFor(rootResult.getInt("yes_votes"));
             root.setId(0);
 
-            setArgumentChildren(root, pollId);
+            setArgumentChildren(root, pollId); // Builds argument tree
+
+            root.updateScore(); // Recursively tell to update
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + "in updateScores");
         }
     }
 
@@ -82,7 +91,7 @@ public class MasterTree {
                 parent.addChild(child);
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + "in setArgumentChildren");
         }
     }
 }

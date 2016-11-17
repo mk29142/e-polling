@@ -247,7 +247,6 @@ class Argument {
      * calculated based on the user votes for and against an argument
      */
     public double getBaseScore() {
-
         int totalVotes = votesFor + votesAgainst;
         if (totalVotes == 0) {
             return 0.5;
@@ -257,17 +256,8 @@ class Argument {
     }
 
     public void updateScore() {
-        for (Argument child : this.children) {
-            child.updateScore();
-        }
+        this.children.forEach(Argument::updateScore);
 
-        /*
-        if (this.vote) {
-            this.incrementVotesFor();
-        } else {
-            this.incrementVotesAgainst();
-        }
-        */
-        this.combinationFunction();
+        System.out.println("Hello");
     }
 }

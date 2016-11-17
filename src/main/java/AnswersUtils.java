@@ -71,6 +71,8 @@ public class AnswersUtils {
                 // This case will occur when we go past last level of tree
                 if (!headIds.isBeforeFirst()) {
                     mt.updateVotes(pollId, ip);
+                    mt.updateScores(pollId);
+                    // Delete the entry in answers table
 
                     return "STOP";
                 }
