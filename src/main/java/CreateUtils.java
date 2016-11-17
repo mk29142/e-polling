@@ -62,7 +62,8 @@ public class CreateUtils {
                 System.out.println(elemObj.toString());
 
                 try {
-                    PreparedStatement addRow = connection.prepareStatement("INSERT INTO ? VALUES(?, ?, ?, ?, ?::statement_type);");
+                    PreparedStatement addRow = connection.prepareStatement
+                            ("INSERT INTO ? VALUES(?, ?, ?, ?, ?, ?, ?, ?::statement_type);");
 
                     //this statement adds a column to the answers table
                     PreparedStatement addAnswerColumn = connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
@@ -87,7 +88,10 @@ public class CreateUtils {
                     addAnswerColumn = connection.prepareStatement(addAnswerColumn.toString().replace("'", "\""));
 
                     addRow.setString(1, elemObj.get("value").getAsString());
-                    addRow.setString(2, elemObj.get("type").getAsString());
+                    addRow.setFloat(2, 0);
+                    addRow.setInt(3, 0);
+                    addRow.setInt(4, 0);
+                    addRow.setString(5, elemObj.get("type").getAsString());
                     addRow.executeUpdate();
                     addAnswerColumn.executeUpdate();
                 } catch (SQLException | UnsupportedOperationException e) {

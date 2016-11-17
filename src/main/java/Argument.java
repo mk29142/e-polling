@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 class Argument {
     private double score;
+
     private int votesFor;
     private int votesAgainst;
 
@@ -50,6 +51,14 @@ class Argument {
         return vote;
     }
     boolean isSupporter() { return isSupporter;}
+
+    public void setVotesFor(int votesFor) {
+        this.votesFor = votesFor;
+    }
+
+    public void setVotesAgainst(int votesAgainst) {
+        this.votesAgainst = votesAgainst;
+    }
 
     public String getText() {
         return text;
@@ -146,14 +155,6 @@ class Argument {
         }
 
         return attackers;
-    }
-
-    public void incrementVotesFor(){
-        votesFor++;
-    }
-
-    public void incrementVotesAgainst(){
-        votesAgainst++;
     }
 
     /*
@@ -255,16 +256,10 @@ class Argument {
     }
 
     public void updateScore() {
-        for (Argument child : this.children) {
-            child.updateScore();
-        }
 
-        if (this.vote) {
-            this.incrementVotesFor();
-        } else {
-            this.incrementVotesAgainst();
-        }
 
-        this.combinationFunction();
+        this.children.forEach(Argument::updateScore);
+
+        System.out.println("Hello");
     }
 }
