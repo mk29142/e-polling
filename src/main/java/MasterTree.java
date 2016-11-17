@@ -68,7 +68,7 @@ public class MasterTree {
 
             setArgumentChildren(root, pollId); // Builds argument tree
 
-            root.updateScore(); // Recursively tell to update
+            root.updateScore(connection, pollId); // Recursively tell to update
         } catch (SQLException e) {
             System.out.println(e.getMessage() + "in updateScores");
         }

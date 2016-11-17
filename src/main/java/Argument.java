@@ -1,9 +1,16 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 class Argument {
-    private double score;
+    /*
+     * Use score function (sigma) from DF-QuAD algorithm to calculate strength
+     * of argument using the vote base score as the base score.
+     */
+    private float score;
 
     private int votesFor;
     private int votesAgainst;
@@ -26,19 +33,9 @@ class Argument {
         this.id = id;
     }
 
-    public int getParent() {
-        return parent;
-    }
-
     public int getId() {
         return id;
     }
-
-    /*
-     * Use score function (sigma) from DF-QuAD algorithm to calculate strength
-     * of argument using the vote base score as the base score.
-     */
-    private double strength;
 
     Argument(boolean vote, String argumentTitle, boolean isSupporter) {
         this.text = argumentTitle;
@@ -60,29 +57,13 @@ class Argument {
         this.votesAgainst = votesAgainst;
     }
 
-    public String getText() {
-        return text;
-    }
-
     // Returns box for sending back Argument in JSON
     public Box toBox() {
-
-        String type = isSupporter ? "Pro" : "Con";
-        return new Box(id, parent, text, type);
-    }
-
-    public void addChild(boolean vote, String argumentTitle,
-            boolean isSupporter) {
-        Argument child = new Argument(vote, argumentTitle, isSupporter);
-        this.children.add(child);
+        return new Box(id, parent, text, isSupporter ? "Pro" : "Con");
     }
 
     public void addChild(Argument child) {
         this.children.add(child);
-    }
-
-    public void addChildren(List<Argument> children) {
-        this.children.addAll(children);
     }
 
     /*
@@ -110,29 +91,6 @@ class Argument {
         }
 
         return new ArrayList<>();
-    }
-
-    /*
-     * Concatenates Attacker and Supporters and returns list of Arguments,
-     * this is used in class MasterTree for the argumentToList() function
-     */
-    List<Argument> getChildren(){
-        return children;
-    }
-
-    /*
-     * Returns true if the subtree with this argument as the root is
-     * consistent, which is when the root and all of its children are
-     * consistent.
-     */
-    public boolean isSubTreeConsistent() {
-        for (Argument child : children) {
-            if (!child.isSubTreeConsistent()) {
-                return false;
-            }
-        }
-
-        return this.getInconsistencies().isEmpty();
     }
 
     private List<Argument> supportersAgreedWith() {
@@ -163,14 +121,14 @@ class Argument {
      * of an argument.
      * (The higher the scores in the list, the higher the aggregate, as one would expect)
      */
-    public double strengthAggregationFunction(List<Double> S) {
+    private float strengthAggregationFunction(List<Float> S) {
         switch(S.size()) {
             case 0: return 0;
             case 1: return S.get(0);
-            case 2: return baseFunction(S.get(0), S.get(1));
+            case 2: return this.baseFunction(S.get(0), S.get(1));
             default:
-                double argScore = S.remove(S.size());
-                return baseFunction(strengthAggregationFunction(S), argScore);
+                float argScore = S.remove(S.size());
+                return this.baseFunction(this.strengthAggregationFunction(S), argScore);
         }
     }
 
@@ -179,18 +137,18 @@ class Argument {
      * used (so far) as
      * part of the aggregation function
      */
-    public double baseFunction(double score1, double score2) {
+    private float baseFunction(float score1, float score2) {
         return score1 + score2 - (score1 * score2);
     }
 
-    public List<Argument> getAllAttackers() {
+    private List<Argument> getAllAttackers() {
         return children
                 .stream()
                 .filter(u -> !u.isSupporter())
                 .collect(Collectors.toList());
     }
 
-    public List<Argument> getAllSupporters() {
+    private List<Argument> getAllSupporters() {
         return children
                 .stream()
                 .filter(u -> u.isSupporter())
@@ -202,15 +160,15 @@ class Argument {
      * the scores of its attackers/supporters
      * and the base score of the argument. (It is also defined in the notes)
      */
-    public void combinationFunction() {
-        List<Double> attackerScoreList = scoreList(getAllAttackers());
-        double attackerScore =
+    private void combinationFunction() {
+        List<Float> attackerScoreList = scoreList(getAllAttackers());
+        float attackerScore =
                 strengthAggregationFunction(attackerScoreList);
-        List<Double> supporterScoreList = scoreList(getAllSupporters());
-        double supporterScore =
+        List<Float> supporterScoreList = scoreList(getAllSupporters());
+        float supporterScore =
                 strengthAggregationFunction(supporterScoreList);
 
-        double baseScore = getBaseScore();
+        float baseScore = getBaseScore();
 
         if (attackerScore >= supporterScore) {
             score = baseScore -
@@ -224,7 +182,7 @@ class Argument {
     /*
      * Simple getter that is used in scoreList (below)
      */
-    public double getScore() {
+    public float getScore() {
         return score;
     }
 
@@ -232,8 +190,8 @@ class Argument {
      * scoreList turns a list of nodes into a list of scores and is needed in the
      * combination function
      */
-    public List<Double> scoreList(List<Argument> argList) {
-        List<Double> scoreList = new ArrayList<>();
+    private List<Float> scoreList(List<Argument> argList) {
+        List<Float> scoreList = new ArrayList<>();
 
         for (Argument arg : argList) {
             scoreList.add(arg.getScore());
@@ -246,18 +204,35 @@ class Argument {
      * getBaseScore is a simple function that is defined in the notes and is
      * calculated based on the user votes for and against an argument
      */
-    public double getBaseScore() {
-        int totalVotes = votesFor + votesAgainst;
+    private float getBaseScore() {
+        int totalVotes = this.votesFor + this.votesAgainst;
         if (totalVotes == 0) {
-            return 0.5;
+            return 0.5f;
         } else {
-            return 0.5 + (0.5 * (votesFor - votesAgainst) / totalVotes);
+            return 0.5f + (0.5f * (this.votesFor - this.votesAgainst) / totalVotes);
         }
     }
 
-    public void updateScore() {
-        this.children.forEach(Argument::updateScore);
+    public void updateScore(Connection connection, String pollId) {
+        for (Argument child : this.children) {
+            child.updateScore(connection, pollId);
+        }
 
-        System.out.println("Hello");
+        this.combinationFunction(); // To set our score
+
+        this.putScoreInDb(connection, pollId);
+    }
+
+    private void putScoreInDb(Connection connection, String pollId) {
+        try {
+            PreparedStatement updateScore = connection.prepareStatement("UPDATE ? SET ? = ?");
+            updateScore.setString(1, pollId);
+            updateScore.setString(2, "score");
+            updateScore.setFloat(3, this.score);
+            updateScore = connection.prepareStatement(updateScore.toString().replace("'", "\""));
+            updateScore.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + " in putScoreInDb: " + this.id);
+        }
     }
 }
