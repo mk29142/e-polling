@@ -72,7 +72,7 @@ public class AnswersUtils {
                 if (!headIds.isBeforeFirst()) {
                     mt.updateVotes(pollId, ip);
                     mt.updateScores(pollId);
-                    // Delete the entry in answers table
+                    mt.deleteFromDataBase(pollId, ip);
 
                     return "STOP";
                 }

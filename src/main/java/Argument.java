@@ -225,10 +225,11 @@ class Argument {
 
     private void putScoreInDb(Connection connection, String pollId) {
         try {
-            PreparedStatement updateScore = connection.prepareStatement("UPDATE ? SET ? = ?");
+            PreparedStatement updateScore = connection.prepareStatement("UPDATE ? SET ? = ? WHERE 'statement_id'=?");
             updateScore.setString(1, pollId);
             updateScore.setString(2, "score");
             updateScore.setFloat(3, this.score);
+            updateScore.setInt(4, this.id);
             updateScore = connection.prepareStatement(updateScore.toString().replace("'", "\""));
             updateScore.executeUpdate();
         } catch (SQLException e) {

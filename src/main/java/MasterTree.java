@@ -52,7 +52,7 @@ public class MasterTree {
         }
     }
 
-    public void updateScores(String pollId) {
+    public synchronized void updateScores(String pollId) {
         try {
             PreparedStatement getRoot = connection.prepareStatement("SELECT * FROM ? WHERE 'statement_id' = 0;");
             getRoot.setString(1, pollId);
@@ -92,6 +92,20 @@ public class MasterTree {
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage() + "in setArgumentChildren");
+        }
+    }
+
+    public void deleteFromDataBase(String pollId, String userId) {
+        try {
+            PreparedStatement deleteUser = connection.prepareStatement("DELETE FROM ? WHERE 'user_id'=");
+            deleteUser.setString(1, pollId + "_answers");
+
+            deleteUser = connection.prepareStatement(deleteUser.toString().replace("'","\"") + "?");
+            deleteUser.setString(1, userId);
+            deleteUser.execute();
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + "in deleteFromDataBase");
         }
     }
 }
