@@ -119,7 +119,8 @@ public class AnswersUtils {
         insertValues.setBoolean(1, vote);
         insertValues.setString(2, ip);
 
-        insertValues.executeUpdate();
+        int worked = insertValues.executeUpdate();
+        if (worked != 1) throw new SQLException();
     }
 
     private ResultSet getAnswers() throws SQLException {
