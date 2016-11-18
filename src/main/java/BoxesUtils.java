@@ -32,7 +32,7 @@ public class BoxesUtils {
 
             // If they have answered questions already do something to notify
             // user. If not then carry on.
-            PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ?;");
+            PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ? ORDER BY 'statement_id';");
             findStatements.setString(1, pollId);
             rs = connection.createStatement().executeQuery(findStatements.toString().replace("'", "\""));
 

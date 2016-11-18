@@ -90,7 +90,7 @@ public class AnswersUtils {
 
             return new DynamicData(dynamicQuestions, nextLevel);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + " in resolveDynamicQuestions");
             return "500 ERROR";
         }
     }
