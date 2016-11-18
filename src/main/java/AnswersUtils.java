@@ -72,7 +72,7 @@ public class AnswersUtils {
                 if (!headIds.isBeforeFirst()) {
                     mt.updateVotes(pollId, ip);
                     mt.updateScores(pollId);
-                    mt.deleteFromDataBase(pollId, ip);
+                    // mt.deleteFromDataBase(pollId, ip);
 
                     return "STOP";
                 }
@@ -89,7 +89,7 @@ public class AnswersUtils {
             } while (dynamicQuestions.isEmpty());
 
             return new DynamicData(dynamicQuestions, nextLevel);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println(e.getMessage() + " in resolveDynamicQuestions");
             return "500 ERROR";
         }
