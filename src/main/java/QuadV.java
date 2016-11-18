@@ -53,7 +53,7 @@ public class QuadV {
         // Get the questions one by one for the specific poll
         // Use PreparedStatement in here to stop string injection
         get("/boxes/:id", "application/json", (req, res) ->
-                new BoxesUtils(connection, req.params(":id"), req.ip()).getStatementBoxes(),
+                new BoxesUtils(connection, req.params(":id")).getStatementBoxes(),
                 new JsonTransformer());
 
         get("/create", (req, res) ->
@@ -64,17 +64,18 @@ public class QuadV {
 
         post("/user/:id", (req, res) -> {
             // TODO: NEED TO ONLY INSERT IF IP IS NOT ALREADY IN TABLE DO A CHECK HERE
-            new AnswersUtils(connection, req.params(":id"), req.ip()).addUser();
-
-            return "200 OK";
+            String userId = req.session().id();
+            new AnswersUtils(connection, req.params(":id"), userId).addUser();
+            return userId;
         });
 
         post("/answers/:id", "application/json", (req, res) -> {
             JsonObject data = new JsonParser()
                     .parse(req.body())
                     .getAsJsonObject();
+            String userId = data.get("userId").getAsString();
 
-            AnswersUtils ans = new AnswersUtils(connection, req.params(":id"), req.ip());
+            AnswersUtils ans = new AnswersUtils(connection, req.params(":id"), userId);
 
             JsonArray answers = data.get("questions").getAsJsonArray();
 

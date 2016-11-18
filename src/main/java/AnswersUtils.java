@@ -120,7 +120,8 @@ public class AnswersUtils {
         insertValues.setString(2, ip);
 
         int worked = insertValues.executeUpdate();
-        if (worked != 1) throw new SQLException("No answers were inserted. " + id + ": " + vote);
+        if (worked != 1) throw new SQLException("No answers were inserted. "
+            + id + ": " + vote + ", ip: " + ip);
     }
 
     private ResultSet getAnswers() throws SQLException {

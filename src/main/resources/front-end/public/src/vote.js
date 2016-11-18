@@ -13,13 +13,31 @@
     var counter = 0;
     var currQ = questions[counter];
 
+    var userId = '';
+    // Do a post to /user so we are able to log their ip address once to put questions in the database
+    $.ajax({
+      type: 'POST',
+      url: '/user/' + pollId,
+      data: {
+        userId: userId
+      },
+      success: function(data) {
+        console.log('id: ' + data);
+        userId = data;
+      },
+      error: function(data) {
+        console.log('Error in user post: ', data);
+      }
+    });
+
     var dynamicCounter;
     var currConflictSet;
 
     var dynamicData = {
       questions: [questions], // questions to update answers for,
                               // initialised to be all questions with head as first value
-      nextLevel: 0 // next level to be searched for inconsistencies
+      nextLevel: 0, // next level to be searched for inconsistencies
+      userId: userId
     };
 
     $('#finalQ').hide();
@@ -46,13 +64,6 @@
         $('#vote-yes').prop('checked', false);
         $('#vote-no').prop('checked', false);
       }
-
-      // Do a post to /user so we are able to log their ip address once to put questions in the database
-      $.ajax({
-        type: 'POST',
-        url: '/user/' + pollId,
-        dataType: 'json',
-      });
 
       // Send this ajax post for first answers and receive inconsistencies from first level
       submitDynamicData();
@@ -85,6 +96,7 @@
     });
 
     function submitDynamicData() {
+      dynamicData.userId = userId;
       $.ajax({
         type: 'POST',
         url: '/answers/' + pollId,
@@ -103,6 +115,9 @@
           } else {
             window.location.href = '/results';
           }
+        },
+        error: function() {
+          console.log('Error in submitting dynamic data');
         }
       });
     }
