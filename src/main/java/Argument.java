@@ -171,10 +171,10 @@ class Argument {
         float baseScore = getBaseScore();
 
         if (attackerScore >= supporterScore) {
-            score = baseScore -
+            this.score = baseScore -
                     baseScore * Math.abs(supporterScore - attackerScore);
         } else {
-            score = baseScore +
+            this.score = baseScore +
                     (1 - baseScore) * Math.abs(supporterScore - attackerScore);
         }
     }
@@ -182,8 +182,8 @@ class Argument {
     /*
      * Simple getter that is used in scoreList (below)
      */
-    public float getScore() {
-        return score;
+    private float getScore() {
+        return this.score;
     }
 
     /*

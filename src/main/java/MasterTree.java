@@ -87,6 +87,8 @@ public class MasterTree {
                 boolean isSupporter = children.getString("type").equals("Pro");
                 Argument child = new Argument(true /* Fake */, text, isSupporter);
                 child.setId(children.getInt("statement_id"));
+                child.setVotesFor(children.getInt("yes_votes"));
+                child.setVotesAgainst(children.getInt("no_votes"));
                 setArgumentChildren(child, pollId);
                 parent.addChild(child);
             }
