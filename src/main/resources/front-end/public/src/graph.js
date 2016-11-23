@@ -6,18 +6,19 @@
      var data = JSON.parse(stringData);
      var text = [];
      var value = [];
-     for(var i = 0; i < data.length; i++) {
-      text.push(data[i].text);
+     for (var i = 0; i < data.length; i++) {
+       text.push(data[i].text);
+       value.push(data[i].score * 100);
      }
-     console.log(text);
+
      var ctx = document.getElementById('myChart');
       var myChart = new Chart(ctx, {
           type: 'bar',
           data: {
-              labels: text, //["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+              labels: text,
               datasets: [{
                   label: '# of Votes',
-                  data: [12, 19, 3, 5],
+                  data: value,
                   backgroundColor: [
                       'rgba(255, 99, 132, 0.2)',
                       'rgba(54, 162, 235, 0.2)',
