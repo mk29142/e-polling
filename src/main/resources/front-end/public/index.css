@@ -141,3 +141,19 @@ html, body {
      z-index: 1; /* Sit on top */
 
  }
+
+ #graphContainer {
+    height: 500px;
+    width: 50%;
+ }
+
+  #graphContainer2 {
+     height: 500px;
+     width: 50%;
+  }
+
+ #container {
+    height: 500px;
+    width: 100%;
+    float: left;
+ }

@@ -8,4 +8,5 @@
     e.preventDefault();
     window.location.href = '/votingroom';
   });
+
 })();

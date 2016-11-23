@@ -113,7 +113,7 @@
 
             displayModal();
           } else {
-            window.location.href = '/results';
+            window.location.href = '/results/' + pollId;
           }
         },
         error: function() {

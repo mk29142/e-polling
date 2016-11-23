@@ -92,6 +92,12 @@ public class QuadV {
         // Where we will show all of the graphs and stats of the poll
         get("/results/:id", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
+
+        get("/graph/:id", "application/json", (req, res) -> {
+            String pollId = req.params(":id");
+            return new AnswersUtils(connection, pollId, /*Fake*/ "").getGraphData();
+
+        }, new JsonTransformer());
     }
 
     private static Connection getConnection()

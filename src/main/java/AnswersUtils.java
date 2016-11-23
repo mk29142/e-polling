@@ -108,6 +108,33 @@ public class AnswersUtils {
         }
     }
 
+    public List<GraphData> getGraphData() {
+        List<GraphData> graphData = new ArrayList<>();
+
+        try {
+            PreparedStatement getStatementData = connection.prepareStatement("SELECT * FROM ? ORDER BY 'statement_id';");
+            getStatementData.setString(1, pollId);
+
+            getStatementData = connection.prepareStatement(getStatementData.toString().replace("'", "\""));
+            ResultSet statementData = getStatementData.executeQuery();
+
+            while (statementData.next()) {
+                String text = statementData.getString("statement");
+                int id = statementData.getInt("statement_id");
+                int yesVotes = statementData.getInt("yes_votes");
+                int noVotes = statementData.getInt("no_votes");
+                float score = statementData.getFloat("score");
+
+                graphData.add(new GraphData(id, score, yesVotes, noVotes, text));
+            }
+
+            return graphData;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + " in getGraphData");
+            return new ArrayList<>();
+        }
+    }
+
     private void insertAnswer(boolean vote, Integer id) throws SQLException {
         PreparedStatement insertAnswer = connection.prepareStatement("UPDATE ? SET ?=");
         insertAnswer.setString(1, pollId + "_answers");
