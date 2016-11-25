@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html lang="en">
+{{> header}}
+<body style="background-color: #EFEFEF">
+<div id="dynamicModal" class="modal">
+    <div class="modal-content">
+        <div id="conflictTitle"></div>
+        <form id="dynamicQuestionForm">
+            <div id="questions"></div>
+            <input type="text" placeholder="Reason"/>
+            <button id="dynamicQuestionSubmit" class="btn">Submit</button>
+        </form>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+      <h2 id="debate-title" class="col offset-s1">Debate title goes here</h2>
+    </div>
+    <div class="row">
+      <div class="col s3 offset-s1" style="padding-top:50px;">
+        <div id="nav-list" class="collection">
+        </div>
+      </div>
+      <div class="col s6 offset-s1">
+        <h4 id="question" align="center" style="padding-top:50px;">Questionnen ist here</h4>
+        <form style="padding-top:100px;">
+          <div class="row">
+            Do you agree?
+            <div class="input-field">
+                <input type="radio" name="options" id="vote-yes" value="yes">
+                <label for="vote-yes">Yes</label><br>
+                <input type="radio" name="options" id="vote-no" value="no">
+                <label for="vote-no">No</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field">
+              <label for="opinion-area">Reasoning (optional)</label>
+              <textarea id="opinion-area" class="materialize-textarea"></textarea>
+            </div>
+          </div>
+          <div class="right-align">
+            <button id="nextQ" class="btn z-depth-0"
+                    type="submit">Next
+              <i class="material-icons right">send</i>
+            </button>
+            <button id="finalQ" class="btn z-depth-0 waves-red"
+                    type="submit">Submit
+              <i class="material-icons right">send</i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="/src/vote.js"></script>
+</body>

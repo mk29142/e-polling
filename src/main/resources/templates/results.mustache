@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html lang="en">
+{{> header}}
+<body>
+  <div class="container">
+    <div>
+      <a class="btn z-depth-0" href="/">back to home</a>
+    </div>
+    <div class="graphContainer" style="padding:5%">
+      This graph gives a metric for how supported an argument is, taking into account all of the other arguments which may affect it (i.e. it takes into account votes on supporters, supporters of supporters, attackers, attackers of attackers, etc.), from every . A high score, also denoted as σ, corresponds to the argument having more total support.
+      <canvas id="sigmaScore" height="80"></canvas>
+    </div>
+    <div class="graphContainer" style="padding:5%">
+      This graph shows how many people voted for the direct supporters and attackers of each argument. A high base score, also denoted as τ, corresponds to more direct supporters being voted for than direct attackers.
+      <canvas id="tauScore" height="80"></canvas>
+    </div>
+  </div>
+<script src="/src/graph.js"></script>
+</body>
+</html>
