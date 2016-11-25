@@ -1,9 +1,6 @@
 import java.net.URISyntaxException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.gson.*;
 
@@ -96,8 +93,39 @@ public class QuadV {
         get("/graph/:id", "application/json", (req, res) -> {
             String pollId = req.params(":id");
             return new AnswersUtils(connection, pollId, /*Fake*/ "").getGraphData();
-
         }, new JsonTransformer());
+
+        get("/someRoute", "application/json", (req, res) -> {
+            List<Node> nodes = generateNodes();
+            List<Link> links = generateLinks(nodes);
+            return new ResultGraph(nodes, links);
+        }, new JsonTransformer());
+    }
+
+    private static List<Node> generateNodes() {
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new Node(1, "Bob"));
+        nodes.add(new Node(2, "Alice"));
+        nodes.add(new Node(5, "Harry"));
+        nodes.add(new Node(3, "Kiran"));
+        nodes.add(new Node(6, "Billy"));
+        nodes.add(new Node(7, "Rory"));
+        nodes.add(new Node(10, "Mridul"));
+        nodes.add(new Node(13, "Sahil"));
+        return nodes;
+    }
+
+    private static List<Link> generateLinks(List<Node> nodes) {
+        List<Link> links = new ArrayList<>();
+        Random random = new Random();
+
+        for (int i = 0; i < nodes.size() * 2; i++) {
+            int src = random.nextInt(nodes.size());
+            int target = random.nextInt(nodes.size());
+            links.add(new Link(10, nodes.get(src), nodes.get(target)));
+        }
+
+        return links;
     }
 
     private static Connection getConnection()

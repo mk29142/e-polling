@@ -12,7 +12,7 @@
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width / 2, height / 2));
 
-  d3.json('/miserables.json', function(err, graph) {
+  d3.json('/someRoute', function(err, graph) {
     if (err) throw err;
 
     let link = svg.append('g')
