@@ -1,10 +1,10 @@
 function Box(options) {
-  var selfId = 'box' + options.id;
-  var typeMessage = options.type === 'Pro' || options.type === 'Con' ?
+  let selfId = 'box' + options.id;
+  let typeMessage = options.type === 'Pro' || options.type === 'Con' ?
     options.type + ' argument' : 'Enter Title';
-  var currDelete;
+  let currDelete;
 
-  var newBox = $(
+  let newBox = $(
     '<div id="' + selfId + '" class="box ' + options.type + '" data-level="' + options.level + '">' +
     '<input type="text" name="statement" placeholder="' + typeMessage + '"/>' +
     '<button class="close close-button">' +
@@ -27,14 +27,14 @@ function Box(options) {
   });
 
   $('#' + selfId + ' .plus').click(function(e) {
-    var parentId = e.target.parentNode.id;
-    var parentLevel = e.target.parentNode.getAttribute('data-level');
+    let parentId = e.target.parentNode.id;
+    let parentLevel = e.target.parentNode.getAttribute('data-level');
 
-    var boxOptions = {
+    let boxOptions = {
       id: id++,
       parentId: parentId,
       type: 'Pro',
-      level: ++parentLevel
+      level: ++parentLevel,
     };
 
     list.push(boxOptions);
@@ -42,14 +42,14 @@ function Box(options) {
   });
 
   $('#' + selfId + ' .minus').click(function(e) {
-    var parentId = e.target.parentNode.id;
-    var parentLevel = e.target.parentNode.getAttribute('data-level');
+    let parentId = e.target.parentNode.id;
+    let parentLevel = e.target.parentNode.getAttribute('data-level');
 
-    var boxOptions = {
+    let boxOptions = {
       id: id++,
       parentId: parentId,
       type: 'Con',
-      level: ++parentLevel
+      level: ++parentLevel,
     };
 
     list.push(boxOptions);
@@ -65,7 +65,7 @@ function Box(options) {
         target: options.parentId,
         anchors: ['Top', 'Bottom'],
         detachable: false,
-        endpoint: 'Blank'
+        endpoint: 'Blank',
       });
     }
   });

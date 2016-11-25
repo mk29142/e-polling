@@ -1,25 +1,25 @@
 (function() {
-  var pollId = window.location.href.substring(
+  let pollId = window.location.href.substring(
     window.location.href.lastIndexOf('/') + 1);
 
   $.get('/boxes/' + pollId, function(data) {
-    var questions = JSON.parse(data);
+    let questions = JSON.parse(data);
 
-    var title = $('#debate-title');
-    var question = $('#question');
-    var options = $('input[name=options]');
-    var reason = $('#opinion-area');
-    var issue = questions[0];
-    var counter = 0;
-    var currQ = questions[counter];
+    let title = $('#debate-title');
+    let question = $('#question');
+    let options = $('input[name=options]');
+    let reason = $('#opinion-area');
+    let issue = questions[0];
+    let counter = 0;
+    let currQ = questions[counter];
 
-    var userId = '';
+    let userId = '';
     // Do a post to /user so we are able to log their ip address once to put questions in the database
     $.ajax({
       type: 'POST',
       url: '/user/' + pollId,
       data: {
-        userId: userId
+        userId: userId,
       },
       success: function(data) {
         console.log('id: ' + data);
@@ -27,17 +27,17 @@
       },
       error: function(data) {
         console.log('Error in user post: ', data);
-      }
+      },
     });
 
-    var dynamicCounter;
-    var currConflictSet;
+    let dynamicCounter;
+    let currConflictSet;
 
-    var dynamicData = {
+    let dynamicData = {
       questions: [questions], // questions to update answers for,
                               // initialised to be all questions with head as first value
       nextLevel: 0, // next level to be searched for inconsistencies
-      userId: userId
+      userId: userId,
     };
 
     $('#finalQ').hide();
@@ -73,8 +73,8 @@
       // window.location.href = '/results/' + data;
       $('#dynamicQuestionSubmit').click(function(e) {
         e.preventDefault();
-        for (var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
-          var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
+        for (let i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+          let val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
           dynamicData.questions[dynamicCounter][i].support = val;
         }
 
@@ -118,14 +118,14 @@
         },
         error: function() {
           console.log('Error in submitting dynamic data');
-        }
+        },
       });
     }
 
     function setNavList() {
-      var nav = $('#nav-list');
+      let nav = $('#nav-list');
 
-      for (var i = 0; i < questions.length; i++) {
+      for (let i = 0; i < questions.length; i++) {
         nav.append('<a class="collection-item"' +
         'value="' +
         questions[i].id +
@@ -136,28 +136,28 @@
     };
 
     function displayModal() {
-      $("#questions").html("");
+      $('#questions').html('');
 
       $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
         currConflictSet[0].text + '. Please change your answer or give a reason why you answered the way you did.');
 
-      for(var i = 1; i < currConflictSet.length; i++) {
-        var support = currConflictSet[i].support;
+      for(let i = 1; i < currConflictSet.length; i++) {
+        let support = currConflictSet[i].support;
         createQuestion(currConflictSet[i].text, i);
-        $('#q' + i + "-" + support).prop('checked', true);
+        $('#q' + i + '-' + support).prop('checked', true);
       }
 
       $('#dynamicModal').openModal({
-        dismissible: false
+        dismissible: false,
       });
     }
 
     function setActive() {
-      var nav = $('#nav-list');
-      var children = nav.children();
+      let nav = $('#nav-list');
+      let children = nav.children();
       children.removeClass('active');
 
-      var active = children.eq(counter);
+      let active = children.eq(counter);
       active.addClass('active');
     }
 
@@ -189,13 +189,13 @@
     }
 
     function createQuestion(question, counter) {
-      var q = '<div id="' + question + '">' +
+      let q = '<div id="' + question + '">' +
       '<p>' + question + '</p>' +
       '<input type="radio" id="q' + counter + '-yes" name="' + counter + '" value="yes">' +
       '<label for="q' + counter +'-yes">Yes</label>   &nbsp; &nbsp; &nbsp;  ' +
       '<input type="radio" id="q' + counter + '-no" name="' + counter + '" value="no">' +
       '<label for="q' + counter +'-no">No</label>' +
-      '</div>'
+      '</div>';
 
       $('#questions').append(q);
     }
