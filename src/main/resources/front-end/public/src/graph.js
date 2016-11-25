@@ -8,7 +8,8 @@
     let sigmaScores = [];
     let tauScores = [];
     for (let i = 0; i < data.length; i++) {
-      text.push(data[i].text);
+      text.push(splitLines(data[i].text));
+
       sigmaScores.push(data[i].score * 100);
       tauScores.push(data[i].baseScore * 100);
     }
@@ -20,6 +21,19 @@
     let tauScore = new Chart(
       $('#tauScore'),
       makeChart('Base Score (τ)', text, tauScores));
+
+    function splitLines(text) {
+      if (text.length < 30) {
+        return [text];
+      } else {
+        let first30 = text.substring(0, 30);
+        let splitIndex = first30.lastIndexOf(' ');
+        return [
+          text.substring(0, splitIndex),
+          splitLines(text.substring(splitIndex))
+        ];
+      }
+    }
 
     function makeChart(name, labels, data) {
       let backgroundColors = [
