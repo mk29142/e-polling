@@ -12,8 +12,8 @@
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width / 2, height / 2));
 
-  d3.json('miserables.json', function(error, graph) {
-    if (error) throw error;
+  d3.json('/miserables.json', function(err, graph) {
+    if (err) throw err;
 
     let link = svg.append('g')
       .attr('class', 'links')
@@ -29,7 +29,7 @@
       .selectAll('circle')
       .data(graph.nodes)
       .enter().append('circle')
-      .attr('r', 5)
+      .attr('r', 10)
       .attr('fill', function(d) {
         return color(d.group);
       })

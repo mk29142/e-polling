@@ -14,9 +14,8 @@
       tauScores.push(data[i].baseScore * 100);
     }
 
-    let colors = createColors(data.length);
-    let backgroundColors = colors(0.4);
-    let borderColors = colors(1);
+    let backgroundColors = createColors(data.length)(0.4);
+    let borderColors = createColors(data.length)(1);
 
     let sigmaScore = new Chart(
       $('#sigmaScore'),
@@ -43,17 +42,24 @@
       return Math.floor(Math.random() * top) + bottom;
     }
 
+    function hexToRGB(hex, alpha) {
+      var r = parseInt(hex.slice(1, 3), 16),
+          g = parseInt(hex.slice(3, 5), 16),
+          b = parseInt(hex.slice(5, 7), 16);
+
+      if (alpha) {
+        return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+      } else {
+        return "rgb(" + r + ", " + g + ", " + b + ")";
+      }
+    }
+
     function createColors(num) {
       let colors = [];
 
       return function(transparency) {
         for (var i = 0; i < num; i++) {
-          let color = 'rgba(';
-          color += randIntBetween(30, 255) + ',';
-          color += randIntBetween(50, 255) + ',';
-          color += randIntBetween(10, 220) + ',';
-          color += transparency + ')';
-          colors.push(color);
+          colors.push(hexToRGB(d3.schemeCategory10[i % 10], transparency));
         }
 
         return colors;
@@ -66,15 +72,15 @@
         maintainAspectRatio: true,
         scales: {
           xAxes: [{
-            stacked: true,
+            stacked: true
           }],
           yAxes: [{
             stacked: true,
             ticks: {
               suggestedMax: 100,
               beginAtZero: true,
-            },
-          }],
+            }
+          }]
         }
       };
 
