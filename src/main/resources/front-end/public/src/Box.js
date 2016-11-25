@@ -5,7 +5,8 @@ function Box(options) {
   let currDelete;
 
   let newBox = $(
-    '<div id="' + selfId + '" class="box ' + options.type + '" data-level="' + options.level + '">' +
+    '<div id="' + selfId + '" class="box ' +
+    options.type + '" data-level="' + options.level + '">' +
     '<input type="text" name="statement" placeholder="' + typeMessage + '"/>' +
     '<button class="close close-button">' +
     '&times;</button>        ' +
