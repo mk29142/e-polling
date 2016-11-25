@@ -142,15 +142,10 @@ html, body {
 
  }
 
- #graphContainer {
-    height: 500px;
-    width: 50%;
- }
-
-  #graphContainer2 {
-     height: 500px;
-     width: 50%;
-  }
+.graphContainer {
+  height: 500px;
+  width: 50%;
+}
 
  #container {
     height: 500px;

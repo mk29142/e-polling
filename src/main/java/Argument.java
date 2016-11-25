@@ -14,6 +14,7 @@ class Argument {
 
     private int votesFor;
     private int votesAgainst;
+    private float baseScore;
 
     private boolean isSupporter;
     private List<Argument> children;
@@ -168,7 +169,7 @@ class Argument {
         float supporterScore =
                 strengthAggregationFunction(supporterScoreList);
 
-        float baseScore = getBaseScore();
+        this.baseScore = getBaseScore();
 
         if (attackerScore >= supporterScore) {
             this.score = baseScore -
