@@ -10,20 +10,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AnswersUtils {
+class AnswersUtils {
     private MasterTree mt;
     private Connection connection;
     private String pollId;
     private String ip;
 
-    public AnswersUtils(Connection connection, String pollId, String ip) {
+    AnswersUtils(Connection connection, String pollId, String ip) {
         this.connection = connection;
         this.pollId = pollId;
         this.ip = ip;
         this.mt = new MasterTree(connection);
     }
 
-    public void enterAnswersIntoDatabase(JsonArray answers) {
+    void enterAnswersIntoDatabase(JsonArray answers) {
         // Go through head's adding changed vote values (for first run all answers given)
         for (int i = 0; i < answers.size(); i++) {
             JsonArray headAnswers = answers.get(i).getAsJsonArray();
@@ -53,7 +53,7 @@ public class AnswersUtils {
         }
     }
 
-    public Object resolveDynamicQuestions(JsonObject data) {
+    Object resolveDynamicQuestions(JsonObject data) {
         // Pull from the database into argument objects
         try {
             ResultSet rs = getAnswers();
@@ -95,7 +95,7 @@ public class AnswersUtils {
         }
     }
 
-    public void addUser() {
+    void addUser() {
         try {
             PreparedStatement createUser = connection.prepareStatement("INSERT INTO ? (user_id)");
             createUser.setString(1, pollId + "_answers");
@@ -108,7 +108,7 @@ public class AnswersUtils {
         }
     }
 
-    public List<GraphData> getGraphData() {
+    List<GraphData> getGraphData() {
         List<GraphData> graphData = new ArrayList<>();
 
         try {

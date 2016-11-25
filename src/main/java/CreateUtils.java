@@ -4,16 +4,16 @@ import com.google.gson.JsonObject;
 
 import java.sql.*;
 
-public class CreateUtils {
+class CreateUtils {
     private Connection connection;
     private JsonElement element;
 
-    public CreateUtils(Connection connection, JsonElement element) {
+    CreateUtils(Connection connection, JsonElement element) {
         this.connection = connection;
         this.element = element;
     }
 
-    public String createPoll() {
+    String createPoll() {
         PreparedStatement insertPoll;
         PreparedStatement findId;
         PreparedStatement createPoll;

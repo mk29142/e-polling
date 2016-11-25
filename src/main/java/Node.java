@@ -1,7 +1,7 @@
 /**
  * Created by har14 on 25/11/16.
  */
-public class Node {
+class Node {
     int group;
     String id;
 

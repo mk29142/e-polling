@@ -5,17 +5,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BoxesUtils {
+class BoxesUtils {
     private Connection connection;
     private String pollId;
     private String ip;
 
-    public BoxesUtils(Connection connection, String pollId) {
+    BoxesUtils(Connection connection, String pollId) {
         this.connection = connection;
         this.pollId = pollId;
     }
 
-    public Object getStatementBoxes() {
+    List<Box> getStatementBoxes() {
         // Checking if connection exists
         try {
             // If they have answered questions already do something to notify
@@ -37,7 +37,7 @@ public class BoxesUtils {
             return boxes;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-            return "500 Error";
+            return new ArrayList<>();
         }
     }
 }

@@ -5,14 +5,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseUtils {
+class DatabaseUtils {
     private Connection connection;
 
-    public DatabaseUtils(Connection connection) {
+    DatabaseUtils(Connection connection) {
         this.connection = connection;
     }
 
-    public List<Poll> getPolls() {
+    List<Poll> getPolls() {
         try {
             Statement stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT id, poll_name FROM polls");

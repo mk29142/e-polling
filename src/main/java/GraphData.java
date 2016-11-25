@@ -1,4 +1,4 @@
-public class GraphData {
+class GraphData {
 
     int id;
     float score;
@@ -7,7 +7,7 @@ public class GraphData {
     int noVotes;
     String text;
 
-    public GraphData(int id, float score, int yesVotes, int noVotes, String text) {
+    GraphData(int id, float score, int yesVotes, int noVotes, String text) {
         this.id = id;
         this.score = score;
         this.yesVotes = yesVotes;

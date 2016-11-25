@@ -6,7 +6,7 @@ import java.sql.SQLException;
 /*
  * Think about concurrency in this class as some of the functions update shared variables in the database
  */
-public class MasterTree {
+class MasterTree {
     private Connection connection;
 
     public MasterTree(Connection connection) {
