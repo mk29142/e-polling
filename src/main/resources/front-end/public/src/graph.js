@@ -17,6 +17,43 @@
     let backgroundColors = createColors(data.length)(0.4);
     let borderColors = createColors(data.length)(1);
 
+    google.charts.load('current', {
+      'packages': ['bar']
+    });
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      function combineScores() {
+        let combined = [['Argument', 'Score (σ)', 'Base Score (τ)']];
+        for (let i = 0; i < text.length; i++) {
+          let newEntry = [];
+          newEntry.push(text[i].join(''));
+          newEntry.push(sigmaScores[i]);
+          newEntry.push(tauScores[i]);
+          combined.push(newEntry);
+        }
+
+        return combined;
+      }
+
+      let combined = combineScores();
+      console.log(combined);
+      let data = google.visualization.arrayToDataTable(combined);
+
+      let options = {
+        chart: {
+          title: 'Comparison of scores',
+          subtitle: 'Real scores and traditional scores',
+        },
+        bars: 'vertical', // Required for Material Bar Charts.
+        axisTitlesPosition: 'in'
+      };
+
+      let chart = new google.charts.Bar(document.getElementById('barchart_material'));
+
+      chart.draw(data, options);
+    }
+
     let sigmaScore = new Chart(
       $('#sigmaScore'),
       makeChart('Score (σ)', text, sigmaScores));
@@ -59,7 +96,7 @@
 
       return function(transparency) {
         for (var i = 0; i < num; i++) {
-          colors.push(hexToRGB(d3.schemeCategory10[i % 10], transparency));
+          colors.push(d3.schemeCategory10[i % 10]);
         }
 
         return colors;
