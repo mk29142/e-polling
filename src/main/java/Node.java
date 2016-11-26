@@ -3,9 +3,9 @@
  */
 class Node {
     int group;
-    String id;
+    int id;
 
-    public Node(int group, String id) {
+    Node(int group, int id) {
         this.group = group;
         this.id = id;
     }

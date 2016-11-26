@@ -1,4 +1,6 @@
 (function() {
+  let pollId = window.location.href.substring(
+    window.location.href.lastIndexOf('/') + 1);
   let svg = d3.select('svg'),
       width = +svg.attr('width'),
       height = +svg.attr('height');
@@ -12,7 +14,7 @@
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width / 2, height / 2));
 
-  d3.json('/someRoute', function(err, graph) {
+  d3.json('/nodeGraph/' + pollId, function(err, graph) {
     if (err) throw err;
 
     let link = svg.append('g')
