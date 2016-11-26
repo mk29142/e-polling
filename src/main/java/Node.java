@@ -1,12 +1,20 @@
-/**
- * Created by har14 on 25/11/16.
- */
 class Node {
-    int group;
-    int id;
+    final int group;
+    final int id;
+    final float radius;
+    final float opacity;
+    final String text;
 
-    Node(int group, int id) {
+    Node(
+            final int group,
+            final int id,
+            final float radius,
+            final float opacity,
+            final String text) {
         this.group = group;
         this.id = id;
+        this.radius = radius;
+        this.opacity = opacity;
+        this.text = text;
     }
 }

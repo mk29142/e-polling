@@ -5,14 +5,14 @@
       width = +svg.attr('width'),
       height = +svg.attr('height');
 
-  let color = d3.scaleOrdinal(d3.schemeCategory20);
+  let color = d3.scaleOrdinal(d3.schemeCategory10);
 
   let simulation = d3.forceSimulation()
     .force('link', d3.forceLink().id(function(d) {
       return d.id;
     }))
     .force('charge', d3.forceManyBody())
-    .force('center', d3.forceCenter(width / 2, height / 2));
+    .force('center', d3.forceCenter(width / 4, height / 4));
 
   d3.json('/nodeGraph/' + pollId, function(err, graph) {
     if (err) throw err;
@@ -31,9 +31,14 @@
       .selectAll('circle')
       .data(graph.nodes)
       .enter().append('circle')
-      .attr('r', 10)
+      .attr('r', function(d) {
+        return d.radius * 25;
+      })
       .attr('fill', function(d) {
         return color(d.group);
+      })
+      .attr('fill-opacity', function(d) {
+        return d.opacity;
       })
       .call(d3.drag()
         .on('start', dragstarted)
@@ -42,7 +47,12 @@
 
     node.append('title')
       .text(function(d) {
-        return d.id;
+        function twodp(num) {
+          return Math.round(num * 100);
+        }
+        return d.text + '\n' +
+          'Base Score (τ): ' + twodp(d.opacity) + '\n' +
+          'Score (σ): ' + twodp(d.radius);
       });
 
     simulation
@@ -54,23 +64,23 @@
 
     function ticked() {
       link.attr('x1', function(d) {
-        return d.source.x;
+        return d.source.x * 2;
       })
       .attr('y1', function(d) {
-        return d.source.y;
+        return d.source.y * 2;
       })
       .attr('x2', function(d) {
-        return d.target.x;
+        return d.target.x * 2;
       })
       .attr('y2', function(d) {
-        return d.target.y;
+        return d.target.y * 2;
       });
 
       node.attr('cx', function(d) {
-        return d.x;
+        return d.x * 2;
       })
       .attr('cy', function(d) {
-        return d.y;
+        return d.y * 2;
       });
     }
   });

@@ -33,13 +33,12 @@ class GraphData {
     }
 
     public Node toNode() {
-        return new Node(id, id);
+        return new Node(id, id, score, baseScore, text);
     }
 
     public Link toLink() {
         if (parentId != null) {
-            Node parent = new Node(parentId, parentId);
-            return new Link(10, parent, new Node(id, id));
+            return new Link(10, parentId, id);
         } else {
             return null;
         }

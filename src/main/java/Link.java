@@ -6,9 +6,9 @@ class Link {
     int target;
     int value;
 
-    Link(int value, Node source, Node target) {
+    Link(int value, int source, int target) {
         this.value = value;
-        this.source = source.id;
-        this.target = target.id;
+        this.source = source;
+        this.target = target;
     }
 }
