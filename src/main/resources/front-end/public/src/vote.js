@@ -42,9 +42,15 @@
 
     $('#finalQ').hide();
     title.html(issue.text);
-    question.html(currQ.text);
+    let num = parseInt(currQ.id) + 1;
+    question.html(num + ': ' + currQ.text);
     setNavList();
     setActive();
+
+    $('input[name="options"]').change(function(e) {
+      e.preventDefault();
+      setTimeout(changeQuestion, 500);
+    });
 
     $('#nextQ').click(function(e) {
       e.preventDefault();
@@ -90,12 +96,13 @@
       });
     });
 
-    $('#nav-list .collection-item').click(function(e) {
-      counter = e.target.attributes[1].value - 1;
+    $('#nav-list a').click(function(e) {
+      counter = parseInt(e.currentTarget.text) - 2;
       changeQuestion();
     });
 
-    function submitDynamicData() {
+     function submitDynamicData() {
+
       dynamicData.userId = userId;
       $.ajax({
         type: 'POST',
@@ -126,14 +133,28 @@
       let nav = $('#nav-list');
 
       for (let i = 0; i < questions.length; i++) {
-        nav.append('<a class="collection-item"' +
+        let num = parseInt(questions[i].id) + 1;
+        nav.append('<li class="waves-effect"><a ' +
         'value="' +
         questions[i].id +
         '">' +
-        questions[i].text +
-        '</a>');
+        num +
+        '</a></li>');
       }
     };
+
+    function allAnswered(questions) {
+       let unanswered = [];
+       for (let i = 0; i < questions.length; i++) {
+         if (questions[i].support === 'undefined') {
+           // Maybe light the unanswered questions up in red or something
+           // need to decide if we are keeping list format on the left
+           unanswered.push[question]
+         }
+       }
+
+       return array.length === 0;
+    }
 
     function displayModal() {
       $('#questions').html('');
@@ -165,8 +186,13 @@
       currQ.support = options.filter(':checked').val();
       currQ.reason = reason.val();
 
+      if (counter > questions.length - 2) {
+        return;
+      }
+
       currQ = questions[++counter];
-      question.text(currQ.text);
+      var num = parseInt(currQ.id) + 1;
+      question.text(num + ': ' + currQ.text);
       reason.val(currQ.reason);
 
       if (currQ.support) {
