@@ -8,6 +8,8 @@
     </div>
     <div id="issue-list" class="collection">
       {{#polls}}
+        <a class="secondary-content btn" href="/results/{{id}}">Results</a>
+
         <a class="collection-item" href="/vote/{{id}}">{{name}}</a>
       {{/polls}}
     </div>
