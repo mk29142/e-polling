@@ -19,6 +19,8 @@
     }
 
     let data = {
+      email: $('#email').val(),
+      password: $('#password').val(),
       name: list[0].value,
       list: list,
     };
