@@ -45,7 +45,7 @@
     let num = parseInt(currQ.id) + 1;
     question.html(num + ': ' + currQ.text);
     setNavList();
-    setActive();
+    setActive([counter]);
 
     $('input[name="options"]').change(function(e) {
       e.preventDefault();
@@ -59,7 +59,6 @@
 
     $('#finalQ').click(function(e) {
       e.preventDefault();
-
       currQ.support = options.filter(':checked').val();
       currQ.reason = reason.val();
 
@@ -71,29 +70,33 @@
         $('#vote-no').prop('checked', false);
       }
 
-      // Send this ajax post for first answers and receive inconsistencies from first level
-      submitDynamicData();
+      if (allAnswered(questions)) {
 
-      // A modal will pop up with dynamic questions from data obj
-      // on last round of dynamic questions modal will show submit
-      // window.location.href = '/results/' + data;
-      $('#dynamicQuestionSubmit').click(function(e) {
-        e.preventDefault();
-        for (let i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
-          let val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
-          dynamicData.questions[dynamicCounter][i].support = val;
-        }
+        // Send this ajax post for first answers and receive inconsistencies from first level
+        submitDynamicData();
 
-        dynamicCounter++;
+        // A modal will pop up with dynamic questions from data obj
+        // on last round of dynamic questions modal will show submit
+        // window.location.href = '/results/' + data;
+        $('#dynamicQuestionSubmit').click(function(e) {
+          e.preventDefault();
+          for (let i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+            let val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
+            dynamicData.questions[dynamicCounter][i].support = val;
+          }
 
-        // Send this ajax post when we want inconsistencies for next level
-        if (dynamicCounter >= dynamicData.questions.length) {
-          submitDynamicData();
-        } else {
-          currConflictSet = dynamicData.questions[dynamicCounter];
-          displayModal();
-        }
-      });
+          dynamicCounter++;
+
+          // Send this ajax post when we want inconsistencies for next level
+          if (dynamicCounter >= dynamicData.questions.length) {
+            submitDynamicData();
+          } else {
+            currConflictSet = dynamicData.questions[dynamicCounter];
+            displayModal();
+          }
+        });
+      }
+
     });
 
     $('#nav-list a').click(function(e) {
@@ -102,7 +105,7 @@
     });
 
      function submitDynamicData() {
-
+      console.log("submitDyanmicData()");
       dynamicData.userId = userId;
       $.ajax({
         type: 'POST',
@@ -143,17 +146,18 @@
       }
     };
 
+    //not using this function yet
     function allAnswered(questions) {
-       let unanswered = [];
+       let unansweredIndices = [];
+
        for (let i = 0; i < questions.length; i++) {
-         if (questions[i].support === 'undefined') {
-           // Maybe light the unanswered questions up in red or something
-           // need to decide if we are keeping list format on the left
-           unanswered.push[question]
+         if (questions[i].support === undefined) {
+           unansweredIndices.push(i);
          }
        }
-
-       return array.length === 0;
+       //Highlight all the wrong questions in red
+       setActive(unansweredIndices);
+       return unansweredIndices.length === 0;
     }
 
     function displayModal() {
@@ -173,13 +177,18 @@
       });
     }
 
-    function setActive() {
+    //At the moment, we are making all red unanswered questions lose redness
+    //on any question click, we want the rest to stay red until answered
+    function setActive(indices) {
       let nav = $('#nav-list');
       let children = nav.children();
       children.removeClass('active');
 
-      let active = children.eq(counter);
-      active.addClass('active');
+      indices.forEach(function (index) {
+        let active = children.eq(index);
+        active.addClass('active');   
+      });
+      
     }
 
     function changeQuestion() {
@@ -211,7 +220,7 @@
         $('#finalQ').hide();
       }
 
-      setActive();
+      setActive([counter]);
     }
 
     function createQuestion(question, counter) {
