@@ -31,7 +31,7 @@ class BoxesUtils {
                 int parentId = rs.getInt("parent_id");
                 String statement = rs.getString("statement");
                 String type = rs.getString("type");
-                boxes.add(new Box(id, parentId, statement, type));
+                boxes.add(new Box(id, parentId, statement, type, "Against"));
             }
 
             return boxes;
