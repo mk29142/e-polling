@@ -104,6 +104,11 @@
       changeQuestion();
     });
 
+     /*
+      we want dynamic questions to be a list of nodes with one head node followed by its supporters/attackers
+      and we want the Box object to contain a vote field to make figuring out what type of dyanmic q
+      */
+
      function submitDynamicData() {
       console.log("submitDyanmicData()");
       dynamicData.userId = userId;
@@ -115,13 +120,15 @@
         success: function(data) {
           console.log(data);
           if (data != 'STOP') {
+          /*
             dynamicData.questions = data.dynamicQuestions;
             dynamicData.nextLevel = data.nextLevel;
 
             dynamicCounter = 0;
             currConflictSet = dynamicData.questions[dynamicCounter];
-
+            console.log(JSON.stringify(dynamicData));
             displayModal();
+           */
           } else {
             window.location.href = '/results/' + pollId;
           }
@@ -159,12 +166,20 @@
        setActive(unansweredIndices);
        return unansweredIndices.length === 0;
     }
+    /*
+    retrieve current conflict index
+    if user if pro conflict index:
+     show supporters and let user change answer for them to be pro
+     allow user to change answer
+     allow user to add supporting argument
+    */
 
     function displayModal() {
       $('#questions').html('');
 
       $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
         currConflictSet[0].text + '. Please change your answer or give a reason why you answered the way you did.');
+
 
       for(let i = 1; i < currConflictSet.length; i++) {
         let support = currConflictSet[i].support;

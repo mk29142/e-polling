@@ -77,10 +77,10 @@ public class QuadV {
             JsonArray answers = data.get("questions").getAsJsonArray();
 
             ans.enterAnswersIntoDatabase(answers);
-            Object dynamicQs = ans.resolveDynamicQuestions(data);
+            Object dynamicQ = ans.resolveDynamicQuestions(data);
 
-            if ("500 Error".equals(dynamicQs)) res.status(500);
-            return dynamicQs;
+            if ("500 Error".equals(dynamicQ)) res.status(500);
+            return dynamicQ;
         }, new JsonTransformer());
 
         get("/results", (req, res) ->

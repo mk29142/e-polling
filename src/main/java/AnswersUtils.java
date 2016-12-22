@@ -66,7 +66,11 @@ class AnswersUtils {
 
             Integer nextLevel = data.get("nextLevel").getAsInt();
 
-            List<List<Box>> dynamicQuestions = new ArrayList<>();
+            /*
+             this list will have the "inconsistent" node at its head with all its supporters/attackers
+             in the rest of the list
+            */
+            List<Box> dynamicQuestion = new ArrayList<>();
 
             do {
                 // 1st elem of each inner list is the head
@@ -86,13 +90,13 @@ class AnswersUtils {
                 while (headIds.next()) {
                     Integer currentHead = headIds.getInt("statement_id");
                     ResultSet children = getChildren(currentHead);
-                    dynamicQuestions = gatherDynamicQs(rs, dynamicQuestions, children);
+                    dynamicQuestion = findDynamicQ(rs, children);
                 }
 
                 nextLevel++;
-            } while (dynamicQuestions.isEmpty());
+            } while (dynamicQuestion.isEmpty());
 
-            return new DynamicData(dynamicQuestions, nextLevel);
+            return new DynamicData(dynamicQuestion, nextLevel);
         } catch (SQLException e) {
             System.out.println(e.getMessage() + " in resolveDynamicQuestions");
             return "500 ERROR";
@@ -204,9 +208,8 @@ class AnswersUtils {
         return getHeadIds.executeQuery();
     }
 
-    private List<List<Box>> gatherDynamicQs(
+    private List<Box> findDynamicQ(
             ResultSet rs,
-            List<List<Box>> dynamicQuestions,
             ResultSet children) throws SQLException {
         if (children.isBeforeFirst()) {
             // Only true if there are children (ignore heads without children)
@@ -229,19 +232,18 @@ class AnswersUtils {
             // If there are inconsistencies then store them with
             // their head node
             if (!inconsistencies.isEmpty()) {
-                List<Box> headInconsistencies = new ArrayList<>();
-                headInconsistencies.add(0, head.toBox());
-                headInconsistencies
+                List<Box> dynamicQuestion = new ArrayList<>();
+                dynamicQuestion.add(0, head.toBox());
+                dynamicQuestion
                         .addAll(inconsistencies
                             .stream()
                             .map(Argument::toBox)
                             .collect(Collectors.toList()));
-
-                dynamicQuestions.add(headInconsistencies);
+                return dynamicQuestion;
             }
         }
 
-        return dynamicQuestions;
+        return null;
     }
 
     private void addChild(ResultSet rs, ResultSet children, Argument head) throws SQLException {
