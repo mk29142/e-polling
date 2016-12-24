@@ -67,11 +67,12 @@ class AnswersUtils {
             List<Box> dynamicQuestion = findDynamicQ(data);
 
             //if there are no dynamic questions
-            if(dynamicQuestion.equals(null)){
+            if(dynamicQuestion==null){
 
                 mt.updateVotes(pollId, ip);
                 mt.updateScores(pollId);
                 mt.deleteFromDataBase(pollId, ip);
+
                 return "STOP";
 
             }
@@ -223,7 +224,7 @@ class AnswersUtils {
         // their head node
         if (!inconsistencies.isEmpty()) {
             List<Box> dynamicQuestion = new ArrayList<>();
-            dynamicQuestion.add(0, head.toBox());
+            dynamicQuestion.add(head.toBox());
             dynamicQuestion.addAll(inconsistencies
                             .stream()
                             .map(Argument::toBox)

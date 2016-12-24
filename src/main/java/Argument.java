@@ -56,9 +56,6 @@ class Argument {
         this.isSupporter = arg.get("type").getAsString().equals("Pro");
         this.parent = arg.get("parent").getAsInt();
         this.id = arg.get("id").getAsInt();
-        //this needs to be changed, there is no field for isSupporter in the json object
-        this.isSupporter = true;
-
         this.children = new ArrayList<>();
     }
 

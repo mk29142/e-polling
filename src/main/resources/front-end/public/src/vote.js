@@ -121,17 +121,15 @@
         success: function(data) {
           console.log(data);
           if (data != 'STOP') {
-          /*
-            dynamicData.questions = data.dynamicQuestions;
-            dynamicData.nextLevel = data.nextLevel;
 
-            dynamicCounter = 0;
-            currConflictSet = dynamicData.questions[dynamicCounter];
+            dynamicData.questions = data;
+
+            currConflictSet = dynamicData.questions;
             console.log(JSON.stringify(dynamicData));
             displayModal();
-           */
+
           } else {
-            //window.location.href = '/results/' + pollId;
+            window.location.href = '/results/' + pollId;
           }
         },
         error: function() {
@@ -177,12 +175,16 @@
 
     function displayModal() {
       $('#questions').html('');
-
+      if(currConflictSet[0].vote == "For") {
+        conflictText = "You voted for the question but against all of its supporting arguments.";
+      } else {
+        conflictText = "You voted against the question but against all of its attacking arguments."
+      }
       $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-        currConflictSet[0].text + '. Please change your answer or give a reason why you answered the way you did.');
+        currConflictSet[0].text + '.\n' + conflictText + ' Please change your answers to the question below:');
 
 
-      for(let i = 1; i < currConflictSet.length; i++) {
+      for(let i = 0; i < currConflictSet.length; i++) {
         let support = currConflictSet[i].support;
         createQuestion(currConflictSet[i].text, i);
         $('#q' + i + '-' + support).prop('checked', true);
