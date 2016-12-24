@@ -1,3 +1,6 @@
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -38,10 +41,24 @@ class Argument {
         return id;
     }
 
+    public int getParent(){ return parent;}
+
     Argument(boolean vote, String argumentTitle, boolean isSupporter) {
         this.text = argumentTitle;
         this.vote = vote;
         this.isSupporter = isSupporter;
+        this.children = new ArrayList<>();
+    }
+
+    Argument(JsonObject arg){
+        this.vote = arg.get("support").getAsString().equals("yes");
+        this.text = arg.get("text").getAsString();
+        this.isSupporter = arg.get("type").getAsString().equals("Pro");
+        this.parent = arg.get("parent").getAsInt();
+        this.id = arg.get("id").getAsInt();
+        //this needs to be changed, there is no field for isSupporter in the json object
+        this.isSupporter = true;
+
         this.children = new ArrayList<>();
     }
 

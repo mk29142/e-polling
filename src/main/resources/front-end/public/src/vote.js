@@ -4,7 +4,7 @@
 
   $.get('/boxes/' + pollId, function(data) {
     let questions = JSON.parse(data);
-
+    console.log(data);
     let title = $('#debate-title');
     let question = $('#question');
     let options = $('input[name=options]');
@@ -112,6 +112,7 @@
      function submitDynamicData() {
       console.log("submitDyanmicData()");
       dynamicData.userId = userId;
+      console.log(dynamicData);
       $.ajax({
         type: 'POST',
         url: '/answers/' + pollId,
@@ -130,7 +131,7 @@
             displayModal();
            */
           } else {
-            window.location.href = '/results/' + pollId;
+            //window.location.href = '/results/' + pollId;
           }
         },
         error: function() {
