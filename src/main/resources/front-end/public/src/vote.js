@@ -114,8 +114,15 @@
 
     //this argument must be added as a child to the parent argument
     function addDynamicArgument(index){
-
-
+      if(isArgSupported) {
+        var type = "Pro";
+      } else {
+        var type = "Con";
+      }
+      var id = dynamicData.questions[0].length;
+      var parent = index;
+      var text = $("#dynamicQuestionReason").val();
+      dynamicData.questions[0].push({id: id, parent: parent, text: text, type: type, support: "yes", vote: "Against"});
     }
 
 

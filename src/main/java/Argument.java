@@ -113,7 +113,6 @@ class Argument {
             }
         }
 
-
         for(Argument child : children){
             List<Argument> currInconsistencies = child.getInconsistencies();
             if(!currInconsistencies.isEmpty()){
