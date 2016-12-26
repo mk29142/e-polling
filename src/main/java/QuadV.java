@@ -78,8 +78,6 @@ public class QuadV {
 
             ans.enterAnswersIntoDatabase(answers);
             Object dynamicQ = ans.resolveDynamicQuestions(data);
-
-            if ("500 Error".equals(dynamicQ)) res.status(500);
             return dynamicQ;
         }, new JsonTransformer());
 

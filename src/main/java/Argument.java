@@ -92,20 +92,38 @@ class Argument {
      * Otherwise, it is consistent.
      */
     public List<Argument> getInconsistencies() {
+
+
+        List<Argument> inconsistencies = new ArrayList<>();
+
         List<Argument> attackers = attackersAgreedWith();
         List<Argument> supporters = supportersAgreedWith();
 
         if (this.vote) {
             if (supporters.isEmpty()) {
-                return getAllSupporters();
+                inconsistencies.add(this);
+                inconsistencies.addAll(getAllSupporters());
+                return inconsistencies;
             }
         } else {
             if (attackers.isEmpty()) {
-                return getAllAttackers();
+                inconsistencies.add(this);
+                inconsistencies.addAll(getAllAttackers());
+                return inconsistencies;
             }
         }
 
-        return new ArrayList<>();
+
+        for(Argument child : children){
+            List<Argument> currInconsistencies = child.getInconsistencies();
+            if(!currInconsistencies.isEmpty()){
+                inconsistencies = currInconsistencies;
+                break;
+            }
+        }
+
+        return inconsistencies;
+
     }
 
     private List<Argument> supportersAgreedWith() {
@@ -197,6 +215,8 @@ class Argument {
     /*
      * Simple getter that is used in scoreList (below)
      */
+
+
     private float getScore() {
         return this.score;
     }

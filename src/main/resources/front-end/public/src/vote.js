@@ -39,7 +39,7 @@
       nextLevel: 0, // next level to be searched for inconsistencies
       userId: userId,
     };
-
+    let isArgSupported;
     $('#finalQ').hide();
     title.html(issue.text);
     let num = parseInt(currQ.id) + 1;
@@ -75,29 +75,65 @@
         // Send this ajax post for first answers and receive inconsistencies from first level
         submitDynamicData();
 
-        // A modal will pop up with dynamic questions from data obj
-        // on last round of dynamic questions modal will show submit
-        // window.location.href = '/results/' + data;
-        $('#dynamicQuestionSubmit').click(function(e) {
-          e.preventDefault();
-          for (let i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
-            let val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
-            dynamicData.questions[dynamicCounter][i].support = val;
-          }
 
-          dynamicCounter++;
 
-          // Send this ajax post when we want inconsistencies for next level
-          if (dynamicCounter >= dynamicData.questions.length) {
-            submitDynamicData();
-          } else {
-            currConflictSet = dynamicData.questions[dynamicCounter];
-            displayModal();
-          }
-        });
       }
 
     });
+    // A modal will pop up with dynamic questions from data obj
+    // on last round of dynamic questions modal will show submit
+    // window.location.href = '/results/' + data;
+    $('#dynamicQuestionSubmit').click(function() {
+      index = findCurrConflictIndex();
+
+      console.log(index);
+      let j = 0;
+      for (let i = 0; i < dynamicData.questions[0].length; i++) {
+
+        if(parseInt(dynamicData.questions[0][i].parent) == index){
+          if(isArgSupported && dynamicData.questions[0][i].type == "Pro" ||
+          !isArgSupported && dynamicData.questions[0][i].type == "Con"){
+              j++;
+              if($('#q'+ j +'-yes').is(':checked')) {
+                checked = "yes";
+              } else {
+                checked = "no";
+              }
+
+              dynamicData.questions[0][i].support = checked;
+            }
+
+        }
+      }
+      addDynamicArgument(index);
+      console.log(dynamicData);
+      // Send this ajax post when we want inconsistencies for next level
+      submitDynamicData();
+
+    });
+
+    //this argument must be added as a child to the parent argument
+    function addDynamicArgument(index){
+
+
+    }
+
+
+
+    function findCurrConflictIndex(){
+      let result = 0;
+       for (i = 0; i < dynamicData.questions.length; i++) {
+          if(dynamicData.questions[i].text == currConflictSet[0].text){
+            result = i;
+            break;
+          }
+       }
+
+       return result;
+
+    }
+
+
 
     $('#nav-list a').click(function(e) {
       counter = parseInt(e.currentTarget.text) - 2;
@@ -122,14 +158,12 @@
           console.log(data);
           if (data != 'STOP') {
 
-            dynamicData.questions = data;
-
-            currConflictSet = dynamicData.questions;
-            console.log(JSON.stringify(dynamicData));
+            currConflictSet = data;
+            console.log(JSON.stringify(currConflictSet));
             displayModal();
 
           } else {
-            window.location.href = '/results/' + pollId;
+            //window.location.href = '/results/' + pollId;
           }
         },
         error: function() {
@@ -176,19 +210,32 @@
     function displayModal() {
       $('#questions').html('');
       if(currConflictSet[0].vote == "For") {
-        conflictText = "You voted for the question but against all of its supporting arguments.";
+        conflictText = "You voted for the argument but against all of its supporting arguments.";
+        supportOrAttack = "Supporting arguments:";
+        sOrA = "a supporting";
+        isArgSupported = true;
       } else {
-        conflictText = "You voted against the question but against all of its attacking arguments."
+        conflictText = "You voted against the argument but against all of its attacking arguments.";
+        supportOrAttack = "Attacking arguments:";
+        sOrA = "an attacking";
+        isArgSupported = false;
       }
-      $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-        currConflictSet[0].text + '.\n' + conflictText + ' Please change your answers to the question below:');
+      $('#conflictTitle').html('CONFLICT! Your answer to "' +
+        currConflictSet[0].text + '" is inconsistent with your other answers! <br>' + conflictText
+        + ' Please edit your answers below:');
 
 
       for(let i = 0; i < currConflictSet.length; i++) {
+        if(i==1){
+          $('#questions').append("<br>" + supportOrAttack);
+        }
         let support = currConflictSet[i].support;
         createQuestion(currConflictSet[i].text, i);
         $('#q' + i + '-' + support).prop('checked', true);
       }
+
+      $('#questions').append("<br> Or add "+ sOrA +" argument that was not mentioned:");
+
 
       $('#dynamicModal').openModal({
         dismissible: false,
