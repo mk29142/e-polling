@@ -91,6 +91,7 @@ html, body {
 
 #poll {
   position: absolute;
+  top: 0px;
   background-color: #A9A9A9;
   color: #caebf2;
   float: left;
@@ -114,12 +115,12 @@ html, body {
   background-color: #C3C3C3;
 }
 
-#create:hover {
-  background-color: #E4FFFF;
+#vote:hover + #poll {
+  background-color: #C3C3C3;
 }
 
-#vote:hover, #poll:hover {
-  background-color: #C3C3C3;
+#create:hover {
+  background-color: #E4FFFF;
 }
 
 #submit-poll {

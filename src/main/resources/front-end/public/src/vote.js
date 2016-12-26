@@ -51,7 +51,7 @@
       $.ajax({
         type: 'POST',
         url: '/user/' + pollId,
-        dataType: 'json',
+        dataType: 'json'
       });
 
       // Send this ajax post for first answers and receive inconsistencies from first level
