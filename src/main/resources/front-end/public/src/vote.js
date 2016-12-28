@@ -34,10 +34,10 @@
     let currConflictSet;
 
     let dynamicData = {
-      questions: [questions], // questions to update answers for,
-                              // initialised to be all questions with head as first value
-      nextLevel: 0, // next level to be searched for inconsistencies
-      userId: userId,
+      questions: questions, // questions to update answers for,
+                     // initialised to be all questions with head as first value
+      nextLevel: 0,  // next level to be searched for inconsistencies
+      userId: userId
     };
 
     $('#finalQ').hide();
@@ -80,23 +80,14 @@
         // window.location.href = '/results/' + data;
         $('#dynamicQuestionSubmit').click(function(e) {
           e.preventDefault();
-          for (let i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+          for (let i = 1; i < dynamicData.questions.length; i++) {
             let val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
-            dynamicData.questions[dynamicCounter][i].support = val;
+            dynamicData.questions[i].support = val;
           }
 
-          dynamicCounter++;
-
-          // Send this ajax post when we want inconsistencies for next level
-          if (dynamicCounter >= dynamicData.questions.length) {
-            submitDynamicData();
-          } else {
-            currConflictSet = dynamicData.questions[dynamicCounter];
-            displayModal();
-          }
+          submitDynamicData();
         });
       }
-
     });
 
     $('#nav-list a').click(function(e) {
@@ -104,13 +95,12 @@
       changeQuestion();
     });
 
-     /*
+    /*
       we want dynamic questions to be a list of nodes with one head node followed by its supporters/attackers
       and we want the Box object to contain a vote field to make figuring out what type of dyanmic q
-      */
+    */
 
-     function submitDynamicData() {
-      console.log("submitDyanmicData()");
+    function submitDynamicData() {
       dynamicData.userId = userId;
       $.ajax({
         type: 'POST',
@@ -120,22 +110,17 @@
         success: function(data) {
           console.log(data);
           if (data != 'STOP') {
-          /*
             dynamicData.questions = data.dynamicQuestions;
             dynamicData.nextLevel = data.nextLevel;
 
-            dynamicCounter = 0;
-            currConflictSet = dynamicData.questions[dynamicCounter];
-            console.log(JSON.stringify(dynamicData));
             displayModal();
-           */
           } else {
             window.location.href = '/results/' + pollId;
           }
         },
         error: function() {
           console.log('Error in submitting dynamic data');
-        },
+        }
       });
     }
 
@@ -178,13 +163,12 @@
       $('#questions').html('');
 
       $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-        currConflictSet[0].text + '. Please change your answer or give a reason why you answered the way you did.');
+        dynamicData.questions[0].text + '. Please change your answer or give a reason why you answered the way you did.');
 
-
-      for(let i = 1; i < currConflictSet.length; i++) {
-        let support = currConflictSet[i].support;
-        createQuestion(currConflictSet[i].text, i);
-        $('#q' + i + '-' + support).prop('checked', true);
+      for(let i = 1; i < dynamicData.questions.length; i++) {
+        let support = dynamicData.questions[i].support;
+        createQuestion(dynamicData.questions[i].text, i);
+        $('#q' + i + '-' + support).prop('checked', dynamicData.questions[i].vote === 'For');
       }
 
       $('#dynamicModal').openModal({

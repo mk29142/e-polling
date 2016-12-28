@@ -14,12 +14,12 @@ class AnswersUtils {
     private MasterTree mt;
     private Connection connection;
     private String pollId;
-    private String ip;
+    private String userId;
 
-    AnswersUtils(Connection connection, String pollId, String ip) {
+    AnswersUtils(Connection connection, String pollId, String userId) {
         this.connection = connection;
         this.pollId = pollId;
-        this.ip = ip;
+        this.userId = userId;
         this.mt = new MasterTree(connection);
     }
 
@@ -28,36 +28,29 @@ class AnswersUtils {
     }
 
     void enterAnswersIntoDatabase(JsonArray answers) {
-        // Go through head's adding changed vote values (for first run all answers given)
         for (int i = 0; i < answers.size(); i++) {
-            JsonArray headAnswers = answers.get(i).getAsJsonArray();
+            JsonObject answer = answers.get(i).getAsJsonObject();
 
-            // Go through a single head
-            for (int j = 0; j < headAnswers.size(); j++) {
-                JsonElement elem = headAnswers.get(j);
-                JsonObject answer = elem.getAsJsonObject();
+            boolean vote;
+            try {
+                vote = answer.get("support").getAsString().equals("yes");
+            } catch (Exception e) {
+                // In all other cases than the first "support" is not a
+                // field so we don't update it with anything
+                continue;
+            }
 
-                boolean vote;
-                try {
-                    vote = answer.get("support").getAsString().equals("yes");
-                } catch (Exception e) {
-                    // In all other cases than the first "support" is not a
-                    // field so we don't update it with anything
-                    continue;
-                }
+            Integer id = answer.get("id").getAsInt();
 
-                Integer id = answer.get("id").getAsInt();
-
-                try {
-                    insertAnswer(vote, id);
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
+            try {
+                insertAnswer(vote, id);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
 
-    Object resolveDynamicQuestions(JsonObject data) {
+    DynamicData resolveDynamicQuestions(JsonObject data) {
         // Pull from the database into argument objects
         try {
             ResultSet rs = getAnswers();
@@ -70,7 +63,7 @@ class AnswersUtils {
              this list will have the "inconsistent" node at its head with all its supporters/attackers
              in the rest of the list
             */
-            List<Box> dynamicQuestion = new ArrayList<>();
+            List<Box> dynamicQuestions = new ArrayList<>();
 
             do {
                 // 1st elem of each inner list is the head
@@ -78,11 +71,11 @@ class AnswersUtils {
 
                 // This case will occur when we go past last level of tree
                 if (!headIds.isBeforeFirst()) {
-                    mt.updateVotes(pollId, ip);
+                    mt.updateVotes(pollId, userId);
                     mt.updateScores(pollId);
-                    mt.deleteFromDataBase(pollId, ip);
+                    mt.deleteFromDataBase(pollId, userId);
 
-                    return "STOP";
+                    return new DynamicData();
                 }
 
                 // For each head find its inconsistencies and store it in a
@@ -90,16 +83,16 @@ class AnswersUtils {
                 while (headIds.next()) {
                     Integer currentHead = headIds.getInt("statement_id");
                     ResultSet children = getChildren(currentHead);
-                    dynamicQuestion = findDynamicQ(rs, children);
+                    dynamicQuestions = findDynamicQ(rs, children);
                 }
 
                 nextLevel++;
-            } while (dynamicQuestion.isEmpty());
+            } while (dynamicQuestions.isEmpty());
 
-            return new DynamicData(dynamicQuestion, nextLevel);
+            return new DynamicData(dynamicQuestions, nextLevel);
         } catch (SQLException e) {
             System.out.println(e.getMessage() + " in resolveDynamicQuestions");
-            return "500 ERROR";
+            return new DynamicData();
         }
     }
 
@@ -109,7 +102,7 @@ class AnswersUtils {
             createUser.setString(1, pollId + "_answers");
             PreparedStatement insertIp = connection.prepareStatement(createUser.toString().replace("'", "\"") + "  VALUES(?);");
 
-            insertIp.setString(1, ip);
+            insertIp.setString(1, userId);
             insertIp.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -159,11 +152,11 @@ class AnswersUtils {
                 + "? WHERE user_id=?;");
 
         insertValues.setBoolean(1, vote);
-        insertValues.setString(2, ip);
+        insertValues.setString(2, userId);
 
         int worked = insertValues.executeUpdate();
         if (worked != 1) throw new SQLException("No answers were inserted. "
-            + id + ": " + vote + ", ip: " + ip);
+            + id + ": " + vote + ", ip: " + userId);
     }
 
     private ResultSet getAnswers() throws SQLException {
@@ -174,7 +167,7 @@ class AnswersUtils {
         PreparedStatement getAnswers =
                 connection.prepareStatement(
                         getUserAnswers.toString().replace("'", "\"") + "?;");
-        getAnswers.setString(1, ip);
+        getAnswers.setString(1, userId);
 
         // Get all answers
         return getAnswers.executeQuery();
@@ -200,11 +193,10 @@ class AnswersUtils {
     private ResultSet getHeadIds(Integer nextLevel) throws SQLException {
         // Get all ids for a level
         PreparedStatement getHeads = connection.prepareStatement(
-                "SELECT \"statement_id\" FROM ? WHERE \"level\"=");
+                "SELECT 'statement_id' FROM ? WHERE 'level'=");
         getHeads.setString(1, pollId);
-        PreparedStatement getHeadIds =
-                connection.prepareStatement(
-                        getHeads.toString().replace("'","\"") + nextLevel);
+        PreparedStatement getHeadIds = connection.prepareStatement(
+                getHeads.toString().replace("'","\"") + nextLevel);
         return getHeadIds.executeQuery();
     }
 
