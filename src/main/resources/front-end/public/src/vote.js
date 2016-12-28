@@ -32,6 +32,7 @@
 
     let dynamicCounter;
     let currConflictSet;
+    let isArgSupported;
 
     let dynamicData = {
       questions: questions, // questions to update answers for,
@@ -40,7 +41,6 @@
       userId: userId
     };
 
-    let isArgSupported;
     $('#finalQ').hide();
     title.html(issue.text);
     let num = parseInt(currQ.id) + 1;
@@ -72,76 +72,69 @@
       }
 
       if (allAnswered(questions)) {
-
         // Send this ajax post for first answers and receive inconsistencies from first level
         submitDynamicData();
-
-
-
       }
 
     });
+
     // A modal will pop up with dynamic questions from data obj
     // on last round of dynamic questions modal will show submit
     // window.location.href = '/results/' + data;
     $('#dynamicQuestionSubmit').click(function() {
-      index = findCurrConflictIndex();
+      let index = findCurrConflictIndex();
 
-      console.log(index);
-      let j = 0;
-      for (let i = 0; i < dynamicData.questions[0].length; i++) {
-
-        if(parseInt(dynamicData.questions[0][i].parent) == index){
-          if(isArgSupported && dynamicData.questions[0][i].type == "Pro" ||
-          !isArgSupported && dynamicData.questions[0][i].type == "Con"){
-              j++;
-              if($('#q'+ j +'-yes').is(':checked')) {
-                checked = "yes";
-              } else {
-                checked = "no";
-              }
-
-              dynamicData.questions[0][i].support = checked;
-            }
-
+      let childNum = 1;
+      for (let i = 0; i < dynamicData.questions.length; i++) {
+        // So that we are only looking at children of the conflicting one
+        if (parseInt(dynamicData.questions[i].parent) === index) {
+          if (isArgSupported && dynamicData.questions[i].type === 'Pro' ||
+          !isArgSupported && dynamicData.questions[i].type === 'Con') {
+            let checked = $('#q' + childNum + '-yes').is(':checked')? 'yes' : 'no';
+            dynamicData.questions[i].support = checked;
+            childNum++;
+          }
         }
       }
+
+      // If there was one, then we need to add it.
       addDynamicArgument(index);
-      console.log(dynamicData);
+
       // Send this ajax post when we want inconsistencies for next level
       submitDynamicData();
-
     });
 
-    //this argument must be added as a child to the parent argument
-    function addDynamicArgument(index){
-      if(isArgSupported) {
-        var type = "Pro";
-      } else {
-        var type = "Con";
-      }
-      var id = dynamicData.questions[0].length;
-      var parent = index;
-      var text = $("#dynamicQuestionReason").val();
-      dynamicData.questions[0].push({id: id, parent: parent, text: text, type: type, support: "yes", vote: "Against"});
+    // This argument must be added as a child to the parent argument
+    function addDynamicArgument(index) {
+      let type = isArgSupported? 'Pro' : 'Con';
+      let id = dynamicData.questions.length;
+      let parent = index;
+      let text = $('#dynamicQuestionReason').val();
+
+      if (text) {
+        dynamicData.questions.push({
+          id: id,
+          parent: parent,
+          text: text,
+          type: type,
+          support: 'yes',
+          vote: 'Against'
+        })
+      };
     }
 
-
-
-    function findCurrConflictIndex(){
+    function findCurrConflictIndex() {
       let result = 0;
-       for (i = 0; i < dynamicData.questions.length; i++) {
-          if(dynamicData.questions[i].text == currConflictSet[0].text){
-            result = i;
-            break;
-          }
-       }
+      let headQ = currConflictSet.dynamicQuestions[0];
+      for (i = 0; i < dynamicData.questions.length; i++) {
+        if (dynamicData.questions[i].text === headQ.text) {
+          result = i;
+          break;
+        }
+      }
 
-       return result;
-
+      return result;
     }
-
-
 
     $('#nav-list a').click(function(e) {
       counter = parseInt(e.currentTarget.text) - 2;
@@ -160,13 +153,9 @@
         data: JSON.stringify(dynamicData),
         dataType: 'json',
         success: function(data) {
-          console.log(data);
           if (data != 'STOP') {
-
             currConflictSet = data;
-            console.log(JSON.stringify(currConflictSet));
             displayModal();
-
           } else {
             window.location.href = '/results/' + pollId;
           }
@@ -183,15 +172,11 @@
       for (let i = 0; i < questions.length; i++) {
         let num = parseInt(questions[i].id) + 1;
         nav.append('<li class="waves-effect"><a ' +
-        'value="' +
-        questions[i].id +
-        '">' +
-        num +
-        '</a></li>');
+        'value="' + questions[i].id +
+        '">' + num + '</a></li>');
       }
     };
 
-    //not using this function yet
     function allAnswered(questions) {
        let unansweredIndices = [];
 
@@ -200,71 +185,59 @@
            unansweredIndices.push(i);
          }
        }
-       //Highlight all the wrong questions in red
+
+       // Highlight all the wrong questions in red
        setActive(unansweredIndices);
        return unansweredIndices.length === 0;
     }
-    /*
-    retrieve current conflict index
-    if user if pro conflict index:
-     show supporters and let user change answer for them to be pro
-     allow user to change answer
-     allow user to add supporting argument
-    */
 
+    /*
+     * Retrieve current conflict index if user if pro conflict index:
+     * show supporters and let user change answer for them to be pro
+     * allow user to change answer
+     * allow user to add supporting argument
+     */
     function displayModal() {
       $('#questions').html('');
-      if(currConflictSet[0].vote == "For") {
-        conflictText = "You voted for the argument but against all of its supporting arguments.";
-        supportOrAttack = "Supporting arguments:";
-        sOrA = "a supporting";
-        isArgSupported = true;
-      } else {
-        conflictText = "You voted against the argument but against all of its attacking arguments.";
-        supportOrAttack = "Attacking arguments:";
-        sOrA = "an attacking";
-        isArgSupported = false;
-      }
+
+      let qs = currConflictSet.dynamicQuestions; // For ease
+      let headQ = qs[0];
+
+      isArgSupported = headQ.vote === 'For'
+      let conflictText = isArgSupported?
+        'You voted for the argument but against all of its supporting arguments.' :
+        'You voted against the argument but for all of its attacking arguments.';
+      let supportOrAttack = isArgSupported? 'Supporting arguments:' :  'Attacking arguments:'
+      let sOrA = isArgSupported? 'a supporting' : 'an attacking';
+
       $('#conflictTitle').html('CONFLICT! Your answer to "' +
-        currConflictSet[0].text + '" is inconsistent with your other answers! <br>' + conflictText
-        + ' Please edit your answers below:');
+        headQ.text + '" is inconsistent with your other answers! <br>' +
+        conflictText + ' Please edit your answers below:');
 
-      $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
-        dynamicData.questions[0].text + '. Please change your answer or give a reason why you answered the way you did.');
-
-      for(let i = 1; i < dynamicData.questions.length; i++) {
-        let support = dynamicData.questions[i].support;
-        createQuestion(dynamicData.questions[i].text, i);
-        $('#q' + i + '-' + support).prop('checked', dynamicData.questions[i].vote === 'For');
-      for(let i = 0; i < currConflictSet.length; i++) {
-        if(i==1){
-          $('#questions').append("<br>" + supportOrAttack);
-        }
-        let support = currConflictSet[i].support;
-        createQuestion(currConflictSet[i].text, i);
+      for (let i = 1; i < qs.length; i++) {
+        let support = qs[i].vote === 'For'? 'yes' : 'no';
+        createQuestion(qs[i].text, i);
         $('#q' + i + '-' + support).prop('checked', true);
       }
 
-      $('#questions').append("<br> Or add "+ sOrA +" argument that was not mentioned:");
-
+      $('#questions').append('<br> Or add ' + sOrA + ' argument that was not mentioned:');
 
       $('#dynamicModal').openModal({
         dismissible: false,
       });
     }
 
-    //At the moment, we are making all red unanswered questions lose redness
-    //on any question click, we want the rest to stay red until answered
+    // At the moment, we are making all red unanswered questions lose redness
+    // on any question click, we want the rest to stay red until answered
     function setActive(indices) {
       let nav = $('#nav-list');
       let children = nav.children();
       children.removeClass('active');
 
-      indices.forEach(function (index) {
+      indices.forEach(function(index) {
         let active = children.eq(index);
         active.addClass('active');   
       });
-      
     }
 
     function changeQuestion() {

@@ -17,6 +17,12 @@ class DynamicData {
         this.nextLevel = nextLevel;
     }
 
+    // Tells us if there is no dynamic questions in here
+    // because we used the faux constructor
+    boolean isEnd() {
+        return nextLevel < 0 || dynamicQuestions.size() <= 1;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
