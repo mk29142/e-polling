@@ -1,4 +1,4 @@
-public class Box {
+class Box {
     int id, parent;
     String text, type;
 

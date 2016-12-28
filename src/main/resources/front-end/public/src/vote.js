@@ -1,32 +1,56 @@
 (function() {
-  var pollId = window.location.href.substring(
+  let pollId = window.location.href.substring(
     window.location.href.lastIndexOf('/') + 1);
 
   $.get('/boxes/' + pollId, function(data) {
-    var questions = JSON.parse(data);
+    let questions = JSON.parse(data);
 
-    var title = $('#debate-title');
-    var question = $('#question');
-    var options = $('input[name=options]');
-    var reason = $('#opinion-area');
-    var issue = questions[0];
-    var counter = 0;
-    var currQ = questions[counter];
+    let title = $('#debate-title');
+    let question = $('#question');
+    let options = $('input[name=options]');
+    let reason = $('#opinion-area');
+    let issue = questions[0];
+    let counter = 0;
+    let currQ = questions[counter];
 
-    var dynamicCounter;
-    var currConflictSet;
+    let userId = '';
+    // Do a post to /user so we are able to log their ip address once to put questions in the database
+    $.ajax({
+      type: 'POST',
+      url: '/user/' + pollId,
+      data: {
+        userId: userId,
+      },
+      success: function(data) {
+        console.log('id: ' + data);
+        userId = data;
+      },
+      error: function(data) {
+        console.log('Error in user post: ', data);
+      },
+    });
 
-    var dynamicData = {
+    let dynamicCounter;
+    let currConflictSet;
+
+    let dynamicData = {
       questions: [questions], // questions to update answers for,
                               // initialised to be all questions with head as first value
-      nextLevel: 0 // next level to be searched for inconsistencies
+      nextLevel: 0, // next level to be searched for inconsistencies
+      userId: userId,
     };
 
     $('#finalQ').hide();
     title.html(issue.text);
-    question.html(currQ.text);
+    let num = parseInt(currQ.id) + 1;
+    question.html(num + ': ' + currQ.text);
     setNavList();
-    setActive();
+    setActive([counter]);
+
+    $('input[name="options"]').change(function(e) {
+      e.preventDefault();
+      setTimeout(changeQuestion, 500);
+    });
 
     $('#nextQ').click(function(e) {
       e.preventDefault();
@@ -35,7 +59,6 @@
 
     $('#finalQ').click(function(e) {
       e.preventDefault();
-
       currQ.support = options.filter(':checked').val();
       currQ.reason = reason.val();
 
@@ -47,44 +70,43 @@
         $('#vote-no').prop('checked', false);
       }
 
-      // Do a post to /user so we are able to log their ip address once to put questions in the database
-      $.ajax({
-        type: 'POST',
-        url: '/user/' + pollId,
-        dataType: 'json'
-      });
+      if (allAnswered(questions)) {
 
-      // Send this ajax post for first answers and receive inconsistencies from first level
-      submitDynamicData();
+        // Send this ajax post for first answers and receive inconsistencies from first level
+        submitDynamicData();
 
-      // A modal will pop up with dynamic questions from data obj
-      // on last round of dynamic questions modal will show submit
-      // window.location.href = '/results/' + data;
-      $('#dynamicQuestionSubmit').click(function(e) {
-        e.preventDefault();
-        for (var i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
-          var val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
-          dynamicData.questions[dynamicCounter][i].support = val;
-        }
+        // A modal will pop up with dynamic questions from data obj
+        // on last round of dynamic questions modal will show submit
+        // window.location.href = '/results/' + data;
+        $('#dynamicQuestionSubmit').click(function(e) {
+          e.preventDefault();
+          for (let i = 1; i < dynamicData.questions[dynamicCounter].length; i++) {
+            let val = $('input[name=' + i + ']:checked', '#dynamicQuestionForm').val();
+            dynamicData.questions[dynamicCounter][i].support = val;
+          }
 
-        dynamicCounter++;
+          dynamicCounter++;
 
-        // Send this ajax post when we want inconsistencies for next level
-        if (dynamicCounter >= dynamicData.questions.length) {
-          submitDynamicData();
-        } else {
-          currConflictSet = dynamicData.questions[dynamicCounter];
-          displayModal();
-        }
-      });
+          // Send this ajax post when we want inconsistencies for next level
+          if (dynamicCounter >= dynamicData.questions.length) {
+            submitDynamicData();
+          } else {
+            currConflictSet = dynamicData.questions[dynamicCounter];
+            displayModal();
+          }
+        });
+      }
+
     });
 
-    $('#nav-list .collection-item').click(function(e) {
-      counter = e.target.attributes[1].value - 1;
+    $('#nav-list a').click(function(e) {
+      counter = parseInt(e.currentTarget.text) - 2;
       changeQuestion();
     });
 
-    function submitDynamicData() {
+     function submitDynamicData() {
+      console.log("submitDyanmicData()");
+      dynamicData.userId = userId;
       $.ajax({
         type: 'POST',
         url: '/answers/' + pollId,
@@ -101,57 +123,85 @@
 
             displayModal();
           } else {
-            window.location.href = '/results';
+            window.location.href = '/results/' + pollId;
           }
-        }
+        },
+        error: function() {
+          console.log('Error in submitting dynamic data');
+        },
       });
     }
 
     function setNavList() {
-      var nav = $('#nav-list');
+      let nav = $('#nav-list');
 
-      for (var i = 0; i < questions.length; i++) {
-        nav.append('<a class="collection-item"' +
+      for (let i = 0; i < questions.length; i++) {
+        let num = parseInt(questions[i].id) + 1;
+        nav.append('<li class="waves-effect"><a ' +
         'value="' +
         questions[i].id +
         '">' +
-        questions[i].text +
-        '</a>');
+        num +
+        '</a></li>');
       }
     };
 
+    //not using this function yet
+    function allAnswered(questions) {
+       let unansweredIndices = [];
+
+       for (let i = 0; i < questions.length; i++) {
+         if (questions[i].support === undefined) {
+           unansweredIndices.push(i);
+         }
+       }
+       //Highlight all the wrong questions in red
+       setActive(unansweredIndices);
+       return unansweredIndices.length === 0;
+    }
+
     function displayModal() {
-      $("#questions").html("");
+      $('#questions').html('');
 
       $('#conflictTitle').text('CONFLICT! Your answers to the following questions are inconsistent with the question: ' +
         currConflictSet[0].text + '. Please change your answer or give a reason why you answered the way you did.');
 
-      for(var i = 1; i < currConflictSet.length; i++) {
-        var support = currConflictSet[i].support;
+      for(let i = 1; i < currConflictSet.length; i++) {
+        let support = currConflictSet[i].support;
         createQuestion(currConflictSet[i].text, i);
-        $('#q' + i + "-" + support).prop('checked', true);
+        $('#q' + i + '-' + support).prop('checked', true);
       }
 
       $('#dynamicModal').openModal({
-        dismissible: false
+        dismissible: false,
       });
     }
 
-    function setActive() {
-      var nav = $('#nav-list');
-      var children = nav.children();
+    //At the moment, we are making all red unanswered questions lose redness
+    //on any question click, we want the rest to stay red until answered
+    function setActive(indices) {
+      let nav = $('#nav-list');
+      let children = nav.children();
       children.removeClass('active');
 
-      var active = children.eq(counter);
-      active.addClass('active');
+      indices.forEach(function (index) {
+        let active = children.eq(index);
+        active.addClass('active');   
+      });
+      
     }
 
     function changeQuestion() {
       currQ.support = options.filter(':checked').val();
       currQ.reason = reason.val();
 
+      if (counter > questions.length - 2) {
+        return;
+      }
+
       currQ = questions[++counter];
-      question.text(currQ.text);
+      var num = parseInt(currQ.id) + 1;
+      question.text(num + ': ' + currQ.text);
       reason.val(currQ.reason);
 
       if (currQ.support) {
@@ -170,17 +220,17 @@
         $('#finalQ').hide();
       }
 
-      setActive();
+      setActive([counter]);
     }
 
     function createQuestion(question, counter) {
-      var q = '<div id="' + question + '">' +
+      let q = '<div id="' + question + '">' +
       '<p>' + question + '</p>' +
       '<input type="radio" id="q' + counter + '-yes" name="' + counter + '" value="yes">' +
       '<label for="q' + counter +'-yes">Yes</label>   &nbsp; &nbsp; &nbsp;  ' +
       '<input type="radio" id="q' + counter + '-no" name="' + counter + '" value="no">' +
       '<label for="q' + counter +'-no">No</label>' +
-      '</div>'
+      '</div>';
 
       $('#questions').append(q);
     }

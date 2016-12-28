@@ -4,16 +4,16 @@ import com.google.gson.JsonObject;
 
 import java.sql.*;
 
-public class CreateUtils {
+class CreateUtils {
     private Connection connection;
     private JsonElement element;
 
-    public CreateUtils(Connection connection, JsonElement element) {
+    CreateUtils(Connection connection, JsonElement element) {
         this.connection = connection;
         this.element = element;
     }
 
-    public String createPoll() {
+    String createPoll() {
         PreparedStatement insertPoll;
         PreparedStatement findId;
         PreparedStatement createPoll;
@@ -21,7 +21,7 @@ public class CreateUtils {
         JsonArray list;
 
         try {
-            insertPoll = connection.prepareStatement("INSERT INTO polls(poll_name) VALUES (?);");
+            insertPoll = connection.prepareStatement("INSERT INTO polls(poll_name, email, password) VALUES (?, ?, ?);");
 
             findId = connection.prepareStatement("SELECT CURRVAL('polls_id_seq')");
             createPoll = connection.prepareStatement("CREATE TABLE ? " +
@@ -39,8 +39,12 @@ public class CreateUtils {
             JsonObject obj = element.getAsJsonObject();
             list = obj.getAsJsonArray("list");
             String name = obj.get("name").getAsString();
+            String email = obj.get("email").getAsString();
+            String password = obj.get("password").getAsString();
 
             insertPoll.setString(1, name);
+            insertPoll.setString(2, email);
+            insertPoll.setString(3, password);
         } catch (SQLException e) {
             String errMessage = e.getMessage();
             System.out.println(errMessage);

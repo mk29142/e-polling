@@ -11,5 +11,9 @@
   "bugs": {
     "url": "https://github.com/sparekh5/e-polling/issues"
   },
-  "homepage": "https://github.com/sparekh5/e-polling#readme"
+  "homepage": "https://github.com/sparekh5/e-polling#readme",
+  "devDependencies": {
+    "eslint": "^3.10.2",
+    "eslint-config-google": "^0.7.0"
+  }
 }

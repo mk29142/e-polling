@@ -14,6 +14,7 @@ class Argument {
 
     private int votesFor;
     private int votesAgainst;
+    private float baseScore;
 
     private boolean isSupporter;
     private List<Argument> children;
@@ -33,9 +34,19 @@ class Argument {
         this.id = id;
     }
 
+    public int getParent() {
+        return parent;
+    }
+
     public int getId() {
         return id;
     }
+
+    /*
+     * Use score function (sigma) from DF-QuAD algorithm to calculate strength
+     * of argument using the vote base score as the base score.
+     */
+    private double strength;
 
     Argument(boolean vote, String argumentTitle, boolean isSupporter) {
         this.text = argumentTitle;
@@ -55,6 +66,10 @@ class Argument {
 
     public void setVotesAgainst(int votesAgainst) {
         this.votesAgainst = votesAgainst;
+    }
+
+    public String getText() {
+        return text;
     }
 
     // Returns box for sending back Argument in JSON
@@ -91,6 +106,29 @@ class Argument {
         }
 
         return new ArrayList<>();
+    }
+
+    /*
+     * Concatenates Attacker and Supporters and returns list of Arguments,
+     * this is used in class MasterTree for the argumentToList() function
+     */
+    List<Argument> getChildren(){
+        return children;
+    }
+
+    /*
+     * Returns true if the subtree with this argument as the root is
+     * consistent, which is when the root and all of its children are
+     * consistent.
+     */
+    public boolean isSubTreeConsistent() {
+        for (Argument child : children) {
+            if (!child.isSubTreeConsistent()) {
+                return false;
+            }
+        }
+
+        return this.getInconsistencies().isEmpty();
     }
 
     private List<Argument> supportersAgreedWith() {
@@ -168,13 +206,13 @@ class Argument {
         float supporterScore =
                 strengthAggregationFunction(supporterScoreList);
 
-        float baseScore = getBaseScore();
+        this.baseScore = getBaseScore();
 
         if (attackerScore >= supporterScore) {
-            score = baseScore -
+            this.score = baseScore -
                     baseScore * Math.abs(supporterScore - attackerScore);
         } else {
-            score = baseScore +
+            this.score = baseScore +
                     (1 - baseScore) * Math.abs(supporterScore - attackerScore);
         }
     }
@@ -182,8 +220,8 @@ class Argument {
     /*
      * Simple getter that is used in scoreList (below)
      */
-    public float getScore() {
-        return score;
+    private float getScore() {
+        return this.score;
     }
 
     /*
@@ -213,11 +251,11 @@ class Argument {
         }
     }
 
-
     public void updateScore(Connection connection, String pollId) {
         for (Argument child : this.children) {
             child.updateScore(connection, pollId);
         }
+
         this.combinationFunction(); // To set our score
 
         this.putScoreInDb(connection, pollId);

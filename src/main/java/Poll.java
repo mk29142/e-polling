@@ -1,7 +1,7 @@
 /**
  * Created by sp5714 on 15/11/16.
  */
-public class Poll {
+class Poll {
     int id;
     String name;
 
@@ -12,6 +12,6 @@ public class Poll {
 
     @Override
     public String toString() {
-            return "Poll = " + name + " with id " + id;
-        }
+        return "Poll = " + this.name + " with id " + this.id;
+    }
 }

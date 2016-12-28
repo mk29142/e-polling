@@ -5,36 +5,24 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BoxesUtils {
+class BoxesUtils {
     private Connection connection;
     private String pollId;
     private String ip;
 
-    public BoxesUtils(Connection connection, String pollId, String ip) {
+    BoxesUtils(Connection connection, String pollId) {
         this.connection = connection;
         this.pollId = pollId;
-        this.ip = ip;
     }
 
-    public Object getStatementBoxes() {
+    List<Box> getStatementBoxes() {
         // Checking if connection exists
         try {
-            PreparedStatement ipCheck = connection.prepareStatement("SELECT " +
-                    "EXISTS(SELECT * FROM ? ");
-            ipCheck.setString(1, pollId + "_answers");
-
-            PreparedStatement insertIp = connection.prepareStatement(ipCheck
-                    .toString().replace("'", "\"") + "WHERE user_id=?);");
-            insertIp.setString(1, ip);
-
-            ResultSet rs = insertIp.executeQuery();
-            rs.next();
-
             // If they have answered questions already do something to notify
             // user. If not then carry on.
-            PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ?;");
+            PreparedStatement findStatements = connection.prepareStatement("SELECT * FROM ? ORDER BY 'statement_id';");
             findStatements.setString(1, pollId);
-            rs = connection.createStatement().executeQuery(findStatements.toString().replace("'", "\""));
+            ResultSet rs = connection.createStatement().executeQuery(findStatements.toString().replace("'", "\""));
 
             List<Box> boxes = new ArrayList<>();
 
@@ -49,7 +37,7 @@ public class BoxesUtils {
             return boxes;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-            return "500 Error";
+            return new ArrayList<>();
         }
     }
 }

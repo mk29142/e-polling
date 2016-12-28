@@ -1,9 +1,6 @@
 import java.net.URISyntaxException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.gson.*;
 
@@ -20,7 +17,7 @@ public class QuadV {
         try {
             connection = getConnection();
             connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
-                    "(id SERIAL UNIQUE, poll_name TEXT);");
+                    "(id SERIAL UNIQUE, poll_name TEXT, email TEXT, password TEXT);");
             //connection.createStatement().execute("CREATE TYPE statement_type " +
             //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
         } catch (URISyntaxException | SQLException e) {
@@ -53,7 +50,7 @@ public class QuadV {
         // Get the questions one by one for the specific poll
         // Use PreparedStatement in here to stop string injection
         get("/boxes/:id", "application/json", (req, res) ->
-                new BoxesUtils(connection, req.params(":id"), req.ip()).getStatementBoxes(),
+                new BoxesUtils(connection, req.params(":id")).getStatementBoxes(),
                 new JsonTransformer());
 
         get("/create", (req, res) ->
@@ -64,30 +61,43 @@ public class QuadV {
 
         post("/user/:id", (req, res) -> {
             // TODO: NEED TO ONLY INSERT IF IP IS NOT ALREADY IN TABLE DO A CHECK HERE
-            new AnswersUtils(connection, req.params(":id"), req.ip()).addUser();
-
-            return "200 OK";
+            String userId = req.session().id();
+            new AnswersUtils(connection, req.params(":id"), userId).addUser();
+            return userId;
         });
 
         post("/answers/:id", "application/json", (req, res) -> {
             JsonObject data = new JsonParser()
                     .parse(req.body())
                     .getAsJsonObject();
+            String userId = data.get("userId").getAsString();
 
-            AnswersUtils ans = new AnswersUtils(connection, req.params(":id"), req.ip());
+            AnswersUtils ans = new AnswersUtils(connection, req.params(":id"), userId);
 
             JsonArray answers = data.get("questions").getAsJsonArray();
 
             ans.enterAnswersIntoDatabase(answers);
-            return ans.resolveDynamicQuestions(data);
+            Object dynamicQs = ans.resolveDynamicQuestions(data);
+
+            if ("500 Error".equals(dynamicQs)) res.status(500);
+            return dynamicQs;
         }, new JsonTransformer());
 
         get("/results", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
 
         // Where we will show all of the graphs and stats of the poll
-        get("/results/:pollid", (req, res) ->
+        get("/results/:id", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
+
+        get("/graph/:id", "application/json", (req, res) -> {
+            String pollId = req.params(":id");
+            return new AnswersUtils(connection, pollId).getGraphData();
+        }, new JsonTransformer());
+
+        get("/nodeGraph/:id", "application/json", (req, res) ->
+                new NodeGraphBuilder(connection, req.params(":id"))
+                        .createResultGraph(), new JsonTransformer());
     }
 
     private static Connection getConnection()

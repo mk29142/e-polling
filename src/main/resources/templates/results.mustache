@@ -3,9 +3,52 @@
 {{> header}}
 <body>
   <div class="container">
-    <div class="center-align" style="padding:20%">
-      <h5>Thank you for voting.</h5>
+    <div class="row">
+      <a class="btn z-depth-0" href="/">back to home</a>
+    </div>
+    <div class="row">
+      <div class="col s6">
+        <h2>'Real' Scores</h2>
+        <canvas id="sigmaScore" width="40" height="40"></canvas>
+        <p>
+          This graph gives a metric for how supported an argument is
+          taking into account all of the other arguments which may affect it
+          (i.e. it takes into account votes on supporters,
+          supporters of supporters, attackers, attackers of attackers, etc.).
+          A high score, also denoted as σ, corresponds to the argument having
+          more total support.
+        </p>
+      </div>
+      <div class="col s6">
+        <h2>'Traditional' scores</h2>
+        <canvas id="tauScore" width="40" height="40"></canvas>
+        <p>
+          This graph shows how many people voted for the direct supporters
+          and attackers of each argument. A high base score, also denoted
+          as τ, corresponds to more direct supporters being voted for
+          than direct attackers.
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+      <div class="col s4 offset-s2" id="barchart_material" style="width: 900px; height: 500px;"></div>
+    </div>
+    <div class="row">
+      <h1>Argument tree</h1>
+      <p>
+        This graph shows the connections between arguments in the poll.
+        These relationships are used in our algorithmm to calculate a node's
+        score. This score is represented here as the radius and the greater
+        the radius, the greater the score of the argument. The opacity is based
+        on the base scores defined above.
+      </p>
+      <div class="col s4 offset-s1">
+        <svg width="950" height="600"></svg>
+      </div>
     </div>
   </div>
+  <script src="/src/graph.js"></script>
+  <script src="/src/nodeGraph.js"></script>
 </body>
 </html>

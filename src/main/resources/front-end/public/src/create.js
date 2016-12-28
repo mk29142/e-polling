@@ -1,9 +1,9 @@
 (function() {
-  var boxOptions = {
+  let boxOptions = {
     id: id++,
     parentId: null,
     type: 'Issue',
-    level: 0
+    level: 0,
   };
 
   new Box(boxOptions);
@@ -11,16 +11,18 @@
   list.push(boxOptions);
 
   $('#submit-poll').click(function() {
-    for (var i = 0; i < list.length; i++) {
-      var elem = list[i];
+    for (let i = 0; i < list.length; i++) {
+      let elem = list[i];
       elem.value = $('#box' + elem.id).find('input').val();
-      var oldParent = elem.parentId;
+      let oldParent = elem.parentId;
       elem.parentId = oldParent ? parseInt(oldParent.substring(3)) : null;
     }
 
-    var data = {
+    let data = {
+      email: $('#email').val(),
+      password: $('#password').val(),
       name: list[0].value,
-      list: list
+      list: list,
     };
 
     $.ajax({
@@ -31,7 +33,7 @@
       success: function(data) {
         console.log(data);
         window.location.href = '/results/' + data;
-      }
+      },
     });
   });
 })();

@@ -10,20 +10,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AnswersUtils {
+class AnswersUtils {
     private MasterTree mt;
     private Connection connection;
     private String pollId;
     private String ip;
 
-    public AnswersUtils(Connection connection, String pollId, String ip) {
+    AnswersUtils(Connection connection, String pollId, String ip) {
         this.connection = connection;
         this.pollId = pollId;
         this.ip = ip;
         this.mt = new MasterTree(connection);
     }
 
-    public void enterAnswersIntoDatabase(JsonArray answers) {
+    AnswersUtils(Connection connection, String pollId) {
+        this(connection, pollId, null);
+    }
+
+    void enterAnswersIntoDatabase(JsonArray answers) {
         // Go through head's adding changed vote values (for first run all answers given)
         for (int i = 0; i < answers.size(); i++) {
             JsonArray headAnswers = answers.get(i).getAsJsonArray();
@@ -53,7 +57,7 @@ public class AnswersUtils {
         }
     }
 
-    public Object resolveDynamicQuestions(JsonObject data) {
+    Object resolveDynamicQuestions(JsonObject data) {
         // Pull from the database into argument objects
         try {
             ResultSet rs = getAnswers();
@@ -72,7 +76,7 @@ public class AnswersUtils {
                 if (!headIds.isBeforeFirst()) {
                     mt.updateVotes(pollId, ip);
                     mt.updateScores(pollId);
-                    // Delete the entry in answers table
+                    mt.deleteFromDataBase(pollId, ip);
 
                     return "STOP";
                 }
@@ -89,13 +93,13 @@ public class AnswersUtils {
             } while (dynamicQuestions.isEmpty());
 
             return new DynamicData(dynamicQuestions, nextLevel);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + " in resolveDynamicQuestions");
             return "500 ERROR";
         }
     }
 
-    public void addUser() {
+    void addUser() {
         try {
             PreparedStatement createUser = connection.prepareStatement("INSERT INTO ? (user_id)");
             createUser.setString(1, pollId + "_answers");
@@ -108,25 +112,64 @@ public class AnswersUtils {
         }
     }
 
+    List<GraphData> getGraphData() {
+        List<GraphData> graphData = new ArrayList<>();
+
+        try {
+            PreparedStatement getStatementData =
+                    connection.prepareStatement(
+                            "SELECT * FROM ? ORDER BY 'statement_id';");
+            getStatementData.setString(1, pollId);
+
+            getStatementData = connection.prepareStatement(
+                    getStatementData.toString().replace("'", "\""));
+            ResultSet statementData = getStatementData.executeQuery();
+
+            while (statementData.next()) {
+                String text = statementData.getString("statement");
+                int id = statementData.getInt("statement_id");
+                Integer parentId = statementData.getInt("parent_id");
+                int yesVotes = statementData.getInt("yes_votes");
+                int noVotes = statementData.getInt("no_votes");
+                float score = statementData.getFloat("score");
+
+                graphData.add(new GraphData(
+                        id, parentId, score, yesVotes, noVotes, text));
+            }
+
+            return graphData;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage() + " in getGraphData");
+            return new ArrayList<>();
+        }
+    }
+
     private void insertAnswer(boolean vote, Integer id) throws SQLException {
-        PreparedStatement insertAnswer = connection.prepareStatement("UPDATE ? SET ?=");
+        PreparedStatement insertAnswer =
+                connection.prepareStatement("UPDATE ? SET ?=");
         insertAnswer.setString(1, pollId + "_answers");
         insertAnswer.setString(2, id.toString());
 
-        PreparedStatement insertValues = connection.prepareStatement(insertAnswer.toString().replace("'", "\"")
+        PreparedStatement insertValues = connection.prepareStatement(
+                insertAnswer.toString().replace("'", "\"")
                 + "? WHERE user_id=?;");
 
         insertValues.setBoolean(1, vote);
         insertValues.setString(2, ip);
 
-        insertValues.executeUpdate();
+        int worked = insertValues.executeUpdate();
+        if (worked != 1) throw new SQLException("No answers were inserted. "
+            + id + ": " + vote + ", ip: " + ip);
     }
 
     private ResultSet getAnswers() throws SQLException {
         // Get row of answers for user
-        PreparedStatement getUserAnswers = connection.prepareStatement("SELECT * FROM ? WHERE user_id=");
+        PreparedStatement getUserAnswers =
+                connection.prepareStatement("SELECT * FROM ? WHERE user_id=");
         getUserAnswers.setString(1, pollId + "_answers");
-        PreparedStatement getAnswers = connection.prepareStatement(getUserAnswers.toString().replace("'", "\"") + "?;");
+        PreparedStatement getAnswers =
+                connection.prepareStatement(
+                        getUserAnswers.toString().replace("'", "\"") + "?;");
         getAnswers.setString(1, ip);
 
         // Get all answers
@@ -136,9 +179,13 @@ public class AnswersUtils {
     private ResultSet getChildren(Integer currentHead) throws SQLException {
         // Get parent = currentHead and children rows in poll
         // table where parent_id = currentHead
-        PreparedStatement getValues = connection.prepareStatement("SELECT * FROM ? WHERE parent_id=");
+        PreparedStatement getValues =
+                connection.prepareStatement(
+                        "SELECT * FROM ? WHERE parent_id=");
         getValues.setString(1, pollId);
-        PreparedStatement getChildren = connection.prepareStatement(getValues.toString().replace("'", "\"") + "? OR" +
+        PreparedStatement getChildren =
+                connection.prepareStatement(
+                        getValues.toString().replace("'", "\"") + "? OR" +
                 " statement_id=? ORDER BY statement_id");
         getChildren.setInt(1, currentHead);
         getChildren.setInt(2, currentHead);
@@ -148,9 +195,12 @@ public class AnswersUtils {
 
     private ResultSet getHeadIds(Integer nextLevel) throws SQLException {
         // Get all ids for a level
-        PreparedStatement getHeads = connection.prepareStatement("SELECT \"statement_id\" FROM ? WHERE \"level\"=");
+        PreparedStatement getHeads = connection.prepareStatement(
+                "SELECT \"statement_id\" FROM ? WHERE \"level\"=");
         getHeads.setString(1, pollId);
-        PreparedStatement getHeadIds = connection.prepareStatement(getHeads.toString().replace("'","\"") + nextLevel);
+        PreparedStatement getHeadIds =
+                connection.prepareStatement(
+                        getHeads.toString().replace("'","\"") + nextLevel);
         return getHeadIds.executeQuery();
     }
 
