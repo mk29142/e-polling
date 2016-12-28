@@ -28,6 +28,7 @@ class AnswersUtils {
     }
 
     void enterAnswersIntoDatabase(JsonArray answers) {
+        // Go through head's adding changed vote values (for first run all answers given)
         for (int i = 0; i < answers.size(); i++) {
             JsonObject answer = answers.get(i).getAsJsonObject();
 
@@ -52,48 +53,26 @@ class AnswersUtils {
 
     DynamicData resolveDynamicQuestions(JsonObject data) {
         // Pull from the database into argument objects
-        try {
-            ResultSet rs = getAnswers();
-            rs.next();
-            // rs is now the first row from the answers table with user_id (should be unique)
 
-            Integer nextLevel = data.get("nextLevel").getAsInt();
+        /*
+         * This list will have the "inconsistent" node at its head with all its supporters/attackers
+         * in the rest of the list
+         */
+        List<Box> dynamicQuestion = findDynamicQ(data);
 
-            /*
-             this list will have the "inconsistent" node at its head with all its supporters/attackers
-             in the rest of the list
-            */
-            List<Box> dynamicQuestions = new ArrayList<>();
+        // If there are no dynamic questions
 
-            do {
-                // 1st elem of each inner list is the head
-                ResultSet headIds = getHeadIds(nextLevel);
-
-                // This case will occur when we go past last level of tree
-                if (!headIds.isBeforeFirst()) {
-                    mt.updateVotes(pollId, userId);
-                    mt.updateScores(pollId);
-                    mt.deleteFromDataBase(pollId, userId);
+        if (dynamicQuestion == null) {
+            mt.updateVotes(pollId, ip);
+            mt.updateScores(pollId);
+            mt.deleteFromDataBase(pollId, ip);
 
                     return new DynamicData();
                 }
 
-                // For each head find its inconsistencies and store it in a
-                // list of boxes
-                while (headIds.next()) {
-                    Integer currentHead = headIds.getInt("statement_id");
-                    ResultSet children = getChildren(currentHead);
-                    dynamicQuestions = findDynamicQ(rs, children);
-                }
-
-                nextLevel++;
-            } while (dynamicQuestions.isEmpty());
-
-            return new DynamicData(dynamicQuestions, nextLevel);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage() + " in resolveDynamicQuestions");
-            return new DynamicData();
         }
+        return dynamicQuestion;
+
     }
 
     void addUser() {
@@ -156,7 +135,7 @@ class AnswersUtils {
 
         int worked = insertValues.executeUpdate();
         if (worked != 1) throw new SQLException("No answers were inserted. "
-            + id + ": " + vote + ", ip: " + userId);
+            + id + ": " + vote + ", id: " + userId);
     }
 
     private ResultSet getAnswers() throws SQLException {
@@ -168,26 +147,56 @@ class AnswersUtils {
                 connection.prepareStatement(
                         getUserAnswers.toString().replace("'", "\"") + "?;");
         getAnswers.setString(1, userId);
-
-        // Get all answers
         return getAnswers.executeQuery();
     }
 
-    private ResultSet getChildren(Integer currentHead) throws SQLException {
-        // Get parent = currentHead and children rows in poll
-        // table where parent_id = currentHead
-        PreparedStatement getValues =
-                connection.prepareStatement(
-                        "SELECT * FROM ? WHERE parent_id=");
-        getValues.setString(1, pollId);
-        PreparedStatement getChildren =
-                connection.prepareStatement(
-                        getValues.toString().replace("'", "\"") + "? OR" +
-                " statement_id=? ORDER BY statement_id");
-        getChildren.setInt(1, currentHead);
-        getChildren.setInt(2, currentHead);
+    private List<Box> findDynamicQ(JsonObject data) {
 
-        return getChildren.executeQuery();
+        JsonArray arguments = data.getAsJsonArray("questions").get(0).getAsJsonArray();
+
+        JsonObject jsonHead = arguments.get(0).getAsJsonObject();
+        // This needs to be set
+        Argument head = new Argument(jsonHead);
+
+        List<Argument> argList = new ArrayList<>();
+        argList.add(head);
+
+
+        // Turn all json arrays into arguments
+        for (int i = 1; i < arguments.size(); i++){
+            JsonObject jsonArr = arguments.get(i).getAsJsonObject();
+            Argument arg = new Argument(jsonArr);
+            argList.add(arg);
+        }
+
+
+        //set the children of each argument using argList
+        for (int i = 0; i < argList.size(); i++){
+            Argument arg = argList.get(i);
+            int argId = arg.getId();
+            for(int j = 1; j < argList.size(); j++){
+                Argument currArg = argList.get(j);
+                if(argId == currArg.getParent()){
+                    arg.addChild(currArg);
+                }
+            }
+        }
+
+        List<Argument> inconsistencies = head.getInconsistencies();
+
+        // If there are inconsistencies then store them with
+        // their head node
+        if (inconsistencies.size() > 1) {
+            List<Box> dynamicQuestion = new ArrayList<>();
+            dynamicQuestion.addAll(inconsistencies
+                    .stream()
+                    .map(Argument::toBox)
+                    .collect(Collectors.toList()));
+
+            return dynamicQuestion;
+        }
+
+        return null;
     }
 
     private ResultSet getHeadIds(Integer nextLevel) throws SQLException {
@@ -198,56 +207,5 @@ class AnswersUtils {
         PreparedStatement getHeadIds = connection.prepareStatement(
                 getHeads.toString().replace("'","\"") + nextLevel);
         return getHeadIds.executeQuery();
-    }
-
-    private List<Box> findDynamicQ(
-            ResultSet rs,
-            ResultSet children) throws SQLException {
-        if (children.isBeforeFirst()) {
-            // Only true if there are children (ignore heads without children)
-            children.next(); // Head is the first here as it has the lowest index
-
-            Argument head = new Argument(
-                    rs.getBoolean("0"),
-                    children.getString("statement"),
-                    children.getString("type").equals("Pro"));
-            head.setId(children.getInt("statement_id"));
-
-            // While there is a row for a child
-            while (children.next()) {
-                addChild(rs, children, head);
-            }
-
-            // Set of all rows for relevant nodes in tree
-            List<Argument> inconsistencies = head.getInconsistencies();
-
-            // If there are inconsistencies then store them with
-            // their head node
-            if (!inconsistencies.isEmpty()) {
-                List<Box> dynamicQuestion = new ArrayList<>();
-                dynamicQuestion.add(0, head.toBox());
-                dynamicQuestion
-                        .addAll(inconsistencies
-                            .stream()
-                            .map(Argument::toBox)
-                            .collect(Collectors.toList()));
-                return dynamicQuestion;
-            }
-        }
-
-        return null;
-    }
-
-    private void addChild(ResultSet rs, ResultSet children, Argument head) throws SQLException {
-        Integer argumentId = children.getInt("statement_id");
-        Integer parentId = children.getInt("parent_id");
-        Argument arg = new Argument(
-                rs.getBoolean(argumentId.toString()),
-                children.getString("statement"),
-                children.getString("type").equals("Pro"));
-        arg.setId(argumentId);
-        arg.setParent(parentId);
-
-        head.addChild(arg);
     }
 }

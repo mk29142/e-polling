@@ -75,6 +75,7 @@ public class QuadV {
             AnswersUtils ans = new AnswersUtils(connection, req.params(":id"), userId);
 
             JsonArray answers = data.get("questions").getAsJsonArray();
+
             ans.enterAnswersIntoDatabase(answers);
             DynamicData dynamicQ = ans.resolveDynamicQuestions(data);
 
