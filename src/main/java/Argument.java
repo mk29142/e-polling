@@ -74,7 +74,12 @@ class Argument {
 
     // Returns box for sending back Argument in JSON
     public Box toBox() {
-        return new Box(id, parent, text, isSupporter ? "Pro" : "Con", vote ? "For" : "Against");
+        return new Box(
+                id,
+                parent,
+                text,
+                isSupporter ? "Pro" : "Con",
+                vote ? "For" : "Against");
     }
 
     public void addChild(Argument child) {

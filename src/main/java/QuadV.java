@@ -70,6 +70,7 @@ public class QuadV {
             JsonObject data = new JsonParser()
                     .parse(req.body())
                     .getAsJsonObject();
+
             String userId = data.get("userId").getAsString();
 
             AnswersUtils ans = new AnswersUtils(connection, req.params(":id"), userId);
@@ -77,8 +78,13 @@ public class QuadV {
             JsonArray answers = data.get("questions").getAsJsonArray();
 
             ans.enterAnswersIntoDatabase(answers);
-            Object dynamicQ = ans.resolveDynamicQuestions(data);
-            return dynamicQ;
+            DynamicData dynamicQ = ans.resolveDynamicQuestions(data);
+
+            if (dynamicQ.isEnd()) {
+                return "STOP";
+            } else {
+                return dynamicQ;
+            }
         }, new JsonTransformer());
 
         get("/results", (req, res) ->

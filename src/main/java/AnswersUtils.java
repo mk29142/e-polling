@@ -14,12 +14,12 @@ class AnswersUtils {
     private MasterTree mt;
     private Connection connection;
     private String pollId;
-    private String ip;
+    private String userId;
 
-    AnswersUtils(Connection connection, String pollId, String ip) {
+    AnswersUtils(Connection connection, String pollId, String userId) {
         this.connection = connection;
         this.pollId = pollId;
-        this.ip = ip;
+        this.userId = userId;
         this.mt = new MasterTree(connection);
     }
 
@@ -28,66 +28,48 @@ class AnswersUtils {
     }
 
     void enterAnswersIntoDatabase(JsonArray answers) {
-        // Go through head's adding changed vote values (for first run all answers given)
+        // Go through head's adding changed vote values
+        // (for first run all answers given)
         for (int i = 0; i < answers.size(); i++) {
-            JsonArray headAnswers = answers.get(i).getAsJsonArray();
+            JsonObject answer = answers.get(i).getAsJsonObject();
 
-            // Go through a single head
-            for (int j = 0; j < headAnswers.size(); j++) {
-                JsonElement elem = headAnswers.get(j);
-                JsonObject answer = elem.getAsJsonObject();
+            boolean vote = answer.get("support").getAsString().equals("yes");
+            int id = answer.get("id").getAsInt();
 
-                boolean vote;
-                try {
-                    vote = answer.get("support").getAsString().equals("yes");
-                } catch (Exception e) {
-                    // In all other cases than the first "support" is not a
-                    // field so we don't update it with anything
-                    continue;
-                }
-
-                Integer id = answer.get("id").getAsInt();
-
-                try {
-                    insertAnswer(vote, id);
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
+            try {
+                insertAnswer(vote, id);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
 
-    Object resolveDynamicQuestions(JsonObject data) {
-        // Pull from the database into argument objects
+    DynamicData resolveDynamicQuestions(JsonObject data) {
+        // This list will have the "inconsistent" node at its head with all its
+        // supporters/attackers in the rest of the list
+        List<Box> dynamicQuestions = findDynamicQ(data);
 
-        /*
-         this list will have the "inconsistent" node at its head with all its supporters/attackers
-         in the rest of the list
-        */
-        List<Box> dynamicQuestion = findDynamicQ(data);
-
-        //if there are no dynamic questions
-
-        if(dynamicQuestion==null){
-
-            mt.updateVotes(pollId, ip);
+        // If there are no dynamic questions
+        if (dynamicQuestions == null || dynamicQuestions.isEmpty()) {
+            mt.updateVotes(pollId, userId);
             mt.updateScores(pollId);
-            mt.deleteFromDataBase(pollId, ip);
+            mt.deleteFromDataBase(pollId, userId);
 
-            return "STOP";
-
+            return new DynamicData();
         }
-        return dynamicQuestion;
 
+        return new DynamicData(dynamicQuestions, 0);
     }
 
     void addUser() {
         try {
-            PreparedStatement createUser = connection.prepareStatement("INSERT INTO ? (user_id)");
+            PreparedStatement createUser = connection.prepareStatement(
+                    "INSERT INTO ? (user_id)");
             createUser.setString(1, pollId + "_answers");
-            PreparedStatement insertIp = connection.prepareStatement(createUser.toString().replace("'", "\"") + "  VALUES(?);");
+            PreparedStatement insertIp = connection.prepareStatement(
+                    createUser.toString().replace("'", "\"") + " VALUES(?);");
 
-            insertIp.setString(1, ip);
+            insertIp.setString(1, userId);
             insertIp.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -137,62 +119,60 @@ class AnswersUtils {
                 + "? WHERE user_id=?;");
 
         insertValues.setBoolean(1, vote);
-        insertValues.setString(2, ip);
+        insertValues.setString(2, userId);
 
         int worked = insertValues.executeUpdate();
         if (worked != 1) throw new SQLException("No answers were inserted. "
-            + id + ": " + vote + ", ip: " + ip);
+            + id + ": " + vote + ", id: " + userId);
     }
 
-
-    private List<Box> findDynamicQ(JsonObject data) {
-
-        JsonArray arguments = data.getAsJsonArray("questions").get(0).getAsJsonArray();
-
-        JsonObject jsonHead = arguments.get(0).getAsJsonObject();
-        //this needs to be set
-        Argument head = new Argument(jsonHead);
-
-
+    // Turn all json arrays into arguments
+    private List<Argument> convertToArgumentList(JsonArray arguments) {
         List<Argument> argList = new ArrayList<>();
-        argList.add(head);
 
-
-        //turn all json arrays into arguments
-        for(int i = 1; i < arguments.size(); i++){
+        for (int i = 1; i < arguments.size(); i++) {
             JsonObject jsonArr = arguments.get(i).getAsJsonObject();
             Argument arg = new Argument(jsonArr);
             argList.add(arg);
         }
 
+        return  argList;
+    }
 
-        //set the children of each argument using argList
-        for(int i = 0; i < argList.size(); i++){
+    // Set the children of each argument using argList
+    private void setChildrenArguments(List<Argument> argList) {
+        for (int i = 0; i < argList.size(); i++) {
             Argument arg = argList.get(i);
             int argId = arg.getId();
-            for(int j = 1; j < argList.size(); j++){
+
+            for (int j = 0; j < argList.size(); j++) {
                 Argument currArg = argList.get(j);
-                if(argId == currArg.getParent()){
+                if (argId == currArg.getParent()) {
                     arg.addChild(currArg);
                 }
             }
         }
+    }
+
+    private List<Box> findDynamicQ(JsonObject data) {
+        JsonArray arguments = data.get("questions").getAsJsonArray();
+        JsonObject jsonHead = arguments.get(0).getAsJsonObject();
+
+        // This needs to be set
+        List<Argument> argList = convertToArgumentList(arguments);
+        Argument head = new Argument(jsonHead);
+        argList.add(head);
+
+        setChildrenArguments(argList);
 
         List<Argument> inconsistencies = head.getInconsistencies();
 
         // If there are inconsistencies then store them with
         // their head node
-        if (inconsistencies.size() > 1) {
-            List<Box> dynamicQuestion = new ArrayList<>();
-            dynamicQuestion.addAll(inconsistencies
-                    .stream()
-                    .map(Argument::toBox)
-                    .collect(Collectors.toList()));
-
-            return dynamicQuestion;
-        }
-
-        return null;
+        return inconsistencies
+                .stream()
+                .map(Argument::toBox)
+                .collect(Collectors.toList());
     }
 
 
