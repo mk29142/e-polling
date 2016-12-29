@@ -95,6 +95,7 @@ class MasterTree {
         } catch (SQLException e) {
             System.out.println(e.getMessage() + "in setArgumentChildren");
         }
+
     }
 
     public void deleteFromDataBase(String pollId, String userId) {

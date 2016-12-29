@@ -1,3 +1,6 @@
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -55,6 +58,15 @@ class Argument {
         this.children = new ArrayList<>();
     }
 
+    Argument(JsonObject arg){
+        this.vote = arg.get("support").getAsString().equals("yes");
+        this.text = arg.get("text").getAsString();
+        this.isSupporter = arg.get("type").getAsString().equals("Pro");
+        this.parent = arg.get("parent").getAsInt();
+        this.id = arg.get("id").getAsInt();
+        this.children = new ArrayList<>();
+    }
+
     boolean getVote() {
         return vote;
     }
@@ -74,7 +86,12 @@ class Argument {
 
     // Returns box for sending back Argument in JSON
     public Box toBox() {
-        return new Box(id, parent, text, isSupporter ? "Pro" : "Con");
+        return new Box(
+                id,
+                parent,
+                text,
+                isSupporter ? "Pro" : "Con",
+                vote ? "For" : "Against");
     }
 
     public void addChild(Argument child) {
@@ -92,20 +109,37 @@ class Argument {
      * Otherwise, it is consistent.
      */
     public List<Argument> getInconsistencies() {
+
+
+        List<Argument> inconsistencies = new ArrayList<>();
+
         List<Argument> attackers = attackersAgreedWith();
         List<Argument> supporters = supportersAgreedWith();
 
         if (this.vote) {
             if (supporters.isEmpty()) {
-                return getAllSupporters();
+                inconsistencies.add(this);
+                inconsistencies.addAll(getAllSupporters());
+                return inconsistencies;
             }
         } else {
             if (attackers.isEmpty()) {
-                return getAllAttackers();
+                inconsistencies.add(this);
+                inconsistencies.addAll(getAllAttackers());
+                return inconsistencies;
             }
         }
 
-        return new ArrayList<>();
+        for(Argument child : children){
+            List<Argument> currInconsistencies = child.getInconsistencies();
+            if(!currInconsistencies.isEmpty()){
+                inconsistencies = currInconsistencies;
+                break;
+            }
+        }
+
+        return inconsistencies;
+
     }
 
     /*
@@ -220,6 +254,8 @@ class Argument {
     /*
      * Simple getter that is used in scoreList (below)
      */
+
+
     private float getScore() {
         return this.score;
     }

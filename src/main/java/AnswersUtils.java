@@ -2,24 +2,24 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class AnswersUtils {
     private MasterTree mt;
     private Connection connection;
     private String pollId;
-    private String ip;
+    private String userId;
 
-    AnswersUtils(Connection connection, String pollId, String ip) {
+    AnswersUtils(Connection connection, String pollId, String userId) {
         this.connection = connection;
         this.pollId = pollId;
-        this.ip = ip;
+        this.userId = userId;
         this.mt = new MasterTree(connection);
     }
 
@@ -28,84 +28,48 @@ class AnswersUtils {
     }
 
     void enterAnswersIntoDatabase(JsonArray answers) {
-        // Go through head's adding changed vote values (for first run all answers given)
+        // Go through head's adding changed vote values
+        // (for first run all answers given)
         for (int i = 0; i < answers.size(); i++) {
-            JsonArray headAnswers = answers.get(i).getAsJsonArray();
+            JsonObject answer = answers.get(i).getAsJsonObject();
 
-            // Go through a single head
-            for (int j = 0; j < headAnswers.size(); j++) {
-                JsonElement elem = headAnswers.get(j);
-                JsonObject answer = elem.getAsJsonObject();
+            boolean vote = answer.get("support").getAsString().equals("yes");
+            int id = answer.get("id").getAsInt();
 
-                boolean vote;
-                try {
-                    vote = answer.get("support").getAsString().equals("yes");
-                } catch (Exception e) {
-                    // In all other cases than the first "support" is not a
-                    // field so we don't update it with anything
-                    continue;
-                }
-
-                Integer id = answer.get("id").getAsInt();
-
-                try {
-                    insertAnswer(vote, id);
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
+            try {
+                insertAnswer(vote, id);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
 
-    Object resolveDynamicQuestions(JsonObject data) {
-        // Pull from the database into argument objects
-        try {
-            ResultSet rs = getAnswers();
-            rs.next();
-            // rs is now the first row from the answers table with user_id (should be unique)
+    DynamicData resolveDynamicQuestions(JsonObject data) {
+        // This list will have the "inconsistent" node at its head with all its
+        // supporters/attackers in the rest of the list
+        List<Box> dynamicQuestions = findDynamicQ(data);
 
-            Integer nextLevel = data.get("nextLevel").getAsInt();
+        // If there are no dynamic questions
+        if (dynamicQuestions == null || dynamicQuestions.isEmpty()) {
+            mt.updateVotes(pollId, userId);
+            mt.updateScores(pollId);
+            mt.deleteFromDataBase(pollId, userId);
 
-            List<List<Box>> dynamicQuestions = new ArrayList<>();
-
-            do {
-                // 1st elem of each inner list is the head
-                ResultSet headIds = getHeadIds(nextLevel);
-
-                // This case will occur when we go past last level of tree
-                if (!headIds.isBeforeFirst()) {
-                    mt.updateVotes(pollId, ip);
-                    mt.updateScores(pollId);
-                    mt.deleteFromDataBase(pollId, ip);
-
-                    return "STOP";
-                }
-
-                // For each head find its inconsistencies and store it in a
-                // list of boxes
-                while (headIds.next()) {
-                    Integer currentHead = headIds.getInt("statement_id");
-                    ResultSet children = getChildren(currentHead);
-                    dynamicQuestions = gatherDynamicQs(rs, dynamicQuestions, children);
-                }
-
-                nextLevel++;
-            } while (dynamicQuestions.isEmpty());
-
-            return new DynamicData(dynamicQuestions, nextLevel);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage() + " in resolveDynamicQuestions");
-            return "500 ERROR";
+            return new DynamicData();
         }
+
+        return new DynamicData(dynamicQuestions, 0);
     }
 
     void addUser() {
         try {
-            PreparedStatement createUser = connection.prepareStatement("INSERT INTO ? (user_id)");
+            PreparedStatement createUser = connection.prepareStatement(
+                    "INSERT INTO ? (user_id)");
             createUser.setString(1, pollId + "_answers");
-            PreparedStatement insertIp = connection.prepareStatement(createUser.toString().replace("'", "\"") + "  VALUES(?);");
+            PreparedStatement insertIp = connection.prepareStatement(
+                    createUser.toString().replace("'", "\"") + " VALUES(?);");
 
-            insertIp.setString(1, ip);
+            insertIp.setString(1, userId);
             insertIp.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -155,105 +119,117 @@ class AnswersUtils {
                 + "? WHERE user_id=?;");
 
         insertValues.setBoolean(1, vote);
-        insertValues.setString(2, ip);
+        insertValues.setString(2, userId);
 
         int worked = insertValues.executeUpdate();
         if (worked != 1) throw new SQLException("No answers were inserted. "
-            + id + ": " + vote + ", ip: " + ip);
+            + id + ": " + vote + ", id: " + userId);
     }
 
-    private ResultSet getAnswers() throws SQLException {
-        // Get row of answers for user
-        PreparedStatement getUserAnswers =
-                connection.prepareStatement("SELECT * FROM ? WHERE user_id=");
-        getUserAnswers.setString(1, pollId + "_answers");
-        PreparedStatement getAnswers =
-                connection.prepareStatement(
-                        getUserAnswers.toString().replace("'", "\"") + "?;");
-        getAnswers.setString(1, ip);
+    // Turn all json arrays into arguments
+    private List<Argument> convertToArgumentList(JsonArray arguments) {
+        List<Argument> argList = new ArrayList<>();
 
-        // Get all answers
-        return getAnswers.executeQuery();
+        for (int i = 1; i < arguments.size(); i++) {
+            JsonObject jsonArr = arguments.get(i).getAsJsonObject();
+            Argument arg = new Argument(jsonArr);
+            argList.add(arg);
+        }
+
+        return  argList;
     }
 
-    private ResultSet getChildren(Integer currentHead) throws SQLException {
-        // Get parent = currentHead and children rows in poll
-        // table where parent_id = currentHead
-        PreparedStatement getValues =
-                connection.prepareStatement(
-                        "SELECT * FROM ? WHERE parent_id=");
-        getValues.setString(1, pollId);
-        PreparedStatement getChildren =
-                connection.prepareStatement(
-                        getValues.toString().replace("'", "\"") + "? OR" +
-                " statement_id=? ORDER BY statement_id");
-        getChildren.setInt(1, currentHead);
-        getChildren.setInt(2, currentHead);
+    // Set the children of each argument using argList
+    private void setChildrenArguments(List<Argument> argList) {
+        for (int i = 0; i < argList.size(); i++) {
+            Argument arg = argList.get(i);
+            int argId = arg.getId();
 
-        return getChildren.executeQuery();
-    }
-
-    private ResultSet getHeadIds(Integer nextLevel) throws SQLException {
-        // Get all ids for a level
-        PreparedStatement getHeads = connection.prepareStatement(
-                "SELECT \"statement_id\" FROM ? WHERE \"level\"=");
-        getHeads.setString(1, pollId);
-        PreparedStatement getHeadIds =
-                connection.prepareStatement(
-                        getHeads.toString().replace("'","\"") + nextLevel);
-        return getHeadIds.executeQuery();
-    }
-
-    private List<List<Box>> gatherDynamicQs(
-            ResultSet rs,
-            List<List<Box>> dynamicQuestions,
-            ResultSet children) throws SQLException {
-        if (children.isBeforeFirst()) {
-            // Only true if there are children (ignore heads without children)
-            children.next(); // Head is the first here as it has the lowest index
-
-            Argument head = new Argument(
-                    rs.getBoolean("0"),
-                    children.getString("statement"),
-                    children.getString("type").equals("Pro"));
-            head.setId(children.getInt("statement_id"));
-
-            // While there is a row for a child
-            while (children.next()) {
-                addChild(rs, children, head);
+            for (int j = 0; j < argList.size(); j++) {
+                Argument currArg = argList.get(j);
+                if (argId == currArg.getParent()) {
+                    arg.addChild(currArg);
+                }
             }
+        }
+    }
 
-            // Set of all rows for relevant nodes in tree
-            List<Argument> inconsistencies = head.getInconsistencies();
+    private List<Box> findDynamicQ(JsonObject data) {
+        JsonArray arguments = data.get("questions").getAsJsonArray();
+        JsonObject jsonHead = arguments.get(0).getAsJsonObject();
 
-            // If there are inconsistencies then store them with
-            // their head node
-            if (!inconsistencies.isEmpty()) {
-                List<Box> headInconsistencies = new ArrayList<>();
-                headInconsistencies.add(0, head.toBox());
-                headInconsistencies
-                        .addAll(inconsistencies
-                            .stream()
-                            .map(Argument::toBox)
-                            .collect(Collectors.toList()));
+        // This needs to be set
+        List<Argument> argList = convertToArgumentList(arguments);
+        Argument head = new Argument(jsonHead);
+        argList.add(head);
 
-                dynamicQuestions.add(headInconsistencies);
+        setChildrenArguments(argList);
+
+        List<Argument> inconsistencies = head.getInconsistencies();
+
+        // If there are inconsistencies then store them with
+        // their head node
+        return inconsistencies
+                .stream()
+                .map(Argument::toBox)
+                .collect(Collectors.toList());
+    }
+
+
+    private String removeStopWordsAndStem(String string){
+        String result = "";
+        StringTokenizer st = new StringTokenizer(string);
+
+
+        while (st.hasMoreTokens()) {
+            String next = st.nextToken();
+            if(!isStopWord(next)){
+                //here we could stem and lemmatize the words
+                result.concat(next);
             }
         }
 
-        return dynamicQuestions;
+        return result;
     }
 
-    private void addChild(ResultSet rs, ResultSet children, Argument head) throws SQLException {
-        Integer argumentId = children.getInt("statement_id");
-        Integer parentId = children.getInt("parent_id");
-        Argument arg = new Argument(
-                rs.getBoolean(argumentId.toString()),
-                children.getString("statement"),
-                children.getString("type").equals("Pro"));
-        arg.setId(argumentId);
-        arg.setParent(parentId);
-
-        head.addChild(arg);
+    private double cosineSimilarity(double[] vector1, double[] vector2) {
+        double dotProduct = dotProduct(vector1, vector2);
+        double euclideanDist = euclideanDistance(vector1) * euclideanDistance(vector2);
+        return dotProduct / euclideanDist;
     }
+
+    private double euclideanDistance(double[] vector){
+
+        double result = 0.0;
+        for(int i = 0; i < vector.length; i++){
+            result += vector[i] * vector[i];
+        }
+
+        return result;
+    }
+
+    private double dotProduct(double[] vector1, double[] vector2){
+
+        double result = 0.0;
+        for(int i = 0; i < vector1.length; i++){
+            result += vector1[i] * vector2[i];
+        }
+        return result;
+    }
+
+
+
+    private boolean isStopWord(String string){
+
+        String[] stopArray = new String[]{"a", "an", "and", "are", "as", "at", "be", "but", "by",
+                "for", "if", "in", "into", "is", "it",
+                "no", "not", "of", "on", "or", "such",
+                "that", "the", "their", "then", "there", "these",
+                "they", "this", "to", "was", "will", "with"};
+
+        return Arrays.asList(stopArray).contains(string);
+
+    }
+
+
 }

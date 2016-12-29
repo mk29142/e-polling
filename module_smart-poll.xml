@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_smart-poll" default="compile.module.smart-poll">
+  <dirname property="module.smart-poll.basedir" file="${ant.file.module_smart-poll}"/>
+  
+  <property name="module.jdk.home.smart-poll" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.smart-poll" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.smart-poll" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.smart-poll" value="-encoding UTF-8 -source 8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="smart-poll.output.dir" value="${module.smart-poll.basedir}/target/classes"/>
+  <property name="smart-poll.testoutput.dir" value="${module.smart-poll.basedir}/target/test-classes"/>
+  
+  <path id="smart-poll.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="smart-poll.module.production.classpath">
+    <path refid="${module.jdk.classpath.smart-poll}"/>
+    <path refid="library.maven:_com.sparkjava:spark-core:2.5.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.13.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-webapp:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-xml:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-common:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-client:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-api:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-debug-tools:0.5.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-velocity:2.3.classpath"/>
+    <path refid="library.maven:_org.apache.velocity:velocity:1.7.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.4.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-mustache:2.3.classpath"/>
+    <path refid="library.maven:_com.github.spullara.mustache.java:compiler:0.9.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-simple:1.7.13.classpath"/>
+    <path refid="library.maven:_org.projectlombok:lombok:1.16.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.5.0.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:19.0.classpath"/>
+    <path refid="library.maven:_org.mindrot:jbcrypt:0.3m.classpath"/>
+    <path refid="library.maven:_org.postgresql:postgresql:9.4.1208.classpath"/>
+    <path refid="library.maven:_com.google.code.gson:gson:2.7.classpath"/>
+  </path>
+  
+  <path id="smart-poll.runtime.production.module.classpath">
+    <pathelement location="${smart-poll.output.dir}"/>
+    <path refid="library.maven:_com.sparkjava:spark-core:2.5.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.13.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-webapp:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-xml:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-common:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-client:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-api:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-debug-tools:0.5.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-velocity:2.3.classpath"/>
+    <path refid="library.maven:_org.apache.velocity:velocity:1.7.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.4.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-mustache:2.3.classpath"/>
+    <path refid="library.maven:_com.github.spullara.mustache.java:compiler:0.9.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-simple:1.7.13.classpath"/>
+    <path refid="library.maven:_org.projectlombok:lombok:1.16.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.5.0.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:19.0.classpath"/>
+    <path refid="library.maven:_org.mindrot:jbcrypt:0.3m.classpath"/>
+    <path refid="library.maven:_org.postgresql:postgresql:9.4.1208.classpath"/>
+    <path refid="library.maven:_com.google.code.gson:gson:2.7.classpath"/>
+  </path>
+  
+  <path id="smart-poll.module.classpath">
+    <path refid="${module.jdk.classpath.smart-poll}"/>
+    <pathelement location="${smart-poll.output.dir}"/>
+    <path refid="library.maven:_com.sparkjava:spark-core:2.5.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.13.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-webapp:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-xml:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-common:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-client:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-api:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-debug-tools:0.5.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-velocity:2.3.classpath"/>
+    <path refid="library.maven:_org.apache.velocity:velocity:1.7.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.4.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-mustache:2.3.classpath"/>
+    <path refid="library.maven:_com.github.spullara.mustache.java:compiler:0.9.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-simple:1.7.13.classpath"/>
+    <path refid="library.maven:_org.projectlombok:lombok:1.16.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.5.0.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:19.0.classpath"/>
+    <path refid="library.maven:_org.mindrot:jbcrypt:0.3m.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+    <path refid="library.maven:_org.jmock:jmock-junit4:2.8.1.classpath"/>
+    <path refid="library.maven:_org.jmock:jmock:2.8.1.classpath"/>
+    <path refid="library.maven:_org.jmock:jmock-testjar:2.8.1.classpath"/>
+    <path refid="library.maven:_cglib:cglib-nodep:3.1.classpath"/>
+    <path refid="library.maven:_org.ow2.asm:asm:5.0.3.classpath"/>
+    <path refid="library.maven:_org.beanshell:bsh:1.3.0.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-library:1.3.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-all:1.3.classpath"/>
+    <path refid="library.maven:_org.postgresql:postgresql:9.4.1208.classpath"/>
+    <path refid="library.maven:_com.google.code.gson:gson:2.7.classpath"/>
+  </path>
+  
+  <path id="smart-poll.runtime.module.classpath">
+    <pathelement location="${smart-poll.testoutput.dir}"/>
+    <pathelement location="${smart-poll.output.dir}"/>
+    <path refid="library.maven:_com.sparkjava:spark-core:2.5.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.13.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-webapp:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-xml:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-server:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-common:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-client:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-servlet:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty.websocket:websocket-api:9.3.6.v20151106.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-debug-tools:0.5.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-velocity:2.3.classpath"/>
+    <path refid="library.maven:_org.apache.velocity:velocity:1.7.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.4.classpath"/>
+    <path refid="library.maven:_com.sparkjava:spark-template-mustache:2.3.classpath"/>
+    <path refid="library.maven:_com.github.spullara.mustache.java:compiler:0.9.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-simple:1.7.13.classpath"/>
+    <path refid="library.maven:_org.projectlombok:lombok:1.16.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.5.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.5.0.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:19.0.classpath"/>
+    <path refid="library.maven:_org.mindrot:jbcrypt:0.3m.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+    <path refid="library.maven:_org.jmock:jmock-junit4:2.8.1.classpath"/>
+    <path refid="library.maven:_org.jmock:jmock:2.8.1.classpath"/>
+    <path refid="library.maven:_org.jmock:jmock-testjar:2.8.1.classpath"/>
+    <path refid="library.maven:_cglib:cglib-nodep:3.1.classpath"/>
+    <path refid="library.maven:_org.ow2.asm:asm:5.0.3.classpath"/>
+    <path refid="library.maven:_org.beanshell:bsh:1.3.0.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-library:1.3.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-all:1.3.classpath"/>
+    <path refid="library.maven:_org.postgresql:postgresql:9.4.1208.classpath"/>
+    <path refid="library.maven:_com.google.code.gson:gson:2.7.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.smart-poll">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.smart-poll">
+    <patternset refid="excluded.from.module.smart-poll"/>
+  </patternset>
+  
+  <path id="smart-poll.module.sourcepath">
+    <dirset dir="${module.smart-poll.basedir}">
+      <include name="src/main/java"/>
+      <include name="src/main/resources"/>
+    </dirset>
+  </path>
+  
+  <path id="smart-poll.module.test.sourcepath">
+    <dirset dir="${module.smart-poll.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.smart-poll" depends="compile.module.smart-poll.production,compile.module.smart-poll.tests" description="Compile module smart-poll"/>
+  
+  <target name="compile.module.smart-poll.production" depends="register.custom.compilers" description="Compile module smart-poll; production classes">
+    <mkdir dir="${smart-poll.output.dir}"/>
+    <javac2 destdir="${smart-poll.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.smart-poll}/javac">
+      <compilerarg line="${compiler.args.smart-poll}"/>
+      <bootclasspath refid="smart-poll.module.bootclasspath"/>
+      <classpath refid="smart-poll.module.production.classpath"/>
+      <src refid="smart-poll.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.smart-poll"/>
+    </javac2>
+    
+    <copy todir="${smart-poll.output.dir}">
+      <fileset dir="${module.smart-poll.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.smart-poll.basedir}/src/main/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.smart-poll.tests" depends="register.custom.compilers,compile.module.smart-poll.production" description="compile module smart-poll; test classes" unless="skip.tests">
+    <mkdir dir="${smart-poll.testoutput.dir}"/>
+    <javac2 destdir="${smart-poll.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.smart-poll}/javac">
+      <compilerarg line="${compiler.args.smart-poll}"/>
+      <bootclasspath refid="smart-poll.module.bootclasspath"/>
+      <classpath refid="smart-poll.module.classpath"/>
+      <src refid="smart-poll.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.smart-poll"/>
+    </javac2>
+    
+    <copy todir="${smart-poll.testoutput.dir}">
+      <fileset dir="${module.smart-poll.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.smart-poll" description="cleanup module">
+    <delete dir="${smart-poll.output.dir}"/>
+    <delete dir="${smart-poll.testoutput.dir}"/>
+  </target>
+</project>
