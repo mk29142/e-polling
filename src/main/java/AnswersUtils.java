@@ -2,12 +2,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class AnswersUtils {
@@ -193,6 +193,62 @@ class AnswersUtils {
         }
 
         return null;
+    }
+
+
+    private String removeStopWordsAndStem(String string){
+        String result = "";
+        StringTokenizer st = new StringTokenizer(string);
+
+
+        while (st.hasMoreTokens()) {
+            String next = st.nextToken();
+            if(!isStopWord(next)){
+                //here we could stem and lemmatize the words
+                result.concat(next);
+            }
+        }
+
+        return result;
+    }
+
+    private double cosineSimilarity(double[] vector1, double[] vector2) {
+        double dotProduct = dotProduct(vector1, vector2);
+        double euclideanDist = euclideanDistance(vector1) * euclideanDistance(vector2);
+        return dotProduct / euclideanDist;
+    }
+
+    private double euclideanDistance(double[] vector){
+
+        double result = 0.0;
+        for(int i = 0; i < vector.length; i++){
+            result += vector[i] * vector[i];
+        }
+
+        return result;
+    }
+
+    private double dotProduct(double[] vector1, double[] vector2){
+
+        double result = 0.0;
+        for(int i = 0; i < vector1.length; i++){
+            result += vector1[i] * vector2[i];
+        }
+        return result;
+    }
+
+
+
+    private boolean isStopWord(String string){
+
+        String[] stopArray = new String[]{"a", "an", "and", "are", "as", "at", "be", "but", "by",
+                "for", "if", "in", "into", "is", "it",
+                "no", "not", "of", "on", "or", "such",
+                "that", "the", "their", "then", "there", "these",
+                "they", "this", "to", "was", "will", "with"};
+
+        return Arrays.asList(stopArray).contains(string);
+
     }
 
 

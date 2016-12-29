@@ -122,7 +122,7 @@
       var id = dynamicData.questions[0].length;
       var parent = index;
       var text = $("#dynamicQuestionReason").val();
-      dynamicData.questions[0].push({id: id, parent: parent, text: text, type: type, support: "yes", vote: "Against"});
+      dynamicData.questions[0].push({id: id, parent: parent, text: text, type: type, support: "yes", vote: "For"});
     }
 
 
