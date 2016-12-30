@@ -2,15 +2,16 @@
 <html lang="en">
 {{> header}}
 <body style="background-color: #EFEFEF">
-<div id="dynamicModal" class="modal">
+  {{> navbar}}
+  <div id="dynamicModal" class="modal">
     <div class="modal-content">
         <div id="conflictTitle"></div>
         <div id="questions"></div>
         <input type="text" id="dynamicQuestionReason" placeholder="Argument"/>
         <button id="dynamicQuestionSubmit" class="btn">Submit</button>
     </div>
-</div>
-<div class="container">
+  </div>
+  <div class="container">
     <div class="row">
       <h2 id="debate-title" class="col offset-s1">Debate title goes here</h2>
     </div>

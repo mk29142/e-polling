@@ -1,0 +1,19 @@
+<nav>
+  <div class="nav-wrapper">
+    <a href="/" class="brand-logo" style="font-family: 'Oswald', sans-serif; padding-left: 10px;">smartPOLL</a>
+    <a href="#" data-activates="mobile" class="button-collapse" style="padding-left: 10px;"><i class="material-icons">menu</i></a>
+    <ul class="right hide-on-med-and-down">
+      <li><a href="/create">Create a poll</a></li>
+      <li><a href="/votingroom">Public polls</a></li>
+    </ul>
+    <ul id="mobile" class="side-nav">
+      <li><a href="/create">Create a poll</a></li>
+      <li><a href="/votingroom">Public polls</a></li>
+    </ul>
+  </div>
+  <script>
+    $( document ).ready(function() {
+      $(".button-collapse").sideNav();
+    });
+  </script>
+</nav>
