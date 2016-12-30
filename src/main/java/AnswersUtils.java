@@ -10,6 +10,21 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+
+import edu.cmu.lti.lexical_db.ILexicalDatabase;
+import edu.cmu.lti.lexical_db.NictWordNet;
+import edu.cmu.lti.ws4j.RelatednessCalculator;
+import edu.cmu.lti.ws4j.impl.HirstStOnge;
+import edu.cmu.lti.ws4j.impl.JiangConrath;
+import edu.cmu.lti.ws4j.impl.LeacockChodorow;
+import edu.cmu.lti.ws4j.impl.Lesk;
+import edu.cmu.lti.ws4j.impl.Lin;
+import edu.cmu.lti.ws4j.impl.Path;
+import edu.cmu.lti.ws4j.impl.Resnik;
+import edu.cmu.lti.ws4j.impl.WuPalmer;
+import edu.cmu.lti.ws4j.util.WS4JConfiguration;
+
 class AnswersUtils {
     private MasterTree mt;
     private Connection connection;
@@ -180,7 +195,6 @@ class AnswersUtils {
         String result = "";
         StringTokenizer st = new StringTokenizer(string);
 
-
         while (st.hasMoreTokens()) {
             String next = st.nextToken();
             if(!isStopWord(next)){
@@ -190,6 +204,16 @@ class AnswersUtils {
         }
 
         return result;
+    }
+
+    private List<double[]> stringsToVectors(String string1, String string2){
+
+        List<double[]> result = new ArrayList<>();
+
+        //group semantically similar words in a phrase
+        
+
+        return null;
     }
 
     private double cosineSimilarity(double[] vector1, double[] vector2) {
@@ -217,6 +241,15 @@ class AnswersUtils {
         return result;
     }
 
+    private ILexicalDatabase db = new NictWordNet();
+
+    private double wuPalmerRelatedness(String word1, String word2 ) {
+        WS4JConfiguration.getInstance().setMFS(true);
+        RelatednessCalculator rc =  new WuPalmer(db);
+        double s = rc.calcRelatednessOfWords(word1, word2);
+        return s;
+
+    }
 
 
     private boolean isStopWord(String string){
