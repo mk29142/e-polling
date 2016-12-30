@@ -104,18 +104,6 @@
       submitDynamicData();
     });
 
-    //this argument must be added as a child to the parent argument
-    function addDynamicArgument(index){
-      if(isArgSupported) {
-        var type = "Pro";
-      } else {
-        var type = "Con";
-      }
-      var id = dynamicData.questions[0].length;
-      var parent = index;
-      var text = $("#dynamicQuestionReason").val();
-      dynamicData.questions[0].push({id: id, parent: parent, text: text, type: type, support: "yes", vote: "For"});
-
     // This argument must be added as a child to the parent argument
     function addDynamicArgument(index) {
       let type = isArgSupported? 'Pro' : 'Con';
@@ -133,7 +121,6 @@
           vote: 'Against'
         })
       };
->>>>>>> f5ddef12cdbbd48a31fd1761c72e7bda6ddad91a
     }
 
     function findCurrConflictIndex() {
@@ -188,7 +175,7 @@
         'value="' + questions[i].id +
         '">' + num + '</a></li>');
       }
-    };
+    }
 
     function allAnswered(questions) {
        let unansweredIndices = [];
