@@ -1,6 +1,3 @@
-/**
- * Created by sp5714 on 15/11/16.
- */
 class Poll {
     int id;
     String name;

@@ -1,8 +1,6 @@
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,18 +8,9 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
-
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
-import edu.cmu.lti.ws4j.impl.HirstStOnge;
-import edu.cmu.lti.ws4j.impl.JiangConrath;
-import edu.cmu.lti.ws4j.impl.LeacockChodorow;
-import edu.cmu.lti.ws4j.impl.Lesk;
-import edu.cmu.lti.ws4j.impl.Lin;
-import edu.cmu.lti.ws4j.impl.Path;
-import edu.cmu.lti.ws4j.impl.Resnik;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
 import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 
@@ -190,15 +179,14 @@ class AnswersUtils {
                 .collect(Collectors.toList());
     }
 
-
-    private String removeStopWordsAndStem(String string){
+    private String removeStopWordsAndStem(String string) {
         String result = "";
         StringTokenizer st = new StringTokenizer(string);
 
         while (st.hasMoreTokens()) {
             String next = st.nextToken();
-            if(!isStopWord(next)){
-                //here we could stem and lemmatize the words
+            if (!isStopWord(next)) {
+                // Here we could stem and lemmatize the words
                 result.concat(next);
             }
         }
@@ -207,11 +195,9 @@ class AnswersUtils {
     }
 
     private List<double[]> stringsToVectors(String string1, String string2){
-
         List<double[]> result = new ArrayList<>();
 
-        //group semantically similar words in a phrase
-        
+        // Group semantically similar words in a phrase
 
         return null;
     }
@@ -223,21 +209,22 @@ class AnswersUtils {
     }
 
     private double euclideanDistance(double[] vector){
-
         double result = 0.0;
-        for(int i = 0; i < vector.length; i++){
+
+        for (int i = 0; i < vector.length; i++) {
             result += vector[i] * vector[i];
         }
 
         return result;
     }
 
-    private double dotProduct(double[] vector1, double[] vector2){
-
+    private double dotProduct(double[] vector1, double[] vector2) {
         double result = 0.0;
-        for(int i = 0; i < vector1.length; i++){
+
+        for (int i = 0; i < vector1.length; i++) {
             result += vector1[i] * vector2[i];
         }
+
         return result;
     }
 
@@ -246,14 +233,10 @@ class AnswersUtils {
     private double wuPalmerRelatedness(String word1, String word2 ) {
         WS4JConfiguration.getInstance().setMFS(true);
         RelatednessCalculator rc =  new WuPalmer(db);
-        double s = rc.calcRelatednessOfWords(word1, word2);
-        return s;
-
+        return rc.calcRelatednessOfWords(word1, word2);
     }
 
-
-    private boolean isStopWord(String string){
-
+    private boolean isStopWord(String string) {
         String[] stopArray = new String[]{"a", "an", "and", "are", "as", "at", "be", "but", "by",
                 "for", "if", "in", "into", "is", "it",
                 "no", "not", "of", "on", "or", "such",
@@ -261,8 +244,5 @@ class AnswersUtils {
                 "they", "this", "to", "was", "will", "with"};
 
         return Arrays.asList(stopArray).contains(string);
-
     }
-
-
 }
