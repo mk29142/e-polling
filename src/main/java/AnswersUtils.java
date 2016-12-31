@@ -1,4 +1,5 @@
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.sql.Connection;
@@ -177,7 +178,7 @@ class AnswersUtils {
                 .map(Argument::toBox)
                 .collect(Collectors.toList());
     }
-
+/*
     private String removeStopWordsAndStem(String string) {
         StringBuilder result = new StringBuilder();
         StringTokenizer st = new StringTokenizer(string);
@@ -244,4 +245,4 @@ class AnswersUtils {
 
         return Arrays.asList(stopArray).contains(string);
     }
-}
+}*/
