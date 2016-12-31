@@ -244,5 +244,5 @@ class AnswersUtils {
                 "they", "this", "to", "was", "will", "with"};
 
         return Arrays.asList(stopArray).contains(string);
-    }
-}*/
+    }*/
+}
