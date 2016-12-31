@@ -28,7 +28,7 @@ class AnswersUtils {
     }
 
     AnswersUtils(Connection connection, String pollId) {
-        this(connection, pollId, null);
+        this(connection, pollId, "");
     }
 
     void enterAnswersIntoDatabase(JsonArray answers) {
@@ -149,8 +149,7 @@ class AnswersUtils {
             Argument arg = argList.get(i);
             int argId = arg.getId();
 
-            for (int j = 0; j < argList.size(); j++) {
-                Argument currArg = argList.get(j);
+            for (Argument currArg : argList) {
                 if (argId == currArg.getParent()) {
                     arg.addChild(currArg);
                 }
@@ -180,18 +179,18 @@ class AnswersUtils {
     }
 
     private String removeStopWordsAndStem(String string) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         StringTokenizer st = new StringTokenizer(string);
 
         while (st.hasMoreTokens()) {
             String next = st.nextToken();
             if (!isStopWord(next)) {
                 // Here we could stem and lemmatize the words
-                result.concat(next);
+                result.append(next);
             }
         }
 
-        return result;
+        return result.toString();
     }
 
     private List<double[]> stringsToVectors(String string1, String string2){
@@ -211,8 +210,8 @@ class AnswersUtils {
     private double euclideanDistance(double[] vector){
         double result = 0.0;
 
-        for (int i = 0; i < vector.length; i++) {
-            result += vector[i] * vector[i];
+        for (double aVector : vector) {
+            result += aVector * aVector;
         }
 
         return result;
