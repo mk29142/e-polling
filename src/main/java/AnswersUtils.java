@@ -9,11 +9,11 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import edu.cmu.lti.lexical_db.ILexicalDatabase;
+/*import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
-import edu.cmu.lti.ws4j.util.WS4JConfiguration;
+import edu.cmu.lti.ws4j.util.WS4JConfiguration;*/
 
 class AnswersUtils {
     private MasterTree mt;
