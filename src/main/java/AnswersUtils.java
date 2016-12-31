@@ -1,5 +1,4 @@
 import com.google.gson.JsonArray;
-//import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.sql.Connection;
@@ -9,11 +8,11 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/*import edu.cmu.lti.lexical_db.ILexicalDatabase;
+import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
-import edu.cmu.lti.ws4j.util.WS4JConfiguration;*/
+import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 
 class AnswersUtils {
     private MasterTree mt;
@@ -178,7 +177,7 @@ class AnswersUtils {
                 .map(Argument::toBox)
                 .collect(Collectors.toList());
     }
-/*
+
     private String removeStopWordsAndStem(String string) {
         StringBuilder result = new StringBuilder();
         StringTokenizer st = new StringTokenizer(string);
@@ -244,5 +243,5 @@ class AnswersUtils {
                 "they", "this", "to", "was", "will", "with"};
 
         return Arrays.asList(stopArray).contains(string);
-    }*/
+    }
 }
