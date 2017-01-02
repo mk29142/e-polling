@@ -51,18 +51,17 @@ class AnswersUtils {
     DynamicData resolveDynamicQuestions(JsonObject data) {
         // This list will have the "inconsistent" node at its head with all its
         // supporters/attackers in the rest of the list
-        List<Box> dynamicQuestions = findDynamicQ(data);
+        DynamicData dynamicData = new DynamicData(findDynamicQ(data), 0);
 
         // If there are no dynamic questions
-        if (dynamicQuestions == null || dynamicQuestions.isEmpty()) {
+        if (dynamicData.isEnd()) {
+            System.out.println("Updating the values for use in the graphs now");
             mt.updateVotes(pollId, userId);
             mt.updateScores(pollId);
             mt.deleteFromDataBase(pollId, userId);
-
-            return new DynamicData();
         }
 
-        return new DynamicData(dynamicQuestions, 0);
+        return dynamicData;
     }
 
     void addUser() {
@@ -126,8 +125,10 @@ class AnswersUtils {
         insertValues.setString(2, userId);
 
         int worked = insertValues.executeUpdate();
-        if (worked != 1) throw new SQLException("No answers were inserted. "
-            + id + ": " + vote + ", id: " + userId);
+        if (worked != 1) {
+            throw new SQLException("No answers were inserted. "
+                    + id + ": " + vote + ", id: " + userId);
+        }
     }
 
     // Turn all json arrays into arguments
@@ -227,10 +228,9 @@ class AnswersUtils {
         return result;
     }
 
-    private ILexicalDatabase db = new NictWordNet();
-
     private double wuPalmerRelatedness(String word1, String word2 ) {
         WS4JConfiguration.getInstance().setMFS(true);
+        ILexicalDatabase db = new NictWordNet();
         RelatednessCalculator rc =  new WuPalmer(db);
         return rc.calcRelatednessOfWords(word1, word2);
     }

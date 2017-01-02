@@ -60,7 +60,6 @@ public class QuadV {
                 new CreateUtils(connection, new JsonParser().parse(req.body())).createPoll());
 
         post("/user/:id", (req, res) -> {
-            // TODO: NEED TO ONLY INSERT IF IP IS NOT ALREADY IN TABLE DO A CHECK HERE
             String userId = req.session().id();
             new AnswersUtils(connection, req.params(":id"), userId).addUser();
             return userId;
@@ -106,8 +105,8 @@ public class QuadV {
 
     private static Connection getConnection()
             throws URISyntaxException, SQLException {
-        System.out.println("Initializing database connection...");
         String dbUrl = System.getenv("JDBC_DATABASE_URL");
+        System.out.println("Initializing database connection to " + dbUrl);
         return DriverManager.getConnection(dbUrl);
     }
 
