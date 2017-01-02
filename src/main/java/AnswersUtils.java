@@ -55,7 +55,6 @@ class AnswersUtils {
 
         // If there are no dynamic questions
         if (dynamicData.isEnd()) {
-            System.out.println("Updating the values for use in the graphs now");
             mt.updateVotes(pollId, userId);
             mt.updateScores(pollId);
             mt.deleteFromDataBase(pollId, userId);
