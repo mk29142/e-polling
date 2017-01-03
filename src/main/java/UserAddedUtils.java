@@ -7,6 +7,7 @@ import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,34 @@ class UserAddedUtils {
             System.out.println(e.getMessage());
             return "FAIL";
         }
+    }
+
+    // Comparable means those with the same type and parent
+    private List<Argument> grabComparableStatements(
+            String userId, String type, int parentId) {
+        List<Argument> args = new ArrayList<>();
+
+        try {
+            PreparedStatement ps =
+                    connection.prepareStatement("SELECT * FROM ?" +
+                            " WHERE type=?::statement_type AND parent_id=?;");
+            ps.setString(1, pollId + "_user_added");
+            ps = connection.prepareStatement(ps.toString().replace("'", "\""));
+            ps.setString(1, type);
+            ps.setInt(2, parentId);
+
+            ResultSet results = ps.executeQuery();
+            while (results.next()) {
+                args.add(new Argument(
+                        true,
+                        results.getString("statement"),
+                        type.equals("Pro")));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return args;
     }
 
     private String removeStopWordsAndStem(String string) {
