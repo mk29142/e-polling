@@ -119,7 +119,10 @@
           type: type,
           support: 'yes',
           vote: 'Against'
-        })
+        });
+
+        // Reset to nothing for the next question
+        $('#dynamicQuestionReason').val('');
       };
     }
 

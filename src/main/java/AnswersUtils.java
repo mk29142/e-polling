@@ -39,12 +39,7 @@ class AnswersUtils {
 
             boolean vote = answer.get("support").getAsString().equals("yes");
             int id = answer.get("id").getAsInt();
-
-            try {
-                insertAnswer(vote, id);
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
+            insertAnswer(vote, id);
         }
     }
 
@@ -110,23 +105,25 @@ class AnswersUtils {
         }
     }
 
-    private void insertAnswer(boolean vote, Integer id) throws SQLException {
-        PreparedStatement insertAnswer =
+    private void insertAnswer(boolean vote, Integer id) {
+        try {
+            PreparedStatement insertAnswer =
                 connection.prepareStatement("UPDATE ? SET ?=");
-        insertAnswer.setString(1, pollId + "_answers");
-        insertAnswer.setString(2, id.toString());
+            insertAnswer.setString(1, pollId + "_answers");
+            insertAnswer.setString(2, id.toString());
 
-        PreparedStatement insertValues = connection.prepareStatement(
-                insertAnswer.toString().replace("'", "\"")
-                + "? WHERE user_id=?;");
+            PreparedStatement insertValues = connection.prepareStatement(
+                    insertAnswer.toString().replace("'", "\"")
+                    + "? WHERE user_id=?;");
 
-        insertValues.setBoolean(1, vote);
-        insertValues.setString(2, userId);
+            insertValues.setBoolean(1, vote);
+            insertValues.setString(2, userId);
 
-        int worked = insertValues.executeUpdate();
-        if (worked != 1) {
-            throw new SQLException("No answers were inserted. "
-                    + id + ": " + vote + ", id: " + userId);
+            insertValues.executeUpdate();
+        } catch (SQLException e) {
+            // This could be because we need to add the new column
+            // so we should add that here.
+            System.out.println(e.getMessage());
         }
     }
 
