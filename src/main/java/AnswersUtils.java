@@ -39,7 +39,9 @@ class AnswersUtils {
 
             boolean vote = answer.get("support").getAsString().equals("yes");
             int id = answer.get("id").getAsInt();
-            insertAnswer(vote, id);
+
+            // So that we can safely ignore the dummy statement
+            if (id < 10000) insertAnswer(vote, id);
         }
     }
 

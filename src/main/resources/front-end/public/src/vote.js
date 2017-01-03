@@ -126,6 +126,14 @@
               // Reset to nothing for the next question
               $('#dynamicQuestionReason').val('');
 
+              // Push this dummy node which is not to be kept
+              dynamicData.questions.push({
+                id: 1000000,
+                parent: index,
+                text: text,
+                type: type,
+                support: 'yes'
+              });
               // Send this ajax post when we want inconsistencies for next level
               submitDynamicData();
             }
