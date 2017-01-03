@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
@@ -192,10 +193,32 @@ class AnswersUtils {
         return result.toString();
     }
 
-    private List<double[]> stringsToVectors(String s1, String s2) {
-        List<double[]> result = new ArrayList<>();
+    private String removeRepetition(String string){
+        return Arrays.stream(string.split(" ")).distinct().collect(Collectors.joining(" "));
+    }
 
-        // Group semantically similar words in a phrase
+    private List<double[]> stringsToVectors(String string1, String string2) {
+        List<double[]> result = new ArrayList<>();
+        String concatString = string1 + " " + string2;
+        concatString = removeRepetition(concatString);
+        //group semantically similar words in a phrase
+        String strings[] = {string1, string2};
+        StringTokenizer concatToken = new StringTokenizer(concatString);
+        for(int i = 0; i < 2; i++){
+            double relatedness[]=  new double[concatToken.countTokens()];
+            int j = 0;
+            while(concatToken.hasMoreTokens()){
+            double currRelatedness = 0;
+            String currToken = concatToken.nextToken();
+            StringTokenizer tk = new StringTokenizer(strings[i]);
+                while(tk.hasMoreTokens()){
+                    currRelatedness += wuPalmerRelatedness(tk.nextToken(), currToken);
+                }
+            relatedness[j] = currRelatedness;
+            j++;
+            }
+            result.set(i, relatedness);
+        }
 
         return result;
     }
@@ -223,9 +246,9 @@ class AnswersUtils {
         for (int i = 0; i < vector1.length; i++) {
             result += vector1[i] * vector2[i];
         }
-
         return result;
     }
+
 
     private double wuPalmerRelatedness(String word1, String word2 ) {
         WS4JConfiguration.getInstance().setMFS(true);
