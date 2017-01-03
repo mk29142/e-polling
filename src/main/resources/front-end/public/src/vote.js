@@ -115,7 +115,7 @@
       var parent = index;
       var text = $("#dynamicQuestionReason").val();
       dynamicData.questions[0].push({id: id, parent: parent, text: text, type: type, support: "yes", vote: "For"});
-
+    }
     // This argument must be added as a child to the parent argument
     function addDynamicArgument(index) {
       let type = isArgSupported? 'Pro' : 'Con';
@@ -133,7 +133,6 @@
           vote: 'Against'
         })
       };
->>>>>>> f5ddef12cdbbd48a31fd1761c72e7bda6ddad91a
     }
 
     function findCurrConflictIndex() {
@@ -168,9 +167,10 @@
         success: function(data) {
           if (data != 'STOP') {
             currConflictSet = data;
+            console.log(data);
             displayModal();
           } else {
-            window.location.href = '/results/' + pollId;
+            //window.location.href = '/results/' + pollId;
           }
         },
         error: function() {
@@ -296,5 +296,6 @@
 
       $('#questions').append(q);
     }
+
   });
 })();

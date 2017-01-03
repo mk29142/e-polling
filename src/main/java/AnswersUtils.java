@@ -11,17 +11,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
-import edu.cmu.lti.ws4j.impl.HirstStOnge;
-import edu.cmu.lti.ws4j.impl.JiangConrath;
-import edu.cmu.lti.ws4j.impl.LeacockChodorow;
-import edu.cmu.lti.ws4j.impl.Lesk;
-import edu.cmu.lti.ws4j.impl.Lin;
-import edu.cmu.lti.ws4j.impl.Path;
-import edu.cmu.lti.ws4j.impl.Resnik;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
 import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 
@@ -62,6 +54,7 @@ class AnswersUtils {
     DynamicData resolveDynamicQuestions(JsonObject data) {
         // This list will have the "inconsistent" node at its head with all its
         // supporters/attackers in the rest of the list
+        //List<Box> dynamicQuestions = findDynamicQ(data);
         List<Box> dynamicQuestions = findDynamicQ(data);
 
         // If there are no dynamic questions
@@ -184,36 +177,59 @@ class AnswersUtils {
 
         // If there are inconsistencies then store them with
         // their head node
-        return inconsistencies
-                .stream()
-                .map(Argument::toBox)
-                .collect(Collectors.toList());
+        //we check that inconsistencies.size() > 1 because arguments are added by default to their inconsistencies
+        //this is useful later on
+        if(inconsistencies.size() > 1) {
+            return inconsistencies
+                    .stream()
+                    .map(Argument::toBox)
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 
-
-    private String removeStopWordsAndStem(String string){
+    private String removeStopWords(String string){
         String result = "";
         StringTokenizer st = new StringTokenizer(string);
 
         while (st.hasMoreTokens()) {
             String next = st.nextToken();
             if(!isStopWord(next)){
-                //here we could stem and lemmatize the words
-                result.concat(next);
+                result += next + " ";
             }
         }
 
         return result;
     }
+    private String removeRepetition(String string){
+        return Arrays.stream(string.split(" ")).distinct().collect(Collectors.joining(" "));
+    }
 
     private List<double[]> stringsToVectors(String string1, String string2){
 
         List<double[]> result = new ArrayList<>();
-
+        String concatString = string1 + " " + string2;
+        concatString = removeRepetition(concatString);
         //group semantically similar words in a phrase
-        
+        String strings[] = {string1, string2};
+        StringTokenizer concatToken = new StringTokenizer(concatString);
+        for(int i = 0; i < 2; i++){
+            double relatedness[]=  new double[concatToken.countTokens()];
+            int j = 0;
+            while(concatToken.hasMoreTokens()){
+            double currRelatedness = 0;
+            String currToken = concatToken.nextToken();
+            StringTokenizer tk = new StringTokenizer(strings[i]);
+                while(tk.hasMoreTokens()){
+                    currRelatedness += wuPalmerRelatedness(tk.nextToken(), currToken);
+                }
+            relatedness[j] = currRelatedness;
+            j++;
+            }
+            result.set(i, relatedness);
+        }
 
-        return null;
+        return result;
     }
 
     private double cosineSimilarity(double[] vector1, double[] vector2) {
@@ -263,6 +279,5 @@ class AnswersUtils {
         return Arrays.asList(stopArray).contains(string);
 
     }
-
 
 }
