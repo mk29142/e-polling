@@ -18,7 +18,7 @@
     let borderColors = createColors(data.length)(1);
 
     google.charts.load('current', {
-      'packages': ['bar']
+      'packages': ['bar', 'corechart']
     });
     google.charts.setOnLoadCallback(drawChart);
 
@@ -37,21 +37,24 @@
       }
 
       let combined = combineScores();
-      console.log(combined);
       let data = google.visualization.arrayToDataTable(combined);
 
       let options = {
         chart: {
           title: 'Comparison of scores',
-          subtitle: 'Real scores and traditional scores',
+          subtitle: 'Real scores and traditional scores'
         },
         bars: 'vertical', // Required for Material Bar Charts.
+        hAxis: {
+          slantedText: true
+        },
         axisTitlesPosition: 'in'
       };
 
-      let chart = new google.charts.Bar(document.getElementById('barchart_material'));
+      let chart = new google.visualization.ColumnChart(
+        document.getElementById('barchart_material'));
 
-      chart.draw(data, options);
+      chart.draw(data, google.charts.Bar.convertOptions(options));
     }
 
     let sigmaScore = new Chart(
