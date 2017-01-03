@@ -42,7 +42,9 @@ class UserAddedUtils {
             newArg.setString(4, type);
             newArg.setString(5, userId);
 
-            return newArg.execute() ? "SUCCESS" : "FAIL";
+            newArg.execute();
+
+            return "SUCCESS";
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return "FAIL";

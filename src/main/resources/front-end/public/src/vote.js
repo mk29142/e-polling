@@ -99,9 +99,6 @@
 
       // If there was one, then we need to add it.
       addDynamicArgument(index);
-
-      // Send this ajax post when we want inconsistencies for next level
-      submitDynamicData();
     });
 
     // This argument must be added as a child to the parent argument
@@ -113,7 +110,7 @@
       if (text) {
         $.ajax({
           type: 'POST',
-          url: '/user_added/' + pollId,
+          url: '/useradded/' + pollId,
           data: JSON.stringify({
             userId: userId,
             id: id,
@@ -122,12 +119,24 @@
             type: type,
             support: 'yes'
           }),
-          dataType: 'json'
-        });
-      }
+          dataType: 'json',
+          success: function(data) {
+            console.log(data);
+            if (data === 'SUCCESS') {
+              // Reset to nothing for the next question
+              $('#dynamicQuestionReason').val('');
 
-      // Reset to nothing for the next question
-      $('#dynamicQuestionReason').val('');
+              // Send this ajax post when we want inconsistencies for next level
+              submitDynamicData();
+            }
+          },
+          error: function() {
+            console.log('Error submitting the new argument');
+          }
+        });
+      } else {
+        submitDynamicData();
+      }
     }
 
     function findCurrConflictIndex() {
@@ -160,7 +169,7 @@
         data: JSON.stringify(dynamicData),
         dataType: 'json',
         success: function(data) {
-          if (data != 'STOP') {
+          if (data !== 'STOP') {
             currConflictSet = data;
             displayModal();
           } else {
