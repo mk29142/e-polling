@@ -86,6 +86,15 @@ public class QuadV {
             }
         }, new JsonTransformer());
 
+        post("/user_added/:id", (req, res) -> {
+            JsonObject newArg = new JsonParser()
+                    .parse(req.body())
+                    .getAsJsonObject();
+
+            UserAddedUtils userAddedUtils = new UserAddedUtils(connection, req.params(":id"));
+            return userAddedUtils.addNewArg(newArg);
+        });
+
         get("/results", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
 

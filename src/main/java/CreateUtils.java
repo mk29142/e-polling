@@ -18,6 +18,7 @@ class CreateUtils {
         PreparedStatement findId;
         PreparedStatement createPoll;
         PreparedStatement createAnswers;
+        PreparedStatement createUserResponses;
         JsonArray list;
 
         try {
@@ -33,18 +34,21 @@ class CreateUtils {
                     "yes_votes INT NOT NULL," +
                     "no_votes INT NOT NULL," +
                     "type statement_type);");
+            createUserResponses = connection.prepareStatement("CREATE TABLE ? " +
+                    "(statement_id INT NOT NULL, " +
+                    "parent_id INT NOT NULL, " +
+                    "statement TEXT NOT NULL, " +
+                    "type statement_type, " +
+                    "user_id TEXT NOT NULL);");
             createAnswers = connection.prepareStatement("CREATE TABLE ? " +
-                    "(user_id TEXT, stupidity INT);");
+                    "(user_id TEXT NOT NULL, stupidity INT);");
 
             JsonObject obj = element.getAsJsonObject();
             list = obj.getAsJsonArray("list");
-            String name = obj.get("name").getAsString();
-            String email = obj.get("email").getAsString();
-            String password = obj.get("password").getAsString();
 
-            insertPoll.setString(1, name);
-            insertPoll.setString(2, email);
-            insertPoll.setString(3, password);
+            insertPoll.setString(1, obj.get("name").getAsString());
+            insertPoll.setString(2, obj.get("email").getAsString());
+            insertPoll.setString(3, obj.get("password").getAsString());
         } catch (SQLException e) {
             String errMessage = e.getMessage();
             System.out.println(errMessage);
@@ -57,20 +61,28 @@ class CreateUtils {
             rs.next();
             Integer id = rs.getInt("currval");
             createPoll.setString(1, id.toString());
+            createUserResponses.setString(1, id.toString() + "_user_added");
             createAnswers.setString(1, id.toString() + "_answers");
-            connection.createStatement().execute(createPoll.toString().replace("'", "\""));
-            connection.createStatement().execute(createAnswers.toString().replace("'", "\""));
+
+            connection.createStatement().execute(
+                    createUserResponses.toString().replace("'", "\""));
+            connection.createStatement().execute(
+                    createPoll.toString().replace("'", "\""));
+            connection.createStatement().execute(
+                    createAnswers.toString().replace("'", "\""));
 
             for (JsonElement elem : list) {
                 JsonObject elemObj = elem.getAsJsonObject();
                 System.out.println(elemObj.toString());
 
                 try {
-                    PreparedStatement addRow = connection.prepareStatement
-                            ("INSERT INTO ? VALUES(?, ?, ?, ?, ?, ?, ?, ?::statement_type);");
+                    PreparedStatement addRow =
+                            connection.prepareStatement("INSERT INTO ? " +
+                                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?::statement_type);");
 
-                    //this statement adds a column to the answers table
-                    PreparedStatement addAnswerColumn = connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
+                    // This statement adds a column to the answers table
+                    PreparedStatement addAnswerColumn =
+                            connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
 
                     Integer statement_id = elemObj.get("id").getAsInt();
 

@@ -30,7 +30,7 @@
       },
     });
 
-    let dynamicCounter;
+    let dynamicId = questions.length;
     let currConflictSet;
     let isArgSupported;
 
@@ -107,23 +107,27 @@
     // This argument must be added as a child to the parent argument
     function addDynamicArgument(index) {
       let type = isArgSupported? 'Pro' : 'Con';
-      let id = dynamicData.questions.length;
-      let parent = index;
+      let id = dynamicId++;
       let text = $('#dynamicQuestionReason').val();
 
       if (text) {
-        dynamicData.questions.push({
-          id: id,
-          parent: parent,
-          text: text,
-          type: type,
-          support: 'yes',
-          vote: 'Against'
+        $.ajax({
+          type: 'POST',
+          url: '/user_added/' + pollId,
+          data: JSON.stringify({
+            userId: userId,
+            id: id,
+            parent: index,
+            text: text,
+            type: type,
+            support: 'yes'
+          }),
+          dataType: 'json'
         });
+      }
 
-        // Reset to nothing for the next question
-        $('#dynamicQuestionReason').val('');
-      };
+      // Reset to nothing for the next question
+      $('#dynamicQuestionReason').val('');
     }
 
     function findCurrConflictIndex() {

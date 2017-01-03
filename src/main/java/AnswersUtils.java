@@ -46,9 +46,9 @@ class AnswersUtils {
     DynamicData resolveDynamicQuestions(JsonObject data) {
         // This list will have the "inconsistent" node at its head with all its
         // supporters/attackers in the rest of the list
-        DynamicData dynamicData = new DynamicData(findDynamicQ(data), 0);
+        DynamicData dynamicData = new DynamicData(findDynamicQ(data));
 
-        // If there are no dynamic questions
+        // If there are no dynamic questions we update the graph table
         if (dynamicData.isEnd()) {
             mt.updateVotes(pollId, userId);
             mt.updateScores(pollId);
@@ -137,7 +137,7 @@ class AnswersUtils {
             argList.add(arg);
         }
 
-        return  argList;
+        return argList;
     }
 
     // Set the children of each argument using argList
@@ -190,17 +190,18 @@ class AnswersUtils {
         return result.toString();
     }
 
-    private List<double[]> stringsToVectors(String string1, String string2){
+    private List<double[]> stringsToVectors(String s1, String s2) {
         List<double[]> result = new ArrayList<>();
 
         // Group semantically similar words in a phrase
 
-        return null;
+        return result;
     }
 
     private double cosineSimilarity(double[] vector1, double[] vector2) {
         double dotProduct = dotProduct(vector1, vector2);
-        double euclideanDist = euclideanDistance(vector1) * euclideanDistance(vector2);
+        double euclideanDist =
+                euclideanDistance(vector1) * euclideanDistance(vector2);
         return dotProduct / euclideanDist;
     }
 
