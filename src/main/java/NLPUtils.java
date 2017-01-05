@@ -8,7 +8,6 @@ import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 
 import java.util.Arrays;
 import java.util.StringTokenizer;
-import java.util.stream.Collectors;
 
 class NLPUtils {
     private static ILexicalDatabase db = new NictWordNet();
@@ -53,7 +52,7 @@ class NLPUtils {
         public T getTwo() { return this.two; }
     }
 
-    static Pair<double[]> stringsToVectors(String s1, String s2) {
+    private static Pair<double[]> stringsToVectors(String s1, String s2) {
         String[] arr1 = removeRepetition(removeStopWordsAndStem(s1));
         String[] arr2 = removeRepetition(removeStopWordsAndStem(s2));
 
