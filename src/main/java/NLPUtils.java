@@ -15,6 +15,8 @@ class NLPUtils {
     static double checkStrings(String oldArg, String newArg) {
         Pair<double[]> stringVectors = stringsToVectors(oldArg, newArg);
 
+        printDoubleArray(new double[][] { stringVectors.getOne(), stringVectors.getTwo() });
+
         // Use cosineSimilarity to analyse these vectors
         return cosineSimilarity(stringVectors.getOne(), stringVectors.getTwo());
     }
@@ -36,7 +38,9 @@ class NLPUtils {
     }
 
     private static String[] removeRepetition(String string) {
-        return string.split(" ");
+        return Arrays.stream(string.split(" "))
+                .distinct()
+                .toArray(String[]::new);
     }
 
     private static class Pair<T> {
@@ -77,7 +81,9 @@ class NLPUtils {
 
             word2[i] = sum / relatedMatrix.length;
         }
-        return new Pair<>(word1, word2);
+
+        if (word1.length > word2.length) return new Pair<>(word2, word1);
+        else return new Pair<>(word1, word2);
     }
 
     private static double[][] matrixRelatedness(String[] s1, String[] s2) {
@@ -130,14 +136,14 @@ class NLPUtils {
         return dotProduct / euclideanDist;
     }
 
-    private static double euclideanDistance(double[] vector){
+    private static double euclideanDistance(double[] vector) {
         double result = 0.0;
 
         for (double aVector : vector) {
             result += aVector * aVector;
         }
 
-        return result;
+        return Math.sqrt(result);
     }
 
     private static double dotProduct(double[] vector1, double[] vector2) {

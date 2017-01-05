@@ -1,19 +1,25 @@
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class QuadVTest {
     private String compareStr = "Kante is a great football player";
-    private String otherCompareStr = "Kante has football skills that are brilliant";
-    private String notSimilarStr = "Where is the nearest post office, Madam?";
 
     @Test
     public void checkStringSaysTwoSimilarHaveHighSimilarity() {
+        String otherCompareStr = "Kante has football skills that are brilliant";
         double val =
-                NLPUtils.checkStrings(compareStr, notSimilarStr);
+                NLPUtils.checkStrings(compareStr, otherCompareStr);
         System.out.println(val);
         assertTrue(val >= 0.5);
+    }
+
+    @Test
+    public void checkStringSaysNotSimilarLowSimilarity() {
+        String notSimilarStr = "Where is the nearest post office, Madam?";
+        double val = NLPUtils.checkStrings(notSimilarStr, compareStr);
+        System.out.println(val);
+        assertTrue(val <= 0.5);
     }
 
     @Test
