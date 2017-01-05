@@ -126,7 +126,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jmock</groupId>
@@ -152,9 +151,23 @@
             <version>2.7</version>
         </dependency>
         <dependency>
-            <groupId>de.sciss</groupId>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.cmu.lti</groupId>
+            <artifactId>jawjaw</artifactId>
+            <version>1.0.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jawjaw-1.0.2.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>edu.cmu.lti</groupId>
             <artifactId>ws4j</artifactId>
-            <version>0.1.0</version>
+            <version>1.0.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/ws4j-1.0.1.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
