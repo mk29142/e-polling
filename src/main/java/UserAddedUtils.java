@@ -1,70 +1,109 @@
 import com.google.gson.JsonObject;
-import edu.cmu.lti.lexical_db.ILexicalDatabase;
-import edu.cmu.lti.lexical_db.NictWordNet;
-import edu.cmu.lti.ws4j.RelatednessCalculator;
-import edu.cmu.lti.ws4j.impl.WuPalmer;
-import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 class UserAddedUtils {
     private final Connection connection;
     private final String pollId;
 
-    public UserAddedUtils(Connection connection, String pollId) {
+    UserAddedUtils(Connection connection, String pollId) {
         this.connection = connection;
         this.pollId = pollId;
     }
 
-    public String addNewArg(JsonObject newArg) {
-        String userId = newArg.get("userId").getAsString();
-        int id = newArg.get("id").getAsInt();
+    String addNewArg(JsonObject newArg) {
         int parent = newArg.get("parent").getAsInt();
         String txt = newArg.get("text").getAsString();
         String type = newArg.get("type").getAsString();
 
-        List<Argument> comp = grabComparableStatements(userId,type,parent);
-        //set threshhold for amount of comparability required to cut user statement
-        double threshHold = 0.75;
+        List<Argument> similar = getSimilarArgs(txt, type, parent);
+        final int MAX_SIMILAR = 3;
 
-        for (Argument arg : comp) {
-            if (checkStrings(arg.getText(), txt) > threshHold) {
-            //The are the same and we will change the users vote at that point in the
-            // tree to be the similar one already in the database
+        if (similar.size() >= MAX_SIMILAR) {
+            addToPoll(parent, txt, type);
+            removeFromUserAdded(similar);
             return "SUCCESS";
-            }
         }
 
-        return addToTable(id, parent, txt, type, userId);
+        return addToUserAdded(parent, txt, type);
     }
 
-    private String addToTable(
-            int id,
+    private void removeFromUserAdded(List<Argument> argsToDelete) {
+        try {
+            PreparedStatement delete =
+                    connection.prepareStatement("DELETE FROM ? WHERE statement_id=?");
+            delete.setString(1, pollId + "_user_added");
+            delete = connection.prepareStatement(delete.toString().replace("'", "\""));
+
+            for (Argument arg : argsToDelete) {
+                delete.setInt(1, arg.getId());
+                delete.execute();
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void addToPoll(int parent, String txt, String type) {
+        try {
+            PreparedStatement getCurrId =
+                    connection.prepareStatement("SELECT count(*) FROM ?;");
+            getCurrId.setString(1, pollId);
+            getCurrId =
+                    connection.prepareStatement(getCurrId.toString().replace("'", "\""));
+            ResultSet idrs = getCurrId.executeQuery();
+            idrs.next();
+
+            int nextId = idrs.getInt("count") + 1;
+
+            PreparedStatement add =
+                    connection.prepareStatement("INSERT INTO ? " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?::statement_type);");
+            add.setString(1, pollId);
+            add = connection.prepareStatement(add.toString().replace("'", "\""));
+            add.setInt(1, nextId);
+            add.setInt(2, parent);
+            add.setString(3, txt);
+            add.setFloat(4, 0);
+            add.setInt(5, 0);
+            add.setInt(6, 0);
+            add.setString(7, type);
+
+            add.execute();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private List<Argument> getSimilarArgs(String txt, String type, int parent) {
+        List<Argument> comparable = grabComparableStatements(type, parent);
+        final double threshold = 0.75;
+        return comparable.stream()
+                .filter(arg -> NLPUtils.checkStrings(arg.getText(), txt) > threshold)
+                .collect(Collectors.toList());
+    }
+
+    private String addToUserAdded(
             int parent,
             String txt,
-            String type,
-            String userId) {
+            String type) {
         try {
             PreparedStatement newArg =
                     connection.prepareStatement("INSERT INTO ?"
-                            + "VALUES (?, ?, ?, ?::statement_type, ?);");
+                            + "VALUES (?, ?, ?::statement_type);");
             newArg.setString(1, pollId + "_user_added");
             newArg = connection.prepareStatement(
                     newArg.toString().replace("'", "\""));
 
-            newArg.setInt(1, id);
-            newArg.setInt(2, parent);
-            newArg.setString(3, txt);
-            newArg.setString(4, type);
-            newArg.setString(5, userId);
+            newArg.setInt(1, parent);
+            newArg.setString(2, txt);
+            newArg.setString(3, type);
 
             newArg.execute();
 
@@ -76,8 +115,7 @@ class UserAddedUtils {
     }
 
     // Comparable means those with the same type and parent
-    private List<Argument> grabComparableStatements(
-            String userId, String type, int parentId) {
+    private List<Argument> grabComparableStatements(String type, int parentId) {
         List<Argument> args = new ArrayList<>();
 
         try {
@@ -91,116 +129,17 @@ class UserAddedUtils {
 
             ResultSet results = ps.executeQuery();
             while (results.next()) {
-                args.add(new Argument(
-                        true,
+                Argument arg = new Argument(
+                        true, // FAKE
                         results.getString("statement"),
-                        type.equals("Pro")));
+                        type.equals("Pro"));
+                arg.setId(results.getInt("statement_id"));
+                args.add(arg);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
 
         return args;
-    }
-
-    private double checkStrings(String oldArg, String newArg) {
-        List<double[]> stringVectors = stringsToVectors(oldArg, newArg);
-
-        // use cosineSimilarity() to analyse these vectors
-
-        return 0.0;
-    }
-
-    private String removeStopWordsAndStem(String string) {
-        StringBuilder result = new StringBuilder();
-        StringTokenizer st = new StringTokenizer(string);
-
-        while (st.hasMoreTokens()) {
-            String next = st.nextToken();
-            if (!isStopWord(next)) {
-                // Here we could stem and lemmatize the words
-                result.append(next);
-            }
-        }
-
-        return result.toString();
-    }
-
-    private String removeRepetition(String string) {
-        return Arrays.stream(string.split(" "))
-                .distinct()
-                .collect(Collectors.joining(" "));
-    }
-
-    private List<double[]> stringsToVectors(String string1, String string2) {
-        List<double[]> result = new ArrayList<>();
-        String concatUniqueWords = removeRepetition(string1 + " " + string2);
-
-        // Group semantically similar words in a phrase
-        String[] strings = {string1, string2};
-        StringTokenizer concatToken = new StringTokenizer(concatUniqueWords);
-
-        for (int i = 0; i < strings.length; i++) {
-            double[] relatedness = new double[concatToken.countTokens()];
-
-            for (int j = 0; concatToken.hasMoreTokens(); j++) {
-                double currRelatedness = 0;
-                String currToken = concatToken.nextToken();
-                StringTokenizer tk = new StringTokenizer(strings[i]);
-
-                while (tk.hasMoreTokens()) {
-                    currRelatedness += wuPalmerRelatedness(tk.nextToken(), currToken);
-                }
-
-                relatedness[j] = currRelatedness;
-            }
-
-            result.set(i, relatedness);
-        }
-
-        return result;
-    }
-
-    private double cosineSimilarity(double[] vector1, double[] vector2) {
-        double dotProduct = dotProduct(vector1, vector2);
-        double euclideanDist =
-                euclideanDistance(vector1) * euclideanDistance(vector2);
-        return dotProduct / euclideanDist;
-    }
-
-    private double euclideanDistance(double[] vector){
-        double result = 0.0;
-
-        for (double aVector : vector) {
-            result += aVector * aVector;
-        }
-
-        return result;
-    }
-
-    private double dotProduct(double[] vector1, double[] vector2) {
-        double result = 0.0;
-
-        for (int i = 0; i < vector1.length; i++) {
-            result += vector1[i] * vector2[i];
-        }
-        return result;
-    }
-
-    private double wuPalmerRelatedness(String word1, String word2 ) {
-        WS4JConfiguration.getInstance().setMFS(true);
-        ILexicalDatabase db = new NictWordNet();
-        RelatednessCalculator rc =  new WuPalmer(db);
-        return rc.calcRelatednessOfWords(word1, word2);
-    }
-
-    private boolean isStopWord(String string) {
-        String[] stopArray = new String[]{"a", "an", "and", "are", "as", "at", "be", "but", "by",
-                "for", "if", "in", "into", "is", "it",
-                "no", "not", "of", "on", "or", "such",
-                "that", "the", "their", "then", "there", "these",
-                "they", "this", "to", "was", "will", "with"};
-
-        return Arrays.asList(stopArray).contains(string);
     }
 }

@@ -5,30 +5,17 @@
   {{> navbar}}
   <div id="checkModal" class="modal">
     <div class="modal-content">
-      <div class="modal-title">
-        <p>Are you sure you want to delete this box?</p>
+      <div class="input-field col s6">
+        <input id="email" type="text" class="validate">
+        <label for="email">Email</label>
       </div>
-      <button id="delete-check-yes" class="btn">Yes</button>
-      <button id="delete-check-no" class="btn">No</button>
+      <div class="input-field col s6">
+        <input id="password" type="password" class="validate">
+        <label for="password">Password (optional)</label>
+      </div>
     </div>
   </div>
   <div class="container">
-      <div class="row" style="padding-top: 3em;">
-          <div class="col s6">
-              <form>
-                  <div class="row">
-                      <div class="input-field col s6">
-                          <input id="email" type="text" class="validate">
-                          <label for="email">Email</label>
-                      </div>
-                      <div class="input-field col s6">
-                          <input id="password" type="password" class="validate">
-                          <label for="password">Password (optional)</label>
-                      </div>
-                  </div>
-              </form>
-          </div>
-      </div>
       <div class="center-align" style="padding:20%" id="boxContainer"></div>
       <div>
         <button class="btn z-depth-0" id="submit-poll">Submit</button>

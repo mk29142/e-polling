@@ -35,11 +35,10 @@ class CreateUtils {
                     "no_votes INT NOT NULL," +
                     "type statement_type);");
             createUserResponses = connection.prepareStatement("CREATE TABLE ? " +
-                    "(statement_id INT NOT NULL, " +
+                    "(statement_id SERIAL UNIQUE, " +
                     "parent_id INT NOT NULL, " +
                     "statement TEXT NOT NULL, " +
-                    "type statement_type, " +
-                    "user_id TEXT NOT NULL);");
+                    "type statement_type;");
             createAnswers = connection.prepareStatement("CREATE TABLE ? " +
                     "(user_id TEXT NOT NULL, stupidity INT);");
 

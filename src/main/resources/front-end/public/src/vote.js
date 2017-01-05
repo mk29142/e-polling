@@ -30,7 +30,6 @@
       },
     });
 
-    let dynamicId = questions.length;
     let currConflictSet;
     let isArgSupported;
 
@@ -104,7 +103,6 @@
     // This argument must be added as a child to the parent argument
     function addDynamicArgument(index) {
       let type = isArgSupported? 'Pro' : 'Con';
-      let id = dynamicId++;
       let text = $('#dynamicQuestionReason').val();
 
       if (text) {
@@ -112,8 +110,6 @@
           type: 'POST',
           url: '/useradded/' + pollId,
           data: JSON.stringify({
-            userId: userId,
-            id: id,
             parent: index,
             text: text,
             type: type,
