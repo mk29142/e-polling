@@ -29,13 +29,11 @@ function Box(options) {
 
   $('#' + selfId + ' .plus').click(function(e) {
     let parentId = e.target.parentNode.id;
-    let parentLevel = e.target.parentNode.getAttribute('data-level');
 
     let boxOptions = {
       id: id++,
       parentId: parentId,
-      type: 'Pro',
-      level: ++parentLevel,
+      type: 'Pro'
     };
 
     list.push(boxOptions);
@@ -44,13 +42,11 @@ function Box(options) {
 
   $('#' + selfId + ' .minus').click(function(e) {
     let parentId = e.target.parentNode.id;
-    let parentLevel = e.target.parentNode.getAttribute('data-level');
 
     let boxOptions = {
       id: id++,
       parentId: parentId,
-      type: 'Con',
-      level: ++parentLevel,
+      type: 'Con'
     };
 
     list.push(boxOptions);

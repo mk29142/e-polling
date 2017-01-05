@@ -2,8 +2,7 @@
   let boxOptions = {
     id: id++,
     parentId: null,
-    type: 'Issue',
-    level: 0,
+    type: 'Issue'
   };
 
   new Box(boxOptions);
@@ -15,6 +14,8 @@
       let elem = list[i];
       elem.value = $('#box' + elem.id).find('input').val();
       let oldParent = elem.parentId;
+      console.log(elem);
+      console.log(oldParent);
       elem.parentId = oldParent ? parseInt(oldParent.substring(3)) : null;
     }
 
@@ -34,6 +35,9 @@
         console.log(data);
         window.location.href = '/results/' + data;
       },
+      error: function() {
+        console.error('Problem submitting poll');
+      }
     });
   });
 })();

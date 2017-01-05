@@ -15,10 +15,11 @@ class NLPUtils {
     static double checkStrings(String oldArg, String newArg) {
         Pair<double[]> stringVectors = stringsToVectors(oldArg, newArg);
 
-        printDoubleArray(new double[][] { stringVectors.getOne(), stringVectors.getTwo() });
-
         // Use cosineSimilarity to analyse these vectors
-        return cosineSimilarity(stringVectors.getOne(), stringVectors.getTwo());
+        double ret =
+                cosineSimilarity(stringVectors.getOne(), stringVectors.getTwo());
+        System.out.println(ret);
+        return ret;
     }
 
     private static String removeStopWordsAndStem(String string) {

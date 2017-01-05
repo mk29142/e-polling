@@ -28,7 +28,6 @@ class CreateUtils {
             createPoll = connection.prepareStatement("CREATE TABLE ? " +
                     "(statement_id INT NOT NULL, " +
                     "parent_id INT, " +
-                    "level INT NOT NULL, " +
                     "statement TEXT NOT NULL, " +
                     "score REAL," +
                     "yes_votes INT NOT NULL," +
@@ -38,7 +37,7 @@ class CreateUtils {
                     "(statement_id SERIAL UNIQUE, " +
                     "parent_id INT NOT NULL, " +
                     "statement TEXT NOT NULL, " +
-                    "type statement_type;");
+                    "type statement_type);");
             createAnswers = connection.prepareStatement("CREATE TABLE ? " +
                     "(user_id TEXT NOT NULL, stupidity INT);");
 
@@ -96,8 +95,6 @@ class CreateUtils {
                     } else {
                         addRow.setInt(3, elemObj.get("parentId").getAsInt());
                     }
-
-                    addRow.setInt(4, elemObj.get("level").getAsInt());
 
                     addRow = connection.prepareStatement(addRow.toString().replace("'", "\""));
                     addAnswerColumn = connection.prepareStatement(addAnswerColumn.toString().replace("'", "\""));

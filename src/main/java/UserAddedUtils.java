@@ -60,11 +60,11 @@ class UserAddedUtils {
             ResultSet idrs = getCurrId.executeQuery();
             idrs.next();
 
-            int nextId = idrs.getInt("count") + 1;
+            Integer nextId = idrs.getInt("count");
 
             PreparedStatement add =
                     connection.prepareStatement("INSERT INTO ? " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?::statement_type);");
+                        "VALUES (?, ?, ?, ?, ?, ?, ?::statement_type);");
             add.setString(1, pollId);
             add = connection.prepareStatement(add.toString().replace("'", "\""));
             add.setInt(1, nextId);
@@ -75,6 +75,14 @@ class UserAddedUtils {
             add.setInt(6, 0);
             add.setString(7, type);
 
+            PreparedStatement addAnswerColumn =
+                    connection.prepareStatement("ALTER TABLE ? ADD COLUMN ? BOOLEAN;");
+            addAnswerColumn.setString(1, pollId + "_answers");
+            addAnswerColumn.setString(2, nextId.toString());
+            addAnswerColumn =
+                    connection.prepareStatement(addAnswerColumn.toString().replace("'", "\""));
+
+            addAnswerColumn.executeUpdate();
             add.execute();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -95,7 +103,7 @@ class UserAddedUtils {
             String type) {
         try {
             PreparedStatement newArg =
-                    connection.prepareStatement("INSERT INTO ?"
+                    connection.prepareStatement("INSERT INTO ? (parent_id, statement, type)"
                             + "VALUES (?, ?, ?::statement_type);");
             newArg.setString(1, pollId + "_user_added");
             newArg = connection.prepareStatement(
