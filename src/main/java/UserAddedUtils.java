@@ -30,6 +30,19 @@ class UserAddedUtils {
         int parent = newArg.get("parent").getAsInt();
         String txt = newArg.get("text").getAsString();
         String type = newArg.get("type").getAsString();
+
+        List<Argument> comp = grabComparableStatements(userId,type,parent);
+        //set threshhold for amount of comparability required to cut user statement
+        double threshHold = 0.75;
+
+        for (Argument arg : comp) {
+            if (checkStrings(arg.getText(), txt) > threshHold) {
+            //The are the same and we will change the users vote at that point in the
+            // tree to be the similar one already in the database
+            return "SUCCESS";
+            }
+        }
+
         return addToTable(id, parent, txt, type, userId);
     }
 
@@ -88,6 +101,14 @@ class UserAddedUtils {
         }
 
         return args;
+    }
+
+    private double checkStrings(String oldArg, String newArg) {
+        List<double[]> stringVectors = stringsToVectors(oldArg, newArg);
+
+        // use cosineSimilarity() to analyse these vectors
+
+        return 0.0;
     }
 
     private String removeStopWordsAndStem(String string) {
