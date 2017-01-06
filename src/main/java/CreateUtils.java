@@ -76,7 +76,7 @@ class CreateUtils {
                 try {
                     PreparedStatement addRow =
                             connection.prepareStatement("INSERT INTO ? " +
-                                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?::statement_type);");
+                                    "VALUES(?, ?, ?, ?, ?, ?, ?::statement_type);");
 
                     // This statement adds a column to the answers table
                     PreparedStatement addAnswerColumn =

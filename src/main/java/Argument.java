@@ -16,7 +16,6 @@ class Argument {
 
     private int votesFor;
     private int votesAgainst;
-    private float baseScore;
 
     private boolean isSupporter;
     private List<Argument> children;
@@ -44,12 +43,6 @@ class Argument {
         return id;
     }
 
-    /*
-     * Use score function (sigma) from DF-QuAD algorithm to calculate strength
-     * of argument using the vote base score as the base score.
-     */
-    private double strength;
-
     Argument(boolean vote, String argumentTitle, boolean isSupporter) {
         this.text = argumentTitle;
         this.vote = vote;
@@ -69,13 +62,13 @@ class Argument {
     boolean getVote() {
         return vote;
     }
-    boolean isSupporter() { return isSupporter;}
+    private boolean isSupporter() { return isSupporter;}
 
-    public void setVotesFor(int votesFor) {
+    void setVotesFor(int votesFor) {
         this.votesFor = votesFor;
     }
 
-    public void setVotesAgainst(int votesAgainst) {
+    void setVotesAgainst(int votesAgainst) {
         this.votesAgainst = votesAgainst;
     }
 
@@ -84,7 +77,7 @@ class Argument {
     }
 
     // Returns box for sending back Argument in JSON
-    public Box toBox() {
+    Box toBox() {
         return new Box(
                 id,
                 parent,
@@ -93,7 +86,7 @@ class Argument {
                 vote ? "For" : "Against");
     }
 
-    public void addChild(Argument child) {
+    void addChild(Argument child) {
         this.children.add(child);
     }
 
@@ -107,9 +100,7 @@ class Argument {
      * and don't agree with any of its attackers, then it is inconsistent.
      * Otherwise, it is consistent.
      */
-    public List<Argument> getInconsistencies() {
-
-
+    List<Argument> getInconsistencies() {
         List<Argument> inconsistencies = new ArrayList<>();
 
         List<Argument> attackers = attackersAgreedWith();
@@ -129,7 +120,7 @@ class Argument {
             }
         }
 
-        for(Argument child : children){
+        for (Argument child : children){
             List<Argument> currInconsistencies = child.getInconsistencies();
             if(!currInconsistencies.isEmpty()){
                 inconsistencies = currInconsistencies;
@@ -138,7 +129,6 @@ class Argument {
         }
 
         return inconsistencies;
-
     }
 
     /*
@@ -149,41 +139,16 @@ class Argument {
         return children;
     }
 
-    /*
-     * Returns true if the subtree with this argument as the root is
-     * consistent, which is when the root and all of its children are
-     * consistent.
-     */
-    public boolean isSubTreeConsistent() {
-        for (Argument child : children) {
-            if (!child.isSubTreeConsistent()) {
-                return false;
-            }
-        }
-
-        return this.getInconsistencies().isEmpty();
-    }
-
     private List<Argument> supportersAgreedWith() {
-        List<Argument> supporters = new ArrayList<>();
-        for (Argument child : this.children) {
-            if (child.getVote() && child.isSupporter()) {
-                supporters.add(child);
-            }
-        }
-
-        return supporters;
+        return this.children.stream()
+                .filter(child -> child.getVote() && child.isSupporter())
+                .collect(Collectors.toList());
     }
 
     private List<Argument> attackersAgreedWith() {
-        List<Argument> attackers = new ArrayList<>();
-        for (Argument child : this.children) {
-            if (child.getVote() && !child.isSupporter()) {
-                attackers.add(child);
-            }
-        }
-
-        return attackers;
+        return this.children.stream()
+                .filter(child -> child.getVote() && !child.isSupporter())
+                .collect(Collectors.toList());
     }
 
     /*
@@ -192,14 +157,14 @@ class Argument {
      * of an argument.
      * (The higher the scores in the list, the higher the aggregate, as one would expect)
      */
-    private float strengthAggregationFunction(List<Float> S) {
-        switch(S.size()) {
+    private float strengthAggregationFunction(List<Float> s) {
+        switch (s.size()) {
             case 0: return 0;
-            case 1: return S.get(0);
-            case 2: return this.baseFunction(S.get(0), S.get(1));
+            case 1: return s.get(0);
+            case 2: return this.baseFunction(s.get(0), s.get(1));
             default:
-                float argScore = S.remove(S.size());
-                return this.baseFunction(this.strengthAggregationFunction(S), argScore);
+                float argScore = s.remove(s.size() - 1);
+                return this.baseFunction(this.strengthAggregationFunction(s), argScore);
         }
     }
 
@@ -222,7 +187,7 @@ class Argument {
     private List<Argument> getAllSupporters() {
         return children
                 .stream()
-                .filter(u -> u.isSupporter())
+                .filter(Argument::isSupporter)
                 .collect(Collectors.toList());
     }
 
@@ -239,7 +204,7 @@ class Argument {
         float supporterScore =
                 strengthAggregationFunction(supporterScoreList);
 
-        this.baseScore = getBaseScore();
+        float baseScore = getBaseScore();
 
         if (attackerScore >= supporterScore) {
             this.score = baseScore -
@@ -251,26 +216,13 @@ class Argument {
     }
 
     /*
-     * Simple getter that is used in scoreList (below)
-     */
-
-
-    private float getScore() {
-        return this.score;
-    }
-
-    /*
      * scoreList turns a list of nodes into a list of scores and is needed in the
      * combination function
      */
     private List<Float> scoreList(List<Argument> argList) {
-        List<Float> scoreList = new ArrayList<>();
-
-        for (Argument arg : argList) {
-            scoreList.add(arg.getScore());
-        }
-
-        return scoreList;
+        return argList.stream()
+                .map(arg -> arg.score)
+                .collect(Collectors.toList());
     }
 
     /*
@@ -286,7 +238,7 @@ class Argument {
         }
     }
 
-    public void updateScore(Connection connection, String pollId) {
+    void updateScore(Connection connection, String pollId) {
         for (Argument child : this.children) {
             child.updateScore(connection, pollId);
         }
@@ -298,15 +250,27 @@ class Argument {
 
     private void putScoreInDb(Connection connection, String pollId) {
         try {
-            PreparedStatement updateScore = connection.prepareStatement("UPDATE ? SET ? = ? WHERE 'statement_id'=?");
+            PreparedStatement updateScore =
+                    connection.prepareStatement(
+                            "UPDATE ? SET score = ? WHERE 'statement_id'=?");
             updateScore.setString(1, pollId);
-            updateScore.setString(2, "score");
-            updateScore.setFloat(3, this.score);
-            updateScore.setInt(4, this.id);
-            updateScore = connection.prepareStatement(updateScore.toString().replace("'", "\""));
+            updateScore.setFloat(2, this.score);
+            updateScore.setInt(3, this.id);
+            updateScore =
+                    connection.prepareStatement(
+                            updateScore.toString().replace("'", "\""));
             updateScore.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage() + " in putScoreInDb: " + this.id);
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("id: ").append(this.id);
+        sb.append(" score: ").append(this.score);
+
+        return sb.toString();
     }
 }
