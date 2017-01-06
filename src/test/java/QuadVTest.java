@@ -35,5 +35,12 @@ public class QuadVTest {
         assertTrue(veryDiffWords <= 1);
         assertTrue(veryDiffWords >= 0);
     }
+
+    @Test
+    public void checkWordsRelatedness() {
+        double r = NLPUtils.relatedness("goodbye", "hello");
+        System.out.println(r);
+        assertTrue(r > 0);
+    }
 }
 

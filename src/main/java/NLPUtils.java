@@ -1,6 +1,7 @@
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
+import edu.cmu.lti.ws4j.impl.HirstStOnge;
 import edu.cmu.lti.ws4j.impl.Lin;
 import edu.cmu.lti.ws4j.impl.Path;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
@@ -16,10 +17,7 @@ class NLPUtils {
         Pair<double[]> stringVectors = stringsToVectors(oldArg, newArg);
 
         // Use cosineSimilarity to analyse these vectors
-        double ret =
-                cosineSimilarity(stringVectors.getOne(), stringVectors.getTwo());
-        System.out.println(ret);
-        return ret;
+        return cosineSimilarity(stringVectors.getOne(), stringVectors.getTwo());
     }
 
     private static String removeStopWordsAndStem(String string) {
@@ -53,81 +51,39 @@ class NLPUtils {
             this.two = two;
         }
 
-        public T getOne() { return this.one; }
-        public T getTwo() { return this.two; }
+        T getOne() { return this.one; }
+        T getTwo() { return this.two; }
     }
 
     private static Pair<double[]> stringsToVectors(String s1, String s2) {
-        String[] arr1 = removeRepetition(removeStopWordsAndStem(s1));
-        String[] arr2 = removeRepetition(removeStopWordsAndStem(s2));
+        String[] concatString = removeRepAndStopWords(s1 + ' ' + s2);
+        String[] word1 = removeRepAndStopWords(s1);
+        String[] word2 = removeRepAndStopWords(s2);
 
-        double[][] relatedMatrix = matrixRelatedness(arr1, arr2);
+        return new Pair<>(
+            makeVector(concatString, word1),
+            makeVector(concatString, word2)
+        );
+    }
 
-        double[] word1 = new double[relatedMatrix.length];
-        for (int i = 0; i < relatedMatrix.length; i++) {
+    private static double[] makeVector(String[] concat, String[] word) {
+        double[] ret = new double[concat.length];
+
+        for (int i = 0; i < concat.length; i++) {
             double sum = 0;
-            for (int j = 0; j < relatedMatrix[0].length; j++) {
-                sum += relatedMatrix[i][j];
+
+            for (String w : word) {
+                sum += relatedness(concat[i], w);
             }
 
-            word1[i] = sum / relatedMatrix[0].length;
+            ret[i] = sum / word.length;
         }
 
-        double[] word2 = new double[relatedMatrix[0].length];
-        for (int i = 0; i < relatedMatrix[0].length; i++) {
-            double sum = 0;
-            for (int j = 0; j < relatedMatrix.length; j++) {
-                sum += relatedMatrix[j][i];
-            }
-
-            word2[i] = sum / relatedMatrix.length;
-        }
-
-        if (word1.length > word2.length) return new Pair<>(word2, word1);
-        else return new Pair<>(word1, word2);
+        return ret;
     }
 
-    private static double[][] matrixRelatedness(String[] s1, String[] s2) {
-        double[][] result = new double[s1.length][s2.length];
-        RelatednessCalculator[] rcs = { new WuPalmer(db), new Path(db), new Lin(db) };
-
-        for (RelatednessCalculator rc : rcs) {
-            double[][] value = rc.getNormalizedSimilarityMatrix(s1, s2);
-
-            result = addMatrix(result, value);
-        }
-
-        return divide(result, rcs.length);
-    }
-
-    private static double[][] divide(double[][] result, int den) {
-        for (int i = 0; i < result.length; i++) {
-            for (int j = 0; j < result[0].length; j++) {
-                result[i][j] /= den;
-            }
-        }
-
-        return result;
-    }
-
-    private static double[][] addMatrix(double[][] result, double[][] value) {
-        for (int i = 0; i < result.length; i++) {
-            for (int j = 0; j < result[0].length; j++) {
-                result[i][j] += value[i][j];
-            }
-        }
-
-        return result;
-    }
-
-    private static void printDoubleArray(double[][] arr) {
-        for (double[] inner : arr) {
-            for (int j = 0; j < inner.length - 1; j++) {
-                System.out.print(String.format("%1$,.2f", inner[j]) + ", ");
-            }
-
-            System.out.println(String.format("%1$,.2f", inner[inner.length - 1]));
-        }
+    private static String[] removeRepAndStopWords(String s) {
+        return removeRepetition(removeStopWordsAndStem(s));
     }
 
     private static double cosineSimilarity(double[] vector1, double[] vector2) {
@@ -160,16 +116,29 @@ class NLPUtils {
     static double relatedness(String word1, String word2) {
         WS4JConfiguration.getInstance().setMFS(true);
         RelatednessCalculator[] rcs = { new WuPalmer(db), new Path(db), new Lin(db) };
+        double[] weights = { 0.6, 0.1, 0.2 };
         double sum = 0;
 
-        for (RelatednessCalculator rc : rcs) {
-            double value = rc.calcRelatednessOfWords(word1, word2);
+        RelatednessCalculator hso = new HirstStOnge(db);
+        double hsoWeight = 0.0625 * 0.1;
+        double hsoVal = hso.calcRelatednessOfWords(word1, word2);
+
+        if (hsoVal >= 0 && hsoVal <= 1) {
+            sum += hsoVal * hsoWeight;
+        } else {
+            sum += 0.1;
+        }
+
+        for (int i = 0; i < rcs.length; i++) {
+            double value = rcs[i].calcRelatednessOfWords(word1, word2);
             if (value >= 0 && value <= 1) {
-                sum += value;
+                sum += value * weights[i];
+            } else if (value > 1) {
+                sum += weights[i];
             }
         }
 
-        return sum / rcs.length;
+        return sum;
     }
 
     private static boolean isStopWord(String string) {
