@@ -71,6 +71,15 @@
         </plugins>
     </build>
 
+    <repositories>
+        <!--other repositories if any-->
+        <repository>
+            <id>project.local</id>
+            <name>project</name>
+            <url>file:${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>com.sparkjava</groupId>
@@ -159,15 +168,11 @@
             <groupId>edu.cmu.lti</groupId>
             <artifactId>jawjaw</artifactId>
             <version>1.0.2</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jawjaw-1.0.2.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>edu.cmu.lti</groupId>
             <artifactId>ws4j</artifactId>
             <version>1.0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/ws4j-1.0.1.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
