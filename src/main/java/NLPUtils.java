@@ -1,4 +1,5 @@
 import edu.cmu.lti.jawjaw.pobj.POS;
+import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.lexical_db.data.Concept;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 class NLPUtils {
-    private static NictWordNet db = new NictWordNet();
+    private static ILexicalDatabase db = new NictWordNet();
 
     static double checkStrings(String oldArg, String newArg) {
         Pair<double[]> stringVectors = stringsToVectors(oldArg, newArg);
