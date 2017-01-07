@@ -1,25 +1,19 @@
 import edu.cmu.lti.jawjaw.pobj.POS;
-import edu.cmu.lti.jawjaw.util.WordNetUtil;
-import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.lexical_db.data.Concept;
-import edu.cmu.lti.ws4j.Relatedness;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
-import edu.cmu.lti.ws4j.impl.HirstStOnge;
 import edu.cmu.lti.ws4j.impl.Lin;
 import edu.cmu.lti.ws4j.impl.Path;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
 import edu.cmu.lti.ws4j.util.PorterStemmer;
 import edu.cmu.lti.ws4j.util.WS4JConfiguration;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.stream.Collector;
 
 class NLPUtils {
-    private static ILexicalDatabase db = new NictWordNet();
+    private static NictWordNet db = new NictWordNet();
 
     static double checkStrings(String oldArg, String newArg) {
         Pair<double[]> stringVectors = stringsToVectors(oldArg, newArg);
