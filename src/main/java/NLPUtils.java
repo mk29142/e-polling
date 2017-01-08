@@ -84,7 +84,7 @@ class NLPUtils {
 
     private static String[] simplifyLargeSentence(String[] larger, String[] smaller) {
         return Arrays.stream(larger)
-            .sorted((a, b) -> a.length() > b.length() ? 1 : -1)
+            .sorted((a, b) -> a.length() < b.length() ? 1 : -1)
             .limit(smaller.length).toArray(String[]::new);
     }
 
