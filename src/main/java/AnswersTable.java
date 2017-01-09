@@ -3,44 +3,37 @@ import com.google.gson.JsonObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class AnswersUtils {
+class AnswersTable {
     private MasterTree mt;
     private Connection connection;
-    private String pollId;
-    private String userId;
 
-    AnswersUtils(Connection connection, String pollId, String userId) {
+    AnswersTable(Connection connection) {
         this.connection = connection;
-        this.pollId = pollId;
-        this.userId = userId;
         this.mt = new MasterTree(connection);
     }
 
-    AnswersUtils(Connection connection, String pollId) {
-        this(connection, pollId, "");
-    }
-
-    void enterAnswersIntoDatabase(JsonArray answers) {
+    void enterAnswersIntoDatabase(JsonArray answers, Integer pollId, String userId) {
         // Go through head's adding changed vote values
         // (for first run all answers given)
+        // This statement adds a column to the answers table
+
         for (int i = 0; i < answers.size(); i++) {
             JsonObject answer = answers.get(i).getAsJsonObject();
 
             boolean vote = answer.get("support").getAsString().equals("yes");
-            int id = answer.get("id").getAsInt();
+            int answerId = answer.get("id").getAsInt();
 
             // So that we can safely ignore the dummy statement
-            if (id < 10000) insertAnswer(vote, id);
+            if (answerId < 10000) insertAnswer(vote, answerId, pollId, userId);
         }
     }
 
-    DynamicData resolveDynamicQuestions(JsonObject data) {
+    DynamicData resolveDynamicQuestions(JsonObject data, Integer pollId, String userId) {
         // This list will have the "inconsistent" node at its head with all its
         // supporters/attackers in the rest of the list
         DynamicData dynamicData = new DynamicData(findDynamicQ(data));
@@ -55,72 +48,47 @@ class AnswersUtils {
         return dynamicData;
     }
 
-    void addUser() {
+    void addUser(Integer pollId, String userId) {
         try {
             PreparedStatement createUser = connection.prepareStatement(
-                    "INSERT INTO ? (user_id)");
-            createUser.setString(1, pollId + "_answers");
-            PreparedStatement insertIp = connection.prepareStatement(
-                    createUser.toString().replace("'", "\"") + " VALUES(?);");
+                    "INSERT INTO answers(poll_id, user_id) VALUES(?, ?)");
+            createUser.setInt(1, pollId);
+            createUser.setString(2, userId);
 
-            insertIp.setString(1, userId);
-            insertIp.executeUpdate();
+            createUser.executeUpdate();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + " in AnswersTable.addUser");
         }
     }
 
-    List<GraphData> getGraphData() {
-        List<GraphData> graphData = new ArrayList<>();
-
-        try {
-            PreparedStatement getStatementData =
-                    connection.prepareStatement(
-                            "SELECT * FROM ? ORDER BY 'statement_id';");
-            getStatementData.setString(1, pollId);
-
-            getStatementData = connection.prepareStatement(
-                    getStatementData.toString().replace("'", "\""));
-            ResultSet statementData = getStatementData.executeQuery();
-
-            while (statementData.next()) {
-                String text = statementData.getString("statement");
-                int id = statementData.getInt("statement_id");
-                Integer parentId = statementData.getInt("parent_id");
-                int yesVotes = statementData.getInt("yes_votes");
-                int noVotes = statementData.getInt("no_votes");
-                float score = statementData.getFloat("score");
-
-                graphData.add(new GraphData(
-                        id, parentId, score, yesVotes, noVotes, text));
-            }
-
-            return graphData;
-        } catch (SQLException e) {
-            System.out.println(e.getMessage() + " in getGraphData");
-            return new ArrayList<>();
-        }
-    }
-
-    private void insertAnswer(boolean vote, Integer id) {
+    private void insertAnswer(boolean vote, Integer id, Integer pollId, String userId) {
         try {
             PreparedStatement insertAnswer =
-                connection.prepareStatement("UPDATE ? SET ?=");
-            insertAnswer.setString(1, pollId + "_answers");
-            insertAnswer.setString(2, id.toString());
+                connection.prepareStatement("UPDATE answers SET answersArray[?] = ");
+            insertAnswer.setInt(1, id);
 
             PreparedStatement insertValues = connection.prepareStatement(
                     insertAnswer.toString().replace("'", "\"")
-                    + "? WHERE user_id=?;");
+                    + "? WHERE user_id=? AND poll_id=?");
 
             insertValues.setBoolean(1, vote);
             insertValues.setString(2, userId);
+            insertValues.setInt(3, pollId);
 
             insertValues.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException e1) {
             // This could be because we need to add the new column
             // so we should add that here.
-            System.out.println(e.getMessage());
+            System.out.println(e1.getMessage() + " e1 in AnswerTable.insertAnswer");
+
+            try {
+                PreparedStatement insertAnswer =
+                        connection.prepareStatement("UPDATE answers SET answersArray = answersArray || ?");
+                insertAnswer.setBoolean(1, vote);
+            } catch (SQLException e2) {
+                System.out.println(e2.getMessage() + " e2 in AnswerTable.insertAnswer");
+            }
+
         }
     }
 

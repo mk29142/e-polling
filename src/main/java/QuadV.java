@@ -1,3 +1,4 @@
+import java.net.InterfaceAddress;
 import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.*;
@@ -13,13 +14,21 @@ public class QuadV {
     public static void main(String[] args) {
         // Configure Spark and server routes.
         Connection connection;
+        DatabaseUtils dbUtils;
+        PollTable pTable;
+        AnswersTable ansTable;
+        ArgumentTable argTable;
+        UserAddedTable uaTable;
+        BoxesUtils boxUtils;
 
         try {
             connection = getConnection();
-            connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
-                    "(id SERIAL UNIQUE, poll_name TEXT, email TEXT, password TEXT);");
-            //connection.createStatement().execute("CREATE TYPE statement_type " +
-            //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
+            dbUtils = new DatabaseUtils(connection);
+            pTable = new PollTable(connection);
+            argTable = new ArgumentTable(connection);
+            ansTable = new AnswersTable(connection);
+            uaTable = new UserAddedTable(connection);
+            boxUtils = new BoxesUtils(connection);
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
             System.exit(e.hashCode());
@@ -39,7 +48,8 @@ public class QuadV {
             // Get all of the names of polls for listing
             Map<String, List<Poll>> map = new HashMap<>();
 
-            List<Poll> polls = new DatabaseUtils(connection).getPolls();
+
+            List<Poll> polls = pTable.getPolls();
             map.put("polls", polls);
 
             return new ModelAndView(map, "votingroom.mustache");
@@ -49,35 +59,40 @@ public class QuadV {
 
         // Get the questions one by one for the specific poll
         // Use PreparedStatement in here to stop string injection
-        get("/boxes/:id", "application/json", (req, res) ->
-                new BoxesUtils(connection, req.params(":id")).getStatementBoxes(),
-                new JsonTransformer());
+        get("/boxes/:id", "application/json", (req, res) -> {
+            Integer pollId = Integer.parseInt(req.params(":id"));
+            return boxUtils.getStatementBoxes(pollId);
+        }, new JsonTransformer());
 
         get("/create", (req, res) ->
                 new ModelAndView(null, "create.mustache"), templateEngine);
 
-        post("/create", (req, res) ->
-                new CreateUtils(connection, new JsonParser().parse(req.body())).createPoll());
+        post("/create", (req, res) -> {
+                JsonObject obj = new JsonParser().parse(req.body()).getAsJsonObject();
+                Integer pollId = pTable.addToTable(obj);
+                argTable.addToTable(obj.getAsJsonArray("list"), pollId);
+                return pollId.toString();
+        }, new JsonTransformer());
 
         post("/user/:id", (req, res) -> {
+            Integer pollId = Integer.parseInt(req.params(":id"));
             String userId = req.session().id();
-            new AnswersUtils(connection, req.params(":id"), userId).addUser();
+            ansTable.addUser(pollId, userId);
             return userId;
         });
 
         post("/answers/:id", "application/json", (req, res) -> {
+            Integer pollId = Integer.parseInt(req.params(":id"));
             JsonObject data = new JsonParser()
                     .parse(req.body())
                     .getAsJsonObject();
 
             String userId = data.get("userId").getAsString();
 
-            AnswersUtils ans = new AnswersUtils(connection, req.params(":id"), userId);
-
             JsonArray answers = data.get("questions").getAsJsonArray();
 
-            ans.enterAnswersIntoDatabase(answers);
-            DynamicData dynamicQ = ans.resolveDynamicQuestions(data);
+            ansTable.enterAnswersIntoDatabase(answers, pollId, userId);
+            DynamicData dynamicQ = ansTable.resolveDynamicQuestions(data, pollId, userId);
 
             if (dynamicQ.isEnd()) {
                 return "STOP";
@@ -87,12 +102,12 @@ public class QuadV {
         }, new JsonTransformer());
 
         post("/useradded/:id", "application/json", (req, res) -> {
+            Integer pollId = Integer.parseInt(req.params(":id"));
             JsonObject newArg = new JsonParser()
                     .parse(req.body())
                     .getAsJsonObject();
 
-            UserAddedUtils userAddedUtils = new UserAddedUtils(connection, req.params(":id"));
-            return userAddedUtils.addNewArg(newArg);
+            return uaTable.addNewArg(newArg, pollId);
         }, new JsonTransformer());
 
         get("/results", (req, res) ->
@@ -103,13 +118,16 @@ public class QuadV {
                 new ModelAndView(null, "results.mustache"), templateEngine);
 
         get("/graph/:id", "application/json", (req, res) -> {
-            String pollId = req.params(":id");
-            return new AnswersUtils(connection, pollId).getGraphData();
+            Integer pollId = Integer.parseInt(req.params(":id"));
+            return argTable.getGraphData(pollId);
         }, new JsonTransformer());
 
-        get("/nodeGraph/:id", "application/json", (req, res) ->
-                new NodeGraphBuilder(connection, req.params(":id"))
-                        .createResultGraph(), new JsonTransformer());
+        get("/nodeGraph/:id", "application/json", (req, res) -> {
+                Integer pollId = Integer.parseInt(req.params(":id"));
+                List<GraphData> gData = argTable.getGraphData(pollId);
+                NodeGraphBuilder ngb = new NodeGraphBuilder();
+                return ngb.createResultGraph(gData);
+        }, new JsonTransformer());
     }
 
     private static Connection getConnection()

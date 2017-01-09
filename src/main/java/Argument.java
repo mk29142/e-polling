@@ -238,7 +238,7 @@ class Argument {
         }
     }
 
-    void updateScore(Connection connection, String pollId) {
+    void updateScore(Connection connection, Integer pollId) {
         for (Argument child : this.children) {
             child.updateScore(connection, pollId);
         }
@@ -248,14 +248,15 @@ class Argument {
         this.putScoreInDb(connection, pollId);
     }
 
-    private void putScoreInDb(Connection connection, String pollId) {
+    private void putScoreInDb(Connection connection, Integer pollId) {
         try {
             PreparedStatement updateScore =
                     connection.prepareStatement(
-                            "UPDATE ? SET score = ? WHERE 'statement_id'=?");
-            updateScore.setString(1, pollId);
-            updateScore.setFloat(2, this.score);
-            updateScore.setInt(3, this.id);
+                            "UPDATE arguments SET score = ? WHERE 'arg_id'=? AND poll_id=?");
+            updateScore.setFloat(1, this.score);
+            updateScore.setInt(2, this.id);
+            updateScore.setInt(3, pollId);
+
             updateScore =
                     connection.prepareStatement(
                             updateScore.toString().replace("'", "\""));

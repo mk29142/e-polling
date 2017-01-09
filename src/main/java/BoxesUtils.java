@@ -7,30 +7,28 @@ import java.util.List;
 
 class BoxesUtils {
     private Connection connection;
-    private String pollId;
 
-    BoxesUtils(Connection connection, String pollId) {
+    BoxesUtils(Connection connection) {
         this.connection = connection;
-        this.pollId = pollId;
     }
 
-    List<Box> getStatementBoxes() {
+    List<Box> getStatementBoxes(Integer pollId) {
         // Checking if connection exists
         try {
             // If they have answered questions already do something to notify
             // user. If not then carry on.
             PreparedStatement findStatements = connection.prepareStatement(
-                    "SELECT * FROM ? ORDER BY 'statement_id';");
-            findStatements.setString(1, pollId);
+                    "SELECT * FROM arguments WHERE poll_id=? ORDER BY 'arg_id';");
+            findStatements.setInt(1, pollId);
             ResultSet rs = connection.createStatement().executeQuery(
                     findStatements.toString().replace("'", "\""));
 
             List<Box> boxes = new ArrayList<>();
 
             while (rs.next()) {
-                int id = rs.getInt("statement_id");
+                int id = rs.getInt("arg_id");
                 int parentId = rs.getInt("parent_id");
-                String statement = rs.getString("statement");
+                String statement = rs.getString("argument");
                 String type = rs.getString("type");
                 boxes.add(new Box(
                         id,

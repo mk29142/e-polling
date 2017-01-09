@@ -35,7 +35,7 @@
         console.log(data);
         window.location.href = '/results/' + data;
       },
-      error: function() {
+      error: function(data) {
         console.error('Problem submitting poll');
       }
     });

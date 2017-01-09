@@ -1,33 +1,52 @@
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
 
 class DatabaseUtils {
     private Connection connection;
 
     DatabaseUtils(Connection connection) {
         this.connection = connection;
+        initializeDatabase();
     }
 
-    List<Poll> getPolls() {
+    public void initializeDatabase() {
         try {
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, poll_name FROM polls");
+            PreparedStatement createArgTable;
+            PreparedStatement createAnswersTable;
+            PreparedStatement createUserAddedTable;
 
-            List<Poll> polls = new ArrayList<>();
+            connection.createStatement().execute("CREATE TABLE IF NOT EXISTS polls" +
+                    "(id SERIAL UNIQUE PRIMARY KEY, poll_name TEXT, email TEXT, password TEXT);");
+            //connection.createStatement().execute("CREATE TYPE statement_type " +
+            //        "AS ENUM ('Issue', 'Pro', 'Con', 'Answer')");
+            createArgTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS arguments " +
+                    "(poll_id INT NOT NULL REFERENCES polls(id) ON DELETE CASCADE, " +
+                    "arg_id INT NOT NULL, " +
+                    "parent_id INT, " +
+                    "argument TEXT NOT NULL, " +
+                    "score REAL," +
+                    "yes_votes INT NOT NULL," +
+                    "no_votes INT NOT NULL," +
+                    "type statement_type," +
+                    "PRIMARY KEY(poll_id, arg_id))");
+            createAnswersTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS answers " +
+                    "(poll_id INT NOT NULL REFERENCES polls(id) ON DELETE CASCADE," +
+                    "user_id TEXT NOT NULL," +
+                    "answersArray BOOLEAN ARRAY DEFAULT '{}');");
+            createUserAddedTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS user_added " +
+                    "(poll_id INT NOT NULL REFERENCES polls(id) ON DELETE CASCADE, " +
+                    "arg_id SERIAL UNIQUE, " +
+                    "parent_id INT NOT NULL, " +
+                    "argument TEXT NOT NULL, " +
+                    "type statement_type," +
+                    "PRIMARY KEY (poll_id, arg_id));");
 
-            while (rs.next()) {
-                Poll p = new Poll(rs.getInt("id"), rs.getString("poll_name"));
-                polls.add(p);
-            }
+            createAnswersTable.execute();
+            createArgTable.execute();
+            createUserAddedTable.execute();
 
-            return polls;
+            System.out.println("Database Configured");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return null;
+            System.out.println(e.getMessage() + " in DatabaseUtils.initializeDatabase()");
         }
     }
 }

@@ -1,16 +1,9 @@
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
 class NodeGraphBuilder {
-    private AnswersUtils au;
 
-    NodeGraphBuilder(Connection connection, String pollId) {
-        this.au = new AnswersUtils(connection, pollId);
-    }
-
-    ResultGraph createResultGraph() {
-        List<GraphData> gd = this.au.getGraphData();
+    ResultGraph createResultGraph(List<GraphData> gd) {
         List<Node> nodes = generateNodes(gd);
         List<Link> links = generateLinks(gd);
         return new ResultGraph(nodes, links);

@@ -2,7 +2,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 /*
  * Think about concurrency in this class as some of the functions update shared variables in the database
@@ -18,45 +17,41 @@ class MasterTree {
      * updateScore updates the scores of all the nodes in the MasterTree, there may be a problem caused by concatenating
      * the attackers and supporters list into children.
      */
-    synchronized void updateVotes(String pollId, String userId) {
+    synchronized void updateVotes(Integer pollId, String userId) {
         try {
             PreparedStatement getAnswerRow =
                     connection.prepareStatement(
-                            "SELECT * FROM ? WHERE 'user_id'=");
-            getAnswerRow.setString(1, pollId + "_answers");
-            PreparedStatement answerRow =
-                    connection.prepareStatement(
-                            getAnswerRow.toString().replace("'","\"") + "?");
-            answerRow.setString(1, userId);
+                            "SELECT * FROM answers WHERE poll_id=? AND user_id=?");
+            getAnswerRow.setInt(1, pollId);
+            getAnswerRow.setString(2, userId);
 
-            ResultSet userAnswers = answerRow.executeQuery();
+            System.out.println(getAnswerRow.toString());
+            ResultSet userAnswers = connection.createStatement().executeQuery(
+                    getAnswerRow.toString().replace("'", "'"));
             userAnswers.next();
+            boolean[] answers = (boolean[])userAnswers.getArray("answersArray").getArray();
+            System.out.println("hi");
+
 
             PreparedStatement getQuestions =
-                    connection.prepareStatement("SELECT * FROM ?");
-            getQuestions.setString(1, pollId);
-
-            ResultSet questions =
-                    connection.createStatement().executeQuery(
-                            getQuestions.toString().replace("'", "\""));
+                    connection.prepareStatement("SELECT * FROM arguments WHERE poll_id=?");
+            getQuestions.setInt(1, pollId);
+            ResultSet questions = getQuestions.executeQuery();
 
             while (questions.next()) {
-                Integer statementId = questions.getInt("statement_id");
-                boolean vote = userAnswers.getBoolean(statementId.toString());
+                Integer argumentId = questions.getInt("arg_id");
+
+                boolean vote = answers[argumentId];
 
                 String yesOrNo = vote? "yes_votes" : "no_votes";
 
                 PreparedStatement updateStatement =
                         connection.prepareStatement(
-                                "UPDATE ? SET ? = ? + 1 WHERE 'statement_id'=");
-                updateStatement.setString(1, pollId);
+                                "UPDATE arguments SET ? = ? + 1 WHERE poll_id=? AND arg_id=?");
+                updateStatement.setString(1, yesOrNo);
                 updateStatement.setString(2, yesOrNo);
-                updateStatement.setString(3, yesOrNo);
-
-                updateStatement =
-                        connection.prepareStatement(
-                                updateStatement.toString().replace("'","\"") +"?");
-                updateStatement.setInt(1, statementId);
+                updateStatement.setInt(3, pollId);
+                updateStatement.setInt(4, argumentId);
                 updateStatement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -64,21 +59,19 @@ class MasterTree {
         }
     }
 
-    synchronized void updateScores(String pollId) {
+    synchronized void updateScores(Integer pollId) {
         try {
             PreparedStatement getRoot =
                     connection.prepareStatement(
-                            "SELECT * FROM ? WHERE 'statement_id' = 0;");
-            getRoot.setString(1, pollId);
-            getRoot =
-                    connection.prepareStatement(
-                            getRoot.toString().replace("'", "\""));
+                            "SELECT * FROM arguments WHERE poll_id=? AND arg_id='0';");
+            getRoot.setInt(1, pollId);
+
             ResultSet rootResult = getRoot.executeQuery();
             rootResult.next(); // So that we get the first returned row
 
             Argument root = new Argument(
                     true /* Fake */,
-                    rootResult.getString("statement"),
+                    rootResult.getString("argument"),
                     true /* Fake */);
 
             root.setVotesAgainst(rootResult.getInt("no_votes"));
@@ -93,23 +86,20 @@ class MasterTree {
         }
     }
 
-    private void setArgumentChildren(Argument parent, String pollId) {
+    private void setArgumentChildren(Argument parent, Integer pollId) {
         try {
             PreparedStatement findChildren =
                     connection.prepareStatement(
-                            "SELECT * FROM ? WHERE 'parent_id'=");
-            findChildren.setString(1, pollId);
-            findChildren =
-                    connection.prepareStatement(
-                            findChildren.toString().replace("'", "\"") + "?");
-            findChildren.setInt(1, parent.getId());
+                            "SELECT * FROM arguments WHERE poll_id=? AND parent_id=?");
+            findChildren.setInt(1, pollId);
+            findChildren.setInt(2, parent.getId());
             ResultSet children = findChildren.executeQuery();
 
             while (children.next()) {
-                String text = children.getString("statement");
+                String text = children.getString("argument");
                 boolean isSupporter = children.getString("type").equals("Pro");
                 Argument child = new Argument(true /* Fake */, text, isSupporter);
-                child.setId(children.getInt("statement_id"));
+                child.setId(children.getInt("arg_id"));
                 child.setVotesFor(children.getInt("yes_votes"));
                 child.setVotesAgainst(children.getInt("no_votes"));
                 setArgumentChildren(child, pollId);
@@ -120,17 +110,14 @@ class MasterTree {
         }
     }
 
-    void deleteFromDataBase(String pollId, String userId) {
+    void deleteFromDataBase(Integer pollId, String userId) {
         try {
             PreparedStatement deleteUser =
                     connection.prepareStatement(
-                            "DELETE FROM ? WHERE 'user_id'=");
-            deleteUser.setString(1, pollId + "_answers");
+                            "DELETE FROM answers WHERE poll_id=? AND 'user_id'=?;");
+            deleteUser.setInt(1, pollId);
+            deleteUser.setString(2, userId);
 
-            deleteUser =
-                    connection.prepareStatement(
-                            deleteUser.toString().replace("'","\"") + "?");
-            deleteUser.setString(1, userId);
             deleteUser.execute();
         } catch (SQLException e) {
             System.out.println(e.getMessage() + "in deleteFromDataBase");
