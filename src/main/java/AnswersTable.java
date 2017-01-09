@@ -37,16 +37,21 @@ class AnswersTable {
     DynamicData resolveDynamicQuestions(JsonObject data, Integer pollId, String userId) {
         // This list will have the "inconsistent" node at its head with all its
         // supporters/attackers in the rest of the list
-        DynamicData dynamicData = new DynamicData(findDynamicQ(data));
+        try {
+            DynamicData dynamicData = new DynamicData(findDynamicQ(data));
 
-        // If there are no dynamic questions we update the graph table
-        if (dynamicData.isEnd()) {
-            mt.updateVotes(pollId, userId);
-            mt.updateScores(pollId);
-            mt.deleteFromDataBase(pollId, userId);
+            // If there are no dynamic questions we update the graph table
+            if (dynamicData.isEnd()) {
+                mt.updateVotes(pollId, userId);
+                mt.updateScores(pollId);
+                mt.deleteFromDataBase(pollId, userId);
+            }
+
+            return dynamicData;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new DynamicData(new ArrayList<>());
         }
-
-        return dynamicData;
     }
 
     void addUser(Integer pollId, String userId) {

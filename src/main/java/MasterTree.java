@@ -30,7 +30,6 @@ class MasterTree {
             Array answers2 = userAnswers.getArray("answersArray");
             Boolean[] answers = (Boolean[])answers2.getArray();
 
-
             PreparedStatement getQuestions =
                     connection.prepareStatement("SELECT * FROM arguments WHERE poll_id=?");
             getQuestions.setInt(1, pollId);
@@ -118,7 +117,7 @@ class MasterTree {
         try {
             PreparedStatement deleteUser =
                     connection.prepareStatement(
-                            "DELETE FROM answers WHERE poll_id=? AND 'user_id'=?;");
+                            "DELETE FROM answers WHERE poll_id=? AND user_id=?;");
             deleteUser.setInt(1, pollId);
             deleteUser.setString(2, userId);
 
