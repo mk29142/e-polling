@@ -5,7 +5,6 @@ class DatabaseUtils {
 
     DatabaseUtils(Connection connection) {
         this.connection = connection;
-        initializeDatabase();
     }
 
     public void initializeDatabase() {

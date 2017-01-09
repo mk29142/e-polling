@@ -1,7 +1,5 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Arrays;
 
 /*
  * Think about concurrency in this class as some of the functions update shared variables in the database
@@ -24,13 +22,13 @@ class MasterTree {
                             "SELECT * FROM answers WHERE poll_id=? AND user_id=?");
             getAnswerRow.setInt(1, pollId);
             getAnswerRow.setString(2, userId);
-
             System.out.println(getAnswerRow.toString());
-            ResultSet userAnswers = connection.createStatement().executeQuery(
-                    getAnswerRow.toString().replace("'", "'"));
+
+            ResultSet userAnswers = getAnswerRow.executeQuery();
             userAnswers.next();
-            boolean[] answers = (boolean[])userAnswers.getArray("answersArray").getArray();
-            System.out.println("hi");
+
+            Array answers2 = userAnswers.getArray("answersArray");
+            Boolean[] answers = (Boolean[])answers2.getArray();
 
 
             PreparedStatement getQuestions =
@@ -47,11 +45,17 @@ class MasterTree {
 
                 PreparedStatement updateStatement =
                         connection.prepareStatement(
-                                "UPDATE arguments SET ? = ? + 1 WHERE poll_id=? AND arg_id=?");
+                                "UPDATE arguments SET ? = ? ");
                 updateStatement.setString(1, yesOrNo);
                 updateStatement.setString(2, yesOrNo);
-                updateStatement.setInt(3, pollId);
-                updateStatement.setInt(4, argumentId);
+                updateStatement =
+                        connection.prepareStatement(
+                                updateStatement.toString().replace("'","\"") +
+                                        "+ 1 WHERE poll_id=? AND arg_id=?");
+
+                updateStatement.setInt(1, pollId);
+                updateStatement.setInt(2, argumentId);
+                System.out.println(updateStatement.toString());
                 updateStatement.executeUpdate();
             }
         } catch (SQLException e) {

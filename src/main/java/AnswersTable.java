@@ -22,6 +22,7 @@ class AnswersTable {
         // (for first run all answers given)
         // This statement adds a column to the answers table
 
+
         for (int i = 0; i < answers.size(); i++) {
             JsonObject answer = answers.get(i).getAsJsonObject();
 
@@ -75,6 +76,7 @@ class AnswersTable {
             insertValues.setString(2, userId);
             insertValues.setInt(3, pollId);
 
+
             insertValues.executeUpdate();
         } catch (SQLException e1) {
             // This could be because we need to add the new column
@@ -88,7 +90,8 @@ class AnswersTable {
             } catch (SQLException e2) {
                 System.out.println(e2.getMessage() + " e2 in AnswerTable.insertAnswer");
             }
-
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 

@@ -15,7 +15,7 @@ class UserAddedTable {
         this.connection = connection;
     }
 
-    Integer addNewArg(JsonObject newArg, Integer pollId) {
+    String addNewArg(JsonObject newArg, Integer pollId) {
         int parent = newArg.get("parent").getAsInt();
         String txt = newArg.get("text").getAsString();
         String type = newArg.get("type").getAsString();
@@ -28,9 +28,7 @@ class UserAddedTable {
             return addToPoll(parent, txt, type, pollId);
         }
 
-        addToUserAdded(parent, txt, type, pollId);
-
-        return -1;
+        return addToUserAdded(parent, txt, type, pollId);
     }
 
     private void removeFromUserAdded(List<Argument> argsToDelete, Integer pollId) {
@@ -43,12 +41,12 @@ class UserAddedTable {
                 delete.setInt(1, arg.getId());
                 delete.execute();
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage() + " in UserAddedTable.removeFromUserAdded()");
         }
     }
 
-    private Integer addToPoll(int parent, String txt, String type, Integer pollId) {
+    private String addToPoll(int parent, String txt, String type, Integer pollId) {
         try {
             PreparedStatement getCurrId =
                     connection.prepareStatement("SELECT count(*) FROM arguments WHERE poll_id=?;");
@@ -72,10 +70,10 @@ class UserAddedTable {
 
             add.execute();
 
-            return nextId;
-        } catch (SQLException e) {
+            return "SUCCESS";
+        } catch (Exception e) {
             System.out.println(e.getMessage());
-            return 0;
+            return "FAIL";
         }
     }
 
@@ -83,7 +81,11 @@ class UserAddedTable {
         List<Argument> comparable = grabComparableStatements(type, parent, pollId);
         final double threshold = 0.75;
         return comparable.stream()
-                .filter(arg -> NLPUtils.checkStrings(arg.getText(), txt) > threshold)
+                .filter(arg -> {
+                    double sim = NLPUtils.checkStrings(arg.getText(), txt);
+                    System.out.println(arg.getText() + " vs " + txt + " = " + sim);
+                    return sim  > threshold;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -131,7 +133,7 @@ class UserAddedTable {
                 arg.setId(results.getInt("arg_id"));
                 args.add(arg);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
 

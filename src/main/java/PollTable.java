@@ -54,5 +54,4 @@ class PollTable {
             return -1;
         }
     }
-
 }

@@ -19,16 +19,16 @@ public class QuadV {
         AnswersTable ansTable;
         ArgumentTable argTable;
         UserAddedTable uaTable;
-        BoxesUtils boxUtils;
+        JsonTransformer jt = new JsonTransformer();
 
         try {
             connection = getConnection();
             dbUtils = new DatabaseUtils(connection);
+            dbUtils.initializeDatabase();
             pTable = new PollTable(connection);
             argTable = new ArgumentTable(connection);
             ansTable = new AnswersTable(connection);
             uaTable = new UserAddedTable(connection);
-            boxUtils = new BoxesUtils(connection);
         } catch (URISyntaxException | SQLException e) {
             System.out.println(e.getMessage());
             System.exit(e.hashCode());
@@ -61,8 +61,8 @@ public class QuadV {
         // Use PreparedStatement in here to stop string injection
         get("/boxes/:id", "application/json", (req, res) -> {
             Integer pollId = Integer.parseInt(req.params(":id"));
-            return boxUtils.getStatementBoxes(pollId);
-        }, new JsonTransformer());
+            return argTable.getStatementBoxes(pollId);
+        }, jt);
 
         get("/create", (req, res) ->
                 new ModelAndView(null, "create.mustache"), templateEngine);
@@ -72,7 +72,7 @@ public class QuadV {
                 Integer pollId = pTable.addToTable(obj);
                 argTable.addToTable(obj.getAsJsonArray("list"), pollId);
                 return pollId.toString();
-        }, new JsonTransformer());
+        }, jt);
 
         post("/user/:id", (req, res) -> {
             Integer pollId = Integer.parseInt(req.params(":id"));
@@ -99,7 +99,7 @@ public class QuadV {
             } else {
                 return dynamicQ;
             }
-        }, new JsonTransformer());
+        }, jt);
 
         post("/useradded/:id", "application/json", (req, res) -> {
             Integer pollId = Integer.parseInt(req.params(":id"));
@@ -108,7 +108,7 @@ public class QuadV {
                     .getAsJsonObject();
 
             return uaTable.addNewArg(newArg, pollId);
-        }, new JsonTransformer());
+        }, jt);
 
         get("/results", (req, res) ->
                 new ModelAndView(null, "results.mustache"), templateEngine);
@@ -127,7 +127,7 @@ public class QuadV {
                 List<GraphData> gData = argTable.getGraphData(pollId);
                 NodeGraphBuilder ngb = new NodeGraphBuilder();
                 return ngb.createResultGraph(gData);
-        }, new JsonTransformer());
+        }, jt);
     }
 
     private static Connection getConnection()
