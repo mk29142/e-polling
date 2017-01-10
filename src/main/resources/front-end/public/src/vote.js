@@ -226,13 +226,21 @@
       isArgSupported = headQ.vote === 'For'
       let conflictText = isArgSupported?
         'You voted for the argument but against all of its supporting arguments.' :
-        'You voted against the argument but for all of its attacking arguments.';
+        'You voted against the argument but against all of its attacking arguments.';
       let supportOrAttack = isArgSupported? 'Supporting arguments:' :  'Attacking arguments:'
       let sOrA = isArgSupported? 'a supporting' : 'an attacking';
 
       $('#conflictTitle').html('CONFLICT! Your answer to "' +
         headQ.text + '" is inconsistent with your other answers! <br>' +
         conflictText + ' Please edit your answers below:');
+
+      let support = qs[0].vote === 'For'? 'yes' : 'no';
+      createQuestion(qs[0].text, 0);
+      $('#q' + 0 + '-' + support).prop('checked', true);
+
+      let supOrAtt = isArgSupported ? "Supporters:" : "Attackers:";
+
+       $('#' + qs[0].text).append("<br><br>"+supOrAtt);
 
       for (let i = 1; i < qs.length; i++) {
         let support = qs[i].vote === 'For'? 'yes' : 'no';
