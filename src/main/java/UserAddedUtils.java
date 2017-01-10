@@ -23,7 +23,7 @@ class UserAddedUtils {
         String type = newArg.get("type").getAsString();
 
         List<Argument> similar = getSimilarArgs(txt, type, parent);
-        final int MAX_SIMILAR = 3;
+        final int MAX_SIMILAR = 1;
 
         if (similar.size() >= MAX_SIMILAR) {
             addToPoll(parent, txt, type);
