@@ -8,6 +8,7 @@ import edu.cmu.lti.ws4j.impl.Path;
 import edu.cmu.lti.ws4j.impl.WuPalmer;
 import edu.cmu.lti.ws4j.util.PorterStemmer;
 import edu.cmu.lti.ws4j.util.WS4JConfiguration;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,38 +74,25 @@ class NLPUtils {
         String[] word1 = removeRepAndStopWords(s1);
         String[] word2 = removeRepAndStopWords(s2);
 
-        if (word1.length > word2.length) {
-            word1 = simplifyLargeSentence(word1, word2);
-        } else {
-            word2 = simplifyLargeSentence(word2, word1);
-        }
-
         return new Pair<>(makeVector(word2, word1), makeVector(word1, word2));
     }
 
-    private static String[] simplifyLargeSentence(String[] larger, String[] smaller) {
-        return Arrays.stream(larger)
-            .sorted((a, b) -> a.length() < b.length() ? 1 : -1)
-            .limit(smaller.length).toArray(String[]::new);
-    }
-
     private static double[] makeVector(String[] sentence1, String[] sentence2) {
-        double[] ret = new double[sentence1.length];
+        String[] both = (String[]) ArrayUtils.addAll(sentence1, sentence2);
+        double[] ret = new double[both.length];
 
-        for (int i = 0; i < sentence1.length; i++) {
+        double weight = both.length / (double)sentence1.length;
+        if (weight > 10) weight = 0; else weight = Math.log10(weight);
+        weight = weight / Math.log10(2);
+
+        for (int i = 0; i < both.length; i++) {
             double sum = 0;
-            int nonZeros = 0;
 
-            for (String w : sentence2) {
-                double r = relatedness(sentence1[i], w);
-                sum += r;
-
-                if (r > 0) {
-                    nonZeros++;
-                }
+            for (String w : sentence1) {
+                sum += relatedness(both[i], w);
             }
 
-            ret[i] = nonZeros > 0 ? sum / nonZeros : 0;
+            ret[i] = sum * weight;
         }
 
         return ret;
@@ -142,6 +130,7 @@ class NLPUtils {
     }
 
     static double relatedness(String word1, String word2) {
+        if (word1.equals(word2)) return 1.0;
         WS4JConfiguration.getInstance().setMFS(true);
         RelatednessCalculator[] rcs = { new WuPalmer(db), new Path(db), new Lin(db) };
         double[] weights = { 0.4, 0.4, 0.2 };
